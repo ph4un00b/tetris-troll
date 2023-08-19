@@ -6,10 +6,13 @@
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.showUnlinkedFileNotification": false,
   "cSpell.words": [
+    "cosito",
     "DARKBROWN",
     "DARKGRAY",
     "DARKPURPLE",
     "macroquad",
+    "miniquad",
+    "srand",
     "tetris"
   ],
   "conventionalCommits.scopes": [
