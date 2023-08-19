@@ -10,3 +10,4 @@ opt-level = 3
 
 [dependencies]
 macroquad = "0.4.2"
+macroquad-particles = "0.2.0"
