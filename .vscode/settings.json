@@ -1,0 +1,18 @@
+{
+  "cSpell.language": "en,es",
+  "rust-analyzer.linkedProjects": [
+    ".\\Cargo.toml"
+  ],
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "cSpell.words": [
+    "DARKBROWN",
+    "DARKGRAY",
+    "DARKPURPLE",
+    "macroquad",
+    "tetris"
+  ],
+  "conventionalCommits.scopes": [
+    "🦾"
+  ]
+}
