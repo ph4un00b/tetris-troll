@@ -1,11 +1,5 @@
-use macroquad::prelude::*;
+use macroquad::{miniquad::date::now, prelude::*};
 
-enum GameStatus {
-    Main,
-    Playing,
-    Paused,
-    GameOver,
-}
 struct Coso {
     size: f32,
     speed: f32,
@@ -24,6 +18,7 @@ impl Coso {
      *
      * phau: falta un debug mode para ver el perímetro❗
      */
+    //todo: draw helpers
     fn rect(&self) -> Rect {
         Rect {
             x: self.x - self.size / 2.0,
@@ -34,14 +29,29 @@ impl Coso {
     }
 }
 
+enum GS {
+    Main,
+    Playing,
+    Paused,
+    GameOver,
+}
+
+#[derive(PartialEq)]
+enum Evt {
+    None,
+    Tapped(f64, f64),
+    DoubleTapped,
+}
 #[macroquad::main("TetrisTroll")]
 async fn main() {
-    let mut game_state = GameStatus::Main;
+    simulate_mouse_with_touch(true);
+    let mut game_state = GS::Main;
+    let mut game_taps = Evt::None;
     const MOVEMENT_SPEED: f32 = 200.0;
 
-    rand::srand(miniquad::date::now() as u64);
+    rand::srand(now() as u64);
     let mut squares: Vec<Coso> = vec![];
-    let mut circle = Coso {
+    let mut player = Coso {
         size: 52.0,
         speed: MOVEMENT_SPEED,
         x: screen_width() / 2.0,
@@ -54,28 +64,102 @@ async fn main() {
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
         clear_background(DARKPURPLE);
-        match game_state {
-            GameStatus::Main => {
+
+        for touch in touches() {
+            match touch.phase {
+                TouchPhase::Started => {
+                    game_taps = match game_taps {
+                        Evt::None => Evt::Tapped(now(), 0.250),
+                        Evt::Tapped(init, delay) if now() > (init + delay) => {
+                            Evt::Tapped(now(), delay)
+                        }
+                        Evt::Tapped(_, _) => Evt::DoubleTapped,
+                        Evt::DoubleTapped => Evt::Tapped(now(), 0.250),
+                    };
+
+                    (GREEN, 90.0)
+                }
+                TouchPhase::Stationary => (WHITE, 90.0),
+                TouchPhase::Moved => (YELLOW, 90.0),
+                TouchPhase::Ended => (BLUE, 90.0),
+                TouchPhase::Cancelled => (BLACK, 90.0),
+            };
+        }
+
+        match &game_taps {
+            Evt::None => {
+                let text = &format!("no touch - {}", now());
+                let text_dimensions = measure_text(text, None, 50, 1.0);
+                draw_text(
+                    text,
+                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
+                    100.0 + screen_height() / 2.0,
+                    60.0,
+                    YELLOW,
+                );
+            }
+            Evt::Tapped(init, _delay) => {
+                let text: &str = &format!("tap registered - {init}");
+                let text_dimensions = measure_text(text, None, 50, 1.0);
+                draw_text(
+                    text,
+                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
+                    100.0 + screen_height() / 2.0,
+                    60.0,
+                    YELLOW,
+                );
+                let text = &format!("time - {}", now());
+                let text_dimensions = measure_text(text, None, 50, 1.0);
+                draw_text(
+                    text,
+                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
+                    160.0 + screen_height() / 2.0,
+                    60.0,
+                    YELLOW,
+                );
+            }
+            Evt::DoubleTapped => {
+                let text: &str = "double tap!";
+                let text_dimensions = measure_text(text, None, 50, 1.0);
+                draw_text(
+                    text,
+                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
+                    100.0 + screen_height() / 2.0,
+                    60.0,
+                    YELLOW,
+                );
+            }
+        }
+
+        match (&game_state, &game_taps) {
+            (GS::Main | GS::Paused | GS::GameOver, Evt::None | Evt::Tapped(_, _)) => {
+                for touch in touches() {
+                    let (fill_color, size) = match touch.phase {
+                        TouchPhase::Started => (GREEN, 90.0),
+                        TouchPhase::Stationary => (WHITE, 90.0),
+                        TouchPhase::Moved => (YELLOW, 90.0),
+                        TouchPhase::Ended => (BLUE, 90.0),
+                        TouchPhase::Cancelled => (BLACK, 90.0),
+                    };
+                    draw_circle(touch.position.x, touch.position.y, size, fill_color);
+                }
+            }
+            (GS::Main, Evt::DoubleTapped)
+            | (GS::Playing, Evt::None)
+            | (GS::Playing, Evt::Tapped(_, _))
+            | (GS::Playing, Evt::DoubleTapped)
+            | (GS::Paused, Evt::DoubleTapped)
+            | (GS::GameOver, Evt::DoubleTapped) => (),
+        }
+        match (&game_state, &game_taps) {
+            (GS::Main, Evt::None | Evt::Tapped(_, _)) => {
                 //todo: Now that there is a start menu you can find a name for your
                 //todo: game and print it with large text on the upper part of the screen
-                if is_key_pressed(KeyCode::Space) {
-                    /*
-                     * The difference between is_key_down() and is_key_pressed()
-                     * is that the latter only checks if the key was pressed below
-                     * the current frame while it previously apply to all frames that
-                     * the button is pressed.
-                     *
-                     * There is also is_key_released() which
-                     * checks if the key was released during the current one frame.
-                     */
-                    squares.clear();
-                    circle.x = screen_width() / 2.0;
-                    circle.y = screen_height() / 2.0;
-                    game_state = GameStatus::Playing;
-                }
+
                 if is_key_pressed(KeyCode::Escape) {
                     std::process::exit(0);
                 }
+
                 let text = "press the space bar❗";
                 let text_dimensions = measure_text(text, None, 50, 1.0);
                 draw_text(
@@ -86,29 +170,47 @@ async fn main() {
                     WHITE,
                 );
             }
-            GameStatus::Playing => {
+            (GS::Main, Evt::DoubleTapped) => {
+                /*
+                 * The difference between is_key_down() and is_key_pressed()
+                 * is that the latter only checks if the key was pressed below
+                 * the current frame while it previously apply to all frames that
+                 * the button is pressed.
+                 *
+                 * There is also is_key_released() which
+                 * checks if the key was released during the current one frame.
+                 */
+                squares.clear();
+                player.x = screen_width() / 2.0;
+                player.y = screen_height() / 2.0;
+
+                game_state = GS::Playing;
+                game_taps = Evt::None;
+            }
+            (GS::Playing, Evt::None | Evt::Tapped(_, _)) => {
                 //? input handlers❗
                 // * @see https://docs.rs/macroquad/latest/macroquad/input/enum.KeyCode.html
                 let delta_time = get_frame_time();
                 if is_key_down(KeyCode::Right) {
-                    circle.x += MOVEMENT_SPEED * delta_time;
+                    player.x += MOVEMENT_SPEED * delta_time;
                 }
                 if is_key_down(KeyCode::Left) {
-                    circle.x -= MOVEMENT_SPEED * delta_time;
+                    player.x -= MOVEMENT_SPEED * delta_time;
                 }
                 if is_key_down(KeyCode::Down) {
-                    circle.y += MOVEMENT_SPEED * delta_time;
+                    player.y += MOVEMENT_SPEED * delta_time;
                 }
                 if is_key_down(KeyCode::Up) {
-                    circle.y -= MOVEMENT_SPEED * delta_time;
+                    player.y -= MOVEMENT_SPEED * delta_time;
                 }
+
                 //? PAUSE on ESC❗
                 if is_key_pressed(KeyCode::Escape) {
-                    game_state = GameStatus::Paused;
+                    game_state = GS::Paused;
                 }
                 //? Clamp X and Y to be within the screen
-                circle.x = circle.x.min(screen_width()).max(0.0);
-                circle.y = circle.y.min(screen_height()).max(0.0);
+                player.x = player.x.min(screen_width()).max(0.0);
+                player.y = player.y.min(screen_height()).max(0.0);
                 //? instances
                 if rand::gen_range(0, 99) >= 95 {
                     let size = rand::gen_range(16.0, 64.0);
@@ -131,11 +233,27 @@ async fn main() {
                 draw_circle(x - 30.0, y - 30.0, 45.0, BROWN);
                 draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
                 //? check collisions
-                if squares.iter().any(|square| circle.collides_with(square)) {
-                    game_state = GameStatus::GameOver;
+                if squares.iter().any(|square| player.collides_with(square)) {
+                    game_state = GS::GameOver;
                 }
                 //? drawing
-                draw_circle(circle.x, circle.y, circle.size / 2.0, YELLOW);
+                for touch in touches() {
+                    (player.x, player.y) = (touch.position.x, touch.position.y);
+
+                    let (fill_color, _size) = match touch.phase {
+                        TouchPhase::Started => (GREEN, 90.0),
+                        TouchPhase::Stationary => (WHITE, 90.0),
+                        TouchPhase::Moved => (YELLOW, 90.0),
+                        TouchPhase::Ended => (BLUE, 90.0),
+                        TouchPhase::Cancelled => (BLACK, 90.0),
+                    };
+                    draw_circle(
+                        touch.position.x,
+                        touch.position.y,
+                        player.size / 2.0,
+                        fill_color,
+                    );
+                }
                 for cosito in &squares {
                     draw_rectangle(
                         cosito.x - cosito.size / 2.0,
@@ -146,9 +264,13 @@ async fn main() {
                     );
                 }
             }
-            GameStatus::Paused => {
+            (GS::Playing, Evt::DoubleTapped) => {
+                game_state = GS::Paused;
+                game_taps = Evt::None;
+            }
+            (GS::Paused, Evt::None | Evt::Tapped(_, _)) => {
                 if is_key_pressed(KeyCode::Escape) {
-                    game_state = GameStatus::Playing;
+                    game_state = GS::Playing;
                 }
                 let text = "Pausad";
                 let text_dimensions = measure_text(text, None, 50, 1.0);
@@ -160,7 +282,11 @@ async fn main() {
                     WHITE,
                 );
             }
-            GameStatus::GameOver => {
+            (GS::Paused, Evt::DoubleTapped) => {
+                game_state = GS::Playing;
+                game_taps = Evt::None;
+            }
+            (GS::GameOver, Evt::None | Evt::Tapped(_, _)) => {
                 let text = "Game Over!";
                 let text_dimensions = measure_text(text, None, 50, 1.0);
                 draw_text(
@@ -170,6 +296,10 @@ async fn main() {
                     80.0,
                     RED,
                 );
+            }
+            (GS::GameOver, Evt::DoubleTapped) => {
+                game_state = GS::Main;
+                game_taps = Evt::None;
             }
         }
 
