@@ -1,4 +1,28 @@
 use macroquad::{miniquad::date::now, prelude::*};
+//todo: fix shader for mobile❗
+const FRAGMENT_SHADER: &str = include_str!("starfield-shader.glsl");
+
+/*
+ * Macroquad automatically adds some uniforms to shaders.
+ * The ones that exist available
+ *
+ * _Time, Model, Projection, Texture and _ScreenTexture.
+ */
+const VERTEX_SHADER: &str = "#version 100
+attribute vec3 position;
+attribute vec2 texcoord;
+attribute vec4 color0;
+varying float iTime;
+
+uniform mat4 Model;
+uniform mat4 Projection;
+uniform vec4 _Time;
+
+void main() {
+    gl_Position = Projection * Model * vec4(position, 1);
+    iTime = _Time.x;
+}
+";
 
 struct Coso {
     size: f32,
@@ -45,6 +69,25 @@ enum Evt {
 #[macroquad::main("TetrisTroll")]
 async fn main() {
     simulate_mouse_with_touch(true);
+    let direction_modifier: f32 = 0.0;
+    let render_target = render_target(320, 150);
+    render_target.texture.set_filter(FilterMode::Nearest);
+    let material = load_material(
+        ShaderSource {
+            glsl_vertex: Some(VERTEX_SHADER),
+            glsl_fragment: Some(FRAGMENT_SHADER),
+            metal_shader: None,
+        },
+        MaterialParams {
+            uniforms: vec![
+                ("iResolution".to_owned(), UniformType::Float2),
+                ("direction_modifier".to_owned(), UniformType::Float1),
+            ],
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
     let mut game_state = GS::Main;
     let mut game_taps = Evt::None;
     const MOVEMENT_SPEED: f32 = 200.0;
@@ -65,6 +108,22 @@ async fn main() {
     loop {
         clear_background(DARKPURPLE);
 
+        //?shader
+        material.set_uniform("iResolution", (screen_width(), screen_height()));
+        material.set_uniform("direction_modifier", direction_modifier);
+        gl_use_material(&material);
+        draw_texture_ex(
+            &render_target.texture,
+            0.,
+            0.,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(screen_width(), screen_height())),
+                ..Default::default()
+            },
+        );
+        gl_use_default_material();
+        //?touches
         for touch in touches() {
             match touch.phase {
                 TouchPhase::Started => {
