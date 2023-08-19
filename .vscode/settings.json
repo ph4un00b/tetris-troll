@@ -10,10 +10,13 @@
     "DARKBROWN",
     "DARKGRAY",
     "DARKPURPLE",
+    "glsl",
     "macroquad",
     "miniquad",
     "srand",
-    "tetris"
+    "starfield",
+    "tetris",
+    "texcoord"
   ],
   "conventionalCommits.scopes": [
     "🦾"
