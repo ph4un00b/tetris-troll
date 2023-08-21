@@ -1,5 +1,6 @@
 use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
 use macroquad::logging;
+use macroquad::ui::{hash, root_ui, Skin};
 use macroquad::{miniquad::date::now, prelude::*};
 use macroquad_particles::{self as part, ColorCurve, Emitter, EmitterConfig};
 //todo: fix shader for mobile❗
@@ -123,6 +124,51 @@ async fn main() {
     //?  Macroquad will clear the screen at the beginning of each frame.
     let mut main_music_started = false;
 
+    //? ui init
+    let window_background = load_image("assets/window_background.png").await.unwrap();
+    let button_background = load_image("assets/button_background.png").await.unwrap();
+    let button_clicked_background = load_image("assets/button_clicked_background.png")
+        .await
+        .unwrap();
+    let font = load_file("assets/atari_games.ttf").await.unwrap();
+
+    let window_style = root_ui()
+        .style_builder()
+        .background(window_background)
+        .background_margin(RectOffset::new(32.0, 76.0, 44.0, 20.0))
+        .margin(RectOffset::new(0.0, -40.0, 0.0, 0.0))
+        .build();
+
+    let button_style = root_ui()
+        .style_builder()
+        .background(button_background)
+        .background_clicked(button_clicked_background)
+        .background_margin(RectOffset::new(16.0, 16.0, 16.0, 16.0))
+        .margin(RectOffset::new(16.0, 0.0, -8.0, -8.0))
+        .font(&font)
+        .unwrap()
+        .text_color(WHITE)
+        .font_size(64)
+        .build();
+
+    let label_style = root_ui()
+        .style_builder()
+        .font(&font)
+        .unwrap()
+        .text_color(WHITE)
+        .font_size(28)
+        .build();
+
+    // * @see https://docs.rs/macroquad/0.3.25/macroquad/ui/struct.Skin.html
+    let ui_skin = Skin {
+        window_style,
+        button_style,
+        label_style,
+        ..root_ui().default_skin()
+    };
+
+    root_ui().push_skin(&ui_skin);
+    let window_size = vec2(370.0, 320.0);
     loop {
         clear_background(DARKPURPLE);
 
@@ -176,12 +222,14 @@ async fn main() {
                 );
             }
             Evt::Tapped(init, _delay) => {
+                //? debug taps
+                let offset = -400.0;
                 let text: &str = &format!("tap registered - {init}");
                 let text_dimensions = measure_text(text, None, 50, 1.0);
                 draw_text(
                     text,
                     (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    100.0 + screen_height() / 2.0,
+                    offset + 100.0 + screen_height() / 2.0,
                     60.0,
                     YELLOW,
                 );
@@ -190,7 +238,7 @@ async fn main() {
                 draw_text(
                     text,
                     (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    160.0 + screen_height() / 2.0,
+                    offset + 160.0 + screen_height() / 2.0,
                     60.0,
                     YELLOW,
                 );
@@ -224,18 +272,16 @@ async fn main() {
         };
         match (&game_state, &game_taps) {
             (GS::Main, Evt::None) => {
-                if is_key_pressed(KeyCode::Escape) {
-                    std::process::exit(0);
-                }
-
-                let text = "touch me 😊";
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    screen_height() / 2.0,
-                    50.0,
-                    WHITE,
+                root_ui().window(
+                    hash!(),
+                    vec2(
+                        screen_width() / 2.0 - window_size.x / 2.0,
+                        screen_height() / 2.0 - window_size.y / 2.0,
+                    ),
+                    window_size,
+                    |ui| {
+                        ui.button(vec2(45.0, 75.0), "toca!");
+                    },
                 );
             }
             (GS::Main, Evt::Tapped(_, _)) => {
@@ -243,54 +289,43 @@ async fn main() {
                 logging::error!("jamon!");
                 println!("caca!");
                 debug!("caca!");
-                if !main_music_started {
-                    main_music_started = true;
-                    //todo: It may be a little intense that the music starts at
-                    //todo: full volume right away, try to lower the volume at the beginning and raise it as the game begins.
-                    play_sound(
-                        &theme_music,
-                        PlaySoundParams {
-                            looped: true,
-                            volume: 0.2,
-                        },
-                    );
-                }
-                //todo: Now that there is a start menu you can find a name for your
-                //todo: game and print it with large text on the upper part of the screen
-                if is_key_pressed(KeyCode::Escape) {
-                    std::process::exit(0);
-                }
 
-                let text = "press the space bar❗";
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    screen_height() / 2.0,
-                    50.0,
-                    WHITE,
+                root_ui().window(
+                    hash!(),
+                    vec2(
+                        screen_width() / 2.0 - window_size.x / 2.0,
+                        screen_height() / 2.0 - window_size.y / 2.0,
+                    ),
+                    window_size,
+                    |ui| {
+                        ui.label(vec2(80.0, -34.0), "El Juego.");
+                        if ui.button(vec2(45.0, 25.0), "Jugar!") {
+                            /*
+                             * The difference between is_key_down() and is_key_pressed()
+                             * is that the latter only checks if the key was pressed below
+                             * the current frame while it previously apply to all frames that
+                             * the button is pressed.
+                             *
+                             * There is also is_key_released() which
+                             * checks if the key was released during the current one frame.
+                             */
+                            squares.clear();
+                            explosions.clear();
+
+                            player.collided = false;
+                            player.x = screen_width() / 2.0;
+                            player.y = screen_height() / 2.0;
+
+                            game_state = GS::Playing;
+                            game_taps = Evt::None;
+                        }
+                        if ui.button(vec2(45.0, 125.0), "Salir!") {
+                            std::process::exit(0);
+                        }
+                    },
                 );
             }
-            (GS::Main, Evt::DoubleTapped) => {
-                /*
-                 * The difference between is_key_down() and is_key_pressed()
-                 * is that the latter only checks if the key was pressed below
-                 * the current frame while it previously apply to all frames that
-                 * the button is pressed.
-                 *
-                 * There is also is_key_released() which
-                 * checks if the key was released during the current one frame.
-                 */
-                squares.clear();
-                explosions.clear();
-
-                player.collided = false;
-                player.x = screen_width() / 2.0;
-                player.y = screen_height() / 2.0;
-
-                game_state = GS::Playing;
-                game_taps = Evt::None;
-            }
+            (GS::Main, Evt::DoubleTapped) => {}
             (GS::Playing, Evt::None | Evt::Tapped(_, _)) => {
                 if !main_music_started {
                     main_music_started = true;
@@ -434,20 +469,23 @@ async fn main() {
                 stop_sound(&theme_music);
                 main_music_started = false;
 
-                let text = "Game Over!";
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    screen_width() / 2.0 - text_dimensions.width / 2.0,
-                    screen_height() / 2.0,
-                    80.0,
-                    RED,
+                root_ui().window(
+                    hash!(),
+                    vec2(
+                        screen_width() / 2.0 - window_size.x / 2.0,
+                        screen_height() / 2.0 - window_size.y / 2.0,
+                    ),
+                    window_size,
+                    |ui| {
+                        ui.label(vec2(80.0, -34.0), "Perdiste.");
+                        if ui.button(vec2(45.0, 75.0), "Menu") {
+                            game_state = GS::Main;
+                            game_taps = Evt::Tapped(now(), 0.250);
+                        }
+                    },
                 );
             }
-            (GS::GameOver, Evt::DoubleTapped) => {
-                game_state = GS::Main;
-                game_taps = Evt::None;
-            }
+            (GS::GameOver, Evt::DoubleTapped) => {}
         }
 
         next_frame().await
