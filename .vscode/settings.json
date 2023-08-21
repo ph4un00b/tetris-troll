@@ -6,6 +6,7 @@
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.showUnlinkedFileNotification": false,
   "cSpell.words": [
+    "atari",
     "consts",
     "cosito",
     "DARKBROWN",
