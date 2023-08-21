@@ -1,3 +1,5 @@
+use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
+use macroquad::logging;
 use macroquad::{miniquad::date::now, prelude::*};
 use macroquad_particles::{self as part, ColorCurve, Emitter, EmitterConfig};
 //todo: fix shader for mobile❗
@@ -71,6 +73,7 @@ enum Evt {
 #[macroquad::main("TetrisTroll")]
 async fn main() {
     simulate_mouse_with_touch(true);
+
     //? game shader init
     let direction_modifier: f32 = 0.0;
     let render_target = render_target(320, 150);
@@ -110,7 +113,16 @@ async fn main() {
     let x = screen_width() / 2.0;
     let y = screen_height() / 2.0;
 
+    //? sound init
+    let theme_music = load_sound("assets/bg_return_default.wav").await.unwrap();
+    // let theme_music = load_sound("assets/bg_caffeine.mp3").await.unwrap();
+    // let theme_music = load_sound("bg_polka.ogg").await.unwrap();
+    // let theme_music = load_sound("assets/mus_picked.wav").await.unwrap();
+    let transition_sound = load_sound("assets/mus_pick_item.wav").await.unwrap();
+    let dead_sound = load_sound("assets/mus_picked.wav").await.unwrap();
     //?  Macroquad will clear the screen at the beginning of each frame.
+    let mut main_music_started = false;
+
     loop {
         clear_background(DARKPURPLE);
 
@@ -196,31 +208,55 @@ async fn main() {
             }
         }
 
-        match (&game_state, &game_taps) {
-            (GS::Main | GS::Paused | GS::GameOver, Evt::None | Evt::Tapped(_, _)) => {
-                for touch in touches() {
-                    let (fill_color, size) = match touch.phase {
-                        TouchPhase::Started => (GREEN, 20.0),
-                        TouchPhase::Stationary => (WHITE, 20.0),
-                        TouchPhase::Moved => (YELLOW, 20.0),
-                        TouchPhase::Ended => (BLUE, 20.0),
-                        TouchPhase::Cancelled => (BLACK, 20.0),
-                    };
-                    draw_circle(touch.position.x, touch.position.y, size, fill_color);
-                }
+        if let (GS::Main | GS::Paused | GS::GameOver, Evt::None | Evt::Tapped(_, _)) =
+            (&game_state, &game_taps)
+        {
+            for touch in touches() {
+                let (fill_color, size) = match touch.phase {
+                    TouchPhase::Started => (GREEN, 20.0),
+                    TouchPhase::Stationary => (WHITE, 20.0),
+                    TouchPhase::Moved => (YELLOW, 20.0),
+                    TouchPhase::Ended => (BLUE, 20.0),
+                    TouchPhase::Cancelled => (BLACK, 20.0),
+                };
+                draw_circle(touch.position.x, touch.position.y, size, fill_color);
             }
-            (GS::Main, Evt::DoubleTapped)
-            | (GS::Playing, Evt::None)
-            | (GS::Playing, Evt::Tapped(_, _))
-            | (GS::Playing, Evt::DoubleTapped)
-            | (GS::Paused, Evt::DoubleTapped)
-            | (GS::GameOver, Evt::DoubleTapped) => (),
-        }
+        };
         match (&game_state, &game_taps) {
-            (GS::Main, Evt::None | Evt::Tapped(_, _)) => {
+            (GS::Main, Evt::None) => {
+                if is_key_pressed(KeyCode::Escape) {
+                    std::process::exit(0);
+                }
+
+                let text = "touch me 😊";
+                let text_dimensions = measure_text(text, None, 50, 1.0);
+                draw_text(
+                    text,
+                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
+                    screen_height() / 2.0,
+                    50.0,
+                    WHITE,
+                );
+            }
+            (GS::Main, Evt::Tapped(_, _)) => {
+                //todo: log on web-side
+                logging::error!("jamon!");
+                println!("caca!");
+                debug!("caca!");
+                if !main_music_started {
+                    main_music_started = true;
+                    //todo: It may be a little intense that the music starts at
+                    //todo: full volume right away, try to lower the volume at the beginning and raise it as the game begins.
+                    play_sound(
+                        &theme_music,
+                        PlaySoundParams {
+                            looped: true,
+                            volume: 0.2,
+                        },
+                    );
+                }
                 //todo: Now that there is a start menu you can find a name for your
                 //todo: game and print it with large text on the upper part of the screen
-
                 if is_key_pressed(KeyCode::Escape) {
                     std::process::exit(0);
                 }
@@ -248,6 +284,7 @@ async fn main() {
                 squares.clear();
                 explosions.clear();
 
+                player.collided = false;
                 player.x = screen_width() / 2.0;
                 player.y = screen_height() / 2.0;
 
@@ -255,6 +292,18 @@ async fn main() {
                 game_taps = Evt::None;
             }
             (GS::Playing, Evt::None | Evt::Tapped(_, _)) => {
+                if !main_music_started {
+                    main_music_started = true;
+                    //todo: It may be a little intense that the music starts at
+                    //todo: full volume right away, try to lower the volume at the beginning and raise it as the game begins.
+                    play_sound(
+                        &theme_music,
+                        PlaySoundParams {
+                            looped: true,
+                            volume: 0.2,
+                        },
+                    );
+                }
                 //? input handlers❗
                 // * @see https://docs.rs/macroquad/latest/macroquad/input/enum.KeyCode.html
                 let delta_time = get_frame_time();
@@ -308,6 +357,7 @@ async fn main() {
                     if !player.collided && player.collides_with(square) {
                         player.collided = true;
                         square.collided = true;
+                        play_sound_once(&dead_sound);
                         game_over_at = now() + 1.25;
                         explosions.push((
                             Emitter::new(EmitterConfig {
@@ -355,6 +405,8 @@ async fn main() {
                 }
             }
             (GS::Playing, Evt::DoubleTapped) => {
+                play_sound_once(&transition_sound);
+                stop_sound(&theme_music);
                 game_state = GS::Paused;
                 game_taps = Evt::None;
             }
@@ -373,10 +425,15 @@ async fn main() {
                 );
             }
             (GS::Paused, Evt::DoubleTapped) => {
+                play_sound_once(&transition_sound);
+                main_music_started = false;
                 game_state = GS::Playing;
                 game_taps = Evt::None;
             }
             (GS::GameOver, Evt::None | Evt::Tapped(_, _)) => {
+                stop_sound(&theme_music);
+                main_music_started = false;
+
                 let text = "Game Over!";
                 let text_dimensions = measure_text(text, None, 50, 1.0);
                 draw_text(
