@@ -6,6 +6,7 @@ use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, Play
 use macroquad::{miniquad::date::now, prelude::*};
 
 use shared::Organism;
+use touches::GTouches;
 use ui::UI;
 
 use crate::player::Player;
@@ -15,6 +16,7 @@ mod enemies;
 mod enemy;
 mod player;
 mod shared;
+mod touches;
 mod ui;
 //todo: fix shader for mobile❗
 const FRAGMENT_SHADER: &str = include_str!("starfield-shader.glsl");
@@ -144,17 +146,9 @@ async fn main() {
         if let (GS::Main | GS::Paused | GS::GameOver, Evt::None | Evt::Tapped(_, _)) =
             (&game_state, &game_taps)
         {
-            for touch in touches() {
-                let (fill_color, size) = match touch.phase {
-                    TouchPhase::Started => (GREEN, 20.0),
-                    TouchPhase::Stationary => (WHITE, 20.0),
-                    TouchPhase::Moved => (YELLOW, 20.0),
-                    TouchPhase::Ended => (BLUE, 20.0),
-                    TouchPhase::Cancelled => (BLACK, 20.0),
-                };
-                draw_circle(touch.position.x, touch.position.y, size, fill_color);
-            }
+            GTouches::draw();
         };
+
         match (&game_state, &game_taps) {
             (GS::Main, Evt::None) => {
                 UI::touch_window();
@@ -183,7 +177,6 @@ async fn main() {
                 enemies.update();
                 player.update();
 
-                //? PAUSE on ESC❗
                 if is_key_pressed(KeyCode::Escape) {
                     game_state = GS::Paused;
                 }
