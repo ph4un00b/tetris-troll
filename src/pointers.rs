@@ -3,9 +3,9 @@ use macroquad::{
     shapes::draw_circle,
 };
 
-pub struct GTouches;
+pub struct Pointers;
 
-impl GTouches {
+impl Pointers {
     pub fn draw() {
         for touch in touches() {
             let (fill_color, size) = match touch.phase {
