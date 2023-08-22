@@ -1,8 +1,20 @@
+use constants::MOVEMENT_SPEED;
+use enemies::Enemies;
+
 use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
 use macroquad::logging;
 use macroquad::ui::{hash, root_ui, Skin};
 use macroquad::{miniquad::date::now, prelude::*};
-use macroquad_particles::{self as part, ColorCurve, Emitter, EmitterConfig};
+
+use shared::Organism;
+
+use crate::player::Player;
+use crate::shared::Coso;
+mod constants;
+mod enemies;
+mod enemy;
+mod player;
+mod shared;
 //todo: fix shader for mobile❗
 const FRAGMENT_SHADER: &str = include_str!("starfield-shader.glsl");
 
@@ -27,36 +39,6 @@ void main() {
     iTime = _Time.x;
 }
 ";
-
-struct Coso {
-    size: f32,
-    speed: f32,
-    x: f32,
-    y: f32,
-    collided: bool,
-}
-impl Coso {
-    fn collides_with(&self, other: &Self) -> bool {
-        self.rect().overlaps(&other.rect())
-    }
-
-    //? el cuadro que mapea la colisión❗
-    /*
-     * Rect also starts from the upper left corner, so we must too here subtract half
-     * the stork from both X and Y.
-     *
-     * phau: falta un debug mode para ver el perímetro❗
-     */
-    //todo: draw helpers
-    fn rect(&self) -> Rect {
-        Rect {
-            x: self.x - self.size / 2.0,
-            y: self.y - self.size / 2.0,
-            w: self.size,
-            h: self.size,
-        }
-    }
-}
 
 enum GS {
     Main,
@@ -95,21 +77,19 @@ async fn main() {
     )
     .unwrap();
     //? game inits
-    let mut explosions: Vec<(Emitter, Vec2)> = vec![];
     let mut game_state = GS::Main;
     let mut game_taps = Evt::None;
     let mut game_over_at = 0.0;
-    const MOVEMENT_SPEED: f32 = 200.0;
 
     rand::srand(now() as u64);
-    let mut squares: Vec<Coso> = vec![];
-    let mut player = Coso {
+    let mut enemies = Enemies::new();
+    let mut player = Player::new(Coso {
         size: 52.0,
         speed: MOVEMENT_SPEED,
         x: screen_width() / 2.0,
         y: screen_height() / 2.0,
         collided: false,
-    };
+    });
 
     let x = screen_width() / 2.0;
     let y = screen_height() / 2.0;
@@ -300,21 +280,8 @@ async fn main() {
                     |ui| {
                         ui.label(vec2(80.0, -34.0), "El Juego.");
                         if ui.button(vec2(45.0, 25.0), "Jugar!") {
-                            /*
-                             * The difference between is_key_down() and is_key_pressed()
-                             * is that the latter only checks if the key was pressed below
-                             * the current frame while it previously apply to all frames that
-                             * the button is pressed.
-                             *
-                             * There is also is_key_released() which
-                             * checks if the key was released during the current one frame.
-                             */
-                            squares.clear();
-                            explosions.clear();
-
-                            player.collided = false;
-                            player.x = screen_width() / 2.0;
-                            player.y = screen_height() / 2.0;
+                            enemies.reset();
+                            player.reset();
 
                             game_state = GS::Playing;
                             game_taps = Evt::None;
@@ -339,105 +306,32 @@ async fn main() {
                         },
                     );
                 }
-                //? input handlers❗
-                // * @see https://docs.rs/macroquad/latest/macroquad/input/enum.KeyCode.html
-                let delta_time = get_frame_time();
-                if is_key_down(KeyCode::Right) {
-                    player.x += MOVEMENT_SPEED * delta_time;
-                }
-                if is_key_down(KeyCode::Left) {
-                    player.x -= MOVEMENT_SPEED * delta_time;
-                }
-                if is_key_down(KeyCode::Down) {
-                    player.y += MOVEMENT_SPEED * delta_time;
-                }
-                if is_key_down(KeyCode::Up) {
-                    player.y -= MOVEMENT_SPEED * delta_time;
-                }
+
+                enemies.update();
+                player.update();
 
                 //? PAUSE on ESC❗
                 if is_key_pressed(KeyCode::Escape) {
                     game_state = GS::Paused;
                 }
-                //? Clamp X and Y to be within the screen
-                player.x = player.x.min(screen_width()).max(0.0);
-                player.y = player.y.min(screen_height()).max(0.0);
-                //? instances
-                if rand::gen_range(0, 99) >= 95 {
-                    let size = rand::gen_range(16.0, 64.0);
-                    squares.push(Coso {
-                        size,
-                        speed: rand::gen_range(50.0, 150.0),
-                        x: rand::gen_range(size / 2.0, screen_width() - size / 2.0),
-                        y: -size,
-                        collided: false,
-                    });
-                }
-                //? move instances
-                for cosito in &mut squares {
-                    cosito.y += cosito.speed * delta_time;
-                }
-                //? optimization: Remove squares below bottom of screen
-                squares.retain(|square| !square.collided);
-                squares.retain(|square| square.y < screen_width() + square.size);
-                // todo hay un problema con eliminar muy rápido la explosiones
-                // explosions.retain(|(explosion, _)| explosion.config.emitting);
+
                 //? world
                 draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
                 draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
                 draw_circle(x - 30.0, y - 30.0, 45.0, BROWN);
                 draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
                 //? check collisions
-                for square in squares.iter_mut() {
-                    if !player.collided && player.collides_with(square) {
-                        player.collided = true;
-                        square.collided = true;
-                        play_sound_once(&dead_sound);
-                        game_over_at = now() + 1.25;
-                        explosions.push((
-                            Emitter::new(EmitterConfig {
-                                amount: square.size.round() as u32 * 4,
-                                ..particle_explosion()
-                            }),
-                            vec2(square.x, square.y),
-                        ));
-                    }
+                if enemies.collides_with(&mut player) {
+                    play_sound_once(&dead_sound);
+                    game_over_at = now() + 1.25;
                 }
-
-                // if squares.iter().any(|square| player.collides_with(square)) {
-                if player.collided && now() > game_over_at {
+                // if squares.iter().any(|square| player.props.collides_with(square)) {
+                if player.props.collided && now() > game_over_at {
                     game_state = GS::GameOver;
                 }
                 //? drawing
-                for (explosion, coords) in explosions.iter_mut() {
-                    explosion.draw(*coords);
-                }
-                for touch in touches() {
-                    (player.x, player.y) = (touch.position.x, touch.position.y);
-
-                    let (fill_color, _size) = match touch.phase {
-                        TouchPhase::Started => (GREEN, 90.0),
-                        TouchPhase::Stationary => (WHITE, 90.0),
-                        TouchPhase::Moved => (YELLOW, 90.0),
-                        TouchPhase::Ended => (BLUE, 90.0),
-                        TouchPhase::Cancelled => (BLACK, 90.0),
-                    };
-                    draw_circle(
-                        touch.position.x,
-                        touch.position.y,
-                        player.size / 2.0,
-                        fill_color,
-                    );
-                }
-                for cosito in &squares {
-                    draw_rectangle(
-                        cosito.x - cosito.size / 2.0,
-                        cosito.y - cosito.size / 2.0,
-                        cosito.size,
-                        cosito.size,
-                        PINK,
-                    );
-                }
+                enemies.draw();
+                player.draw();
             }
             (GS::Playing, Evt::DoubleTapped) => {
                 play_sound_once(&transition_sound);
@@ -489,37 +383,5 @@ async fn main() {
         }
 
         next_frame().await
-    }
-}
-
-fn particle_explosion() -> part::EmitterConfig {
-    /*
-     * We will use the same configuration for all explosions,
-     * and only will resize it based on the size of the square.
-     *
-     * Therefore, we create a function returning one EmitterConfig which
-     * can be used to create one Emitter. One Emitter is a point based on
-     * particles can be generated.
-     *
-     * @see https://docs.rs/macroquad-particles/latest/macroquad_particles/struct.EmitterConfig.html
-     */
-    part::EmitterConfig {
-        local_coords: false,
-        one_shot: true,
-        emitting: true,
-        lifetime: 0.6,
-        lifetime_randomness: 0.3,
-        explosiveness: 0.65,
-        initial_direction_spread: 2.0 * std::f32::consts::PI,
-        initial_velocity: 300.0,
-        initial_velocity_randomness: 0.8,
-        size: 3.0,
-        size_randomness: 0.3,
-        colors_curve: ColorCurve {
-            start: VIOLET,
-            mid: ORANGE,
-            end: GREEN,
-        },
-        ..Default::default()
     }
 }
