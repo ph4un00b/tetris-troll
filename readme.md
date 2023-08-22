@@ -3,6 +3,9 @@
 - basic-http-server .
 - `http://localhost:4000/web/`
 
+# todo
+- [ ] automate prod releases.
+
 # assets
 - Copyright 2009 "Nel giardino dello Zar (Polka)" Bruno Belotti <http://www.jamendo.com/en/artist/348519/bruno-belotti> Copyright 2012 Iwan Gabovitch "Nel giardino dello Zar (Polka) Loop" (simple editing to make it loop)
 - Please attribute as: "Caffeine Crazed Coin-Op Kids" by Eric Matyas soundimage.org
