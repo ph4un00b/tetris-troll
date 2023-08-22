@@ -2,11 +2,11 @@ use constants::MOVEMENT_SPEED;
 use enemies::Enemies;
 
 use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
-use macroquad::logging;
-use macroquad::ui::{hash, root_ui, Skin};
+
 use macroquad::{miniquad::date::now, prelude::*};
 
 use shared::Organism;
+use ui::UI;
 
 use crate::player::Player;
 use crate::shared::Coso;
@@ -15,6 +15,7 @@ mod enemies;
 mod enemy;
 mod player;
 mod shared;
+mod ui;
 //todo: fix shader for mobile❗
 const FRAGMENT_SHADER: &str = include_str!("starfield-shader.glsl");
 
@@ -101,57 +102,11 @@ async fn main() {
     // let theme_music = load_sound("assets/mus_picked.wav").await.unwrap();
     let transition_sound = load_sound("assets/mus_pick_item.wav").await.unwrap();
     let dead_sound = load_sound("assets/mus_picked.wav").await.unwrap();
-    //?  Macroquad will clear the screen at the beginning of each frame.
     let mut main_music_started = false;
-
-    //? ui init
-    let window_background = load_image("assets/window_background.png").await.unwrap();
-    let button_background = load_image("assets/button_background.png").await.unwrap();
-    let button_clicked_background = load_image("assets/button_clicked_background.png")
-        .await
-        .unwrap();
-    let font = load_file("assets/atari_games.ttf").await.unwrap();
-
-    let window_style = root_ui()
-        .style_builder()
-        .background(window_background)
-        .background_margin(RectOffset::new(32.0, 76.0, 44.0, 20.0))
-        .margin(RectOffset::new(0.0, -40.0, 0.0, 0.0))
-        .build();
-
-    let button_style = root_ui()
-        .style_builder()
-        .background(button_background)
-        .background_clicked(button_clicked_background)
-        .background_margin(RectOffset::new(16.0, 16.0, 16.0, 16.0))
-        .margin(RectOffset::new(16.0, 0.0, -8.0, -8.0))
-        .font(&font)
-        .unwrap()
-        .text_color(WHITE)
-        .font_size(64)
-        .build();
-
-    let label_style = root_ui()
-        .style_builder()
-        .font(&font)
-        .unwrap()
-        .text_color(WHITE)
-        .font_size(28)
-        .build();
-
-    // * @see https://docs.rs/macroquad/0.3.25/macroquad/ui/struct.Skin.html
-    let ui_skin = Skin {
-        window_style,
-        button_style,
-        label_style,
-        ..root_ui().default_skin()
-    };
-
-    root_ui().push_skin(&ui_skin);
-    let window_size = vec2(370.0, 320.0);
+    UI::init().await;
+    //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
         clear_background(DARKPURPLE);
-
         //?shader
         material.set_uniform("iResolution", (screen_width(), screen_height()));
         material.set_uniform("direction_modifier", direction_modifier);
@@ -167,74 +122,24 @@ async fn main() {
             },
         );
         gl_use_default_material();
-        //?touches
-        for touch in touches() {
-            match touch.phase {
-                TouchPhase::Started => {
-                    game_taps = match game_taps {
-                        Evt::None => Evt::Tapped(now(), 0.250),
-                        Evt::Tapped(init, delay) if now() > (init + delay) => {
-                            Evt::Tapped(now(), delay)
-                        }
-                        Evt::Tapped(_, _) => Evt::DoubleTapped,
-                        Evt::DoubleTapped => Evt::Tapped(now(), 0.250),
-                    };
+        //? end-shader
 
-                    (GREEN, 90.0)
-                }
-                TouchPhase::Stationary => (WHITE, 90.0),
-                TouchPhase::Moved => (YELLOW, 90.0),
-                TouchPhase::Ended => (BLUE, 90.0),
-                TouchPhase::Cancelled => (BLACK, 90.0),
+        for touch in touches() {
+            if let TouchPhase::Started = touch.phase {
+                game_taps = match game_taps {
+                    Evt::None => Evt::Tapped(now(), 0.250),
+                    Evt::Tapped(init, delay) if now() > (init + delay) => Evt::Tapped(now(), delay),
+                    Evt::Tapped(_, _) => Evt::DoubleTapped,
+                    Evt::DoubleTapped => Evt::Tapped(now(), 0.250),
+                };
             };
         }
 
         match &game_taps {
-            Evt::None => {
-                let text = &format!("no touch - {}", now());
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    100.0 + screen_height() / 2.0,
-                    60.0,
-                    YELLOW,
-                );
-            }
-            Evt::Tapped(init, _delay) => {
-                //? debug taps
-                let offset = -400.0;
-                let text: &str = &format!("tap registered - {init}");
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    offset + 100.0 + screen_height() / 2.0,
-                    60.0,
-                    YELLOW,
-                );
-                let text = &format!("time - {}", now());
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    offset + 160.0 + screen_height() / 2.0,
-                    60.0,
-                    YELLOW,
-                );
-            }
-            Evt::DoubleTapped => {
-                let text: &str = "double tap!";
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    (screen_width() / 2.0) - (text_dimensions.width / 2.0),
-                    100.0 + screen_height() / 2.0,
-                    60.0,
-                    YELLOW,
-                );
-            }
-        }
+            Evt::None => UI::debug_touch(),
+            Evt::Tapped(init, _delay) => UI::debug_tap(init),
+            Evt::DoubleTapped => UI::debug_double_tap(),
+        };
 
         if let (GS::Main | GS::Paused | GS::GameOver, Evt::None | Evt::Tapped(_, _)) =
             (&game_state, &game_taps)
@@ -252,46 +157,14 @@ async fn main() {
         };
         match (&game_state, &game_taps) {
             (GS::Main, Evt::None) => {
-                root_ui().window(
-                    hash!(),
-                    vec2(
-                        screen_width() / 2.0 - window_size.x / 2.0,
-                        screen_height() / 2.0 - window_size.y / 2.0,
-                    ),
-                    window_size,
-                    |ui| {
-                        ui.button(vec2(45.0, 75.0), "toca!");
-                    },
-                );
+                UI::touch_window();
             }
-            (GS::Main, Evt::Tapped(_, _)) => {
-                //todo: log on web-side
-                logging::error!("jamon!");
-                println!("caca!");
-                debug!("caca!");
-
-                root_ui().window(
-                    hash!(),
-                    vec2(
-                        screen_width() / 2.0 - window_size.x / 2.0,
-                        screen_height() / 2.0 - window_size.y / 2.0,
-                    ),
-                    window_size,
-                    |ui| {
-                        ui.label(vec2(80.0, -34.0), "El Juego.");
-                        if ui.button(vec2(45.0, 25.0), "Jugar!") {
-                            enemies.reset();
-                            player.reset();
-
-                            game_state = GS::Playing;
-                            game_taps = Evt::None;
-                        }
-                        if ui.button(vec2(45.0, 125.0), "Salir!") {
-                            std::process::exit(0);
-                        }
-                    },
-                );
-            }
+            (GS::Main, Evt::Tapped(_, _)) => UI::main_window(|| {
+                enemies.reset();
+                player.reset();
+                game_state = GS::Playing;
+                game_taps = Evt::None;
+            }),
             (GS::Main, Evt::DoubleTapped) => {}
             (GS::Playing, Evt::None | Evt::Tapped(_, _)) => {
                 if !main_music_started {
@@ -320,16 +193,13 @@ async fn main() {
                 draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
                 draw_circle(x - 30.0, y - 30.0, 45.0, BROWN);
                 draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
-                //? check collisions
                 if enemies.collides_with(&mut player) {
                     play_sound_once(&dead_sound);
                     game_over_at = now() + 1.25;
                 }
-                // if squares.iter().any(|square| player.props.collides_with(square)) {
                 if player.props.collided && now() > game_over_at {
                     game_state = GS::GameOver;
                 }
-                //? drawing
                 enemies.draw();
                 player.draw();
             }
@@ -362,22 +232,10 @@ async fn main() {
             (GS::GameOver, Evt::None | Evt::Tapped(_, _)) => {
                 stop_sound(&theme_music);
                 main_music_started = false;
-
-                root_ui().window(
-                    hash!(),
-                    vec2(
-                        screen_width() / 2.0 - window_size.x / 2.0,
-                        screen_height() / 2.0 - window_size.y / 2.0,
-                    ),
-                    window_size,
-                    |ui| {
-                        ui.label(vec2(80.0, -34.0), "Perdiste.");
-                        if ui.button(vec2(45.0, 75.0), "Menu") {
-                            game_state = GS::Main;
-                            game_taps = Evt::Tapped(now(), 0.250);
-                        }
-                    },
-                );
+                UI::game_over_window(|| {
+                    game_state = GS::Main;
+                    game_taps = Evt::Tapped(now(), 0.250);
+                })
             }
             (GS::GameOver, Evt::DoubleTapped) => {}
         }
