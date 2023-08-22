@@ -145,6 +145,18 @@ impl UI {
         );
     }
 
+    pub fn game_paused() {
+        let text = "Pausad";
+        let text_dimensions = measure_text(text, None, 50, 1.0);
+        draw_text(
+            text,
+            screen_width() / 2.0 - text_dimensions.width / 2.0,
+            screen_height() / 2.0,
+            50.0,
+            WHITE,
+        );
+    }
+
     pub fn game_over_window<F: FnOnce()>(next_func: F) {
         root_ui().window(
             hash!(),

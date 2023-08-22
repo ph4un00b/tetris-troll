@@ -6,8 +6,9 @@ use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, Play
 use macroquad::{miniquad::date::now, prelude::*};
 
 use shared::Organism;
-use touches::GTouches;
+use pointers::Pointers;
 use ui::UI;
+use universe::Universe;
 
 use crate::player::Player;
 use crate::shared::Coso;
@@ -16,8 +17,9 @@ mod enemies;
 mod enemy;
 mod player;
 mod shared;
-mod touches;
+mod pointers;
 mod ui;
+mod universe;
 //todo: fix shader for mobile❗
 const FRAGMENT_SHADER: &str = include_str!("starfield-shader.glsl");
 
@@ -94,9 +96,6 @@ async fn main() {
         collided: false,
     });
 
-    let x = screen_width() / 2.0;
-    let y = screen_height() / 2.0;
-
     //? sound init
     let theme_music = load_sound("assets/bg_return_default.wav").await.unwrap();
     // let theme_music = load_sound("assets/bg_caffeine.mp3").await.unwrap();
@@ -146,7 +145,7 @@ async fn main() {
         if let (GS::Main | GS::Paused | GS::GameOver, Evt::None | Evt::Tapped(_, _)) =
             (&game_state, &game_taps)
         {
-            GTouches::draw();
+            Pointers::draw();
         };
 
         match (&game_state, &game_taps) {
@@ -173,19 +172,11 @@ async fn main() {
                         },
                     );
                 }
-
                 enemies.update();
                 player.update();
-
                 if is_key_pressed(KeyCode::Escape) {
                     game_state = GS::Paused;
                 }
-
-                //? world
-                draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-                draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
-                draw_circle(x - 30.0, y - 30.0, 45.0, BROWN);
-                draw_text("IT WORKS!", 20.0, 20.0, 30.0, DARKGRAY);
                 if enemies.collides_with(&mut player) {
                     play_sound_once(&dead_sound);
                     game_over_at = now() + 1.25;
@@ -195,6 +186,7 @@ async fn main() {
                 }
                 enemies.draw();
                 player.draw();
+                Universe::draw();
             }
             (GS::Playing, Evt::DoubleTapped) => {
                 play_sound_once(&transition_sound);
@@ -206,15 +198,7 @@ async fn main() {
                 if is_key_pressed(KeyCode::Escape) {
                     game_state = GS::Playing;
                 }
-                let text = "Pausad";
-                let text_dimensions = measure_text(text, None, 50, 1.0);
-                draw_text(
-                    text,
-                    screen_width() / 2.0 - text_dimensions.width / 2.0,
-                    screen_height() / 2.0,
-                    50.0,
-                    WHITE,
-                );
+                UI::game_paused();
             }
             (GS::Paused, Evt::DoubleTapped) => {
                 play_sound_once(&transition_sound);
