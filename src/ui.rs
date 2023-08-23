@@ -1,14 +1,14 @@
 use macroquad::{
-    hash, logging,
+    hash,
     miniquad::date::now,
-    prelude::{debug, load_file, vec2, RectOffset, WHITE, YELLOW},
+    prelude::{load_file, vec2, RectOffset, WHITE, YELLOW},
     text::{draw_text, measure_text},
     texture::load_image,
     ui::{root_ui, Skin},
     window::{screen_height, screen_width},
 };
 
-use crate::constants::WINDOWS_SIZE;
+use crate::{constants::WINDOWS_SIZE, shared::StateMachine, Evt, GameMachine};
 
 pub struct UI;
 
@@ -106,7 +106,7 @@ impl UI {
         );
     }
 
-    pub fn touch_window() {
+    pub fn touch_window<F: FnOnce()>(handle_func: F) {
         root_ui().window(
             hash!(),
             vec2(
@@ -115,16 +115,22 @@ impl UI {
             ),
             WINDOWS_SIZE,
             |ui| {
-                ui.button(vec2(45.0, 75.0), "toca!");
+                if ui.button(vec2(45.0, 75.0), "toca!") {
+                    handle_func();
+                }
             },
         );
     }
 
-    pub fn main_window<F: FnOnce()>(play_func: F) {
+    pub fn main_window<A, B>(gs: &mut GameMachine, mut play_func: A, mut exit_func: B)
+    where
+        A: FnMut() -> Evt,
+        B: FnMut() -> Evt,
+    {
         //todo: log on web-side
-        logging::error!("jamon!");
-        println!("caca!");
-        debug!("caca!");
+        // logging::error!("jamon!");
+        // println!("caca!");
+        // debug!("caca!");
 
         root_ui().window(
             hash!(),
@@ -136,10 +142,10 @@ impl UI {
             |ui| {
                 ui.label(vec2(80.0, -34.0), "El Juego.");
                 if ui.button(vec2(45.0, 25.0), "Jugar!") {
-                    play_func();
+                    gs.send(&play_func());
                 }
                 if ui.button(vec2(45.0, 125.0), "Salir!") {
-                    std::process::exit(0);
+                    gs.send(&exit_func());
                 }
             },
         );

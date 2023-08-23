@@ -4,13 +4,16 @@ use constants::MOVEMENT_SPEED;
 use enemies::Enemies;
 use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
 use macroquad::{miniquad::date::now, prelude::*};
+
+use manager::{GameMachine, Manager};
 use pointers::Pointers;
-use shared::Organism;
+use shared::{Evt, Organism, StateMachine};
 use ui::UI;
 use universe::Universe;
 mod constants;
 mod enemies;
 mod enemy;
+mod manager;
 mod player;
 mod pointers;
 mod shared;
@@ -40,19 +43,6 @@ void main() {
 }
 ";
 
-enum GS {
-    Main,
-    Playing,
-    Paused,
-    Dead,
-}
-
-#[derive(PartialEq)]
-enum Evt {
-    None,
-    Tap(f64, f64),
-    DTap,
-}
 #[macroquad::main("TetrisTroll")]
 async fn main() {
     simulate_mouse_with_touch(true);
@@ -77,9 +67,9 @@ async fn main() {
     )
     .unwrap();
     //? game inits
-    let mut game_state = GS::Main;
+    let mut game_state = GameMachine::new().await;
     let mut game_taps = Evt::None;
-    let mut game_over_at = 0.0;
+    let mut exit_at = 0.0;
 
     rand::srand(now() as u64);
     let mut enemies = Enemies::new();
@@ -98,7 +88,7 @@ async fn main() {
     // let theme_music = load_sound("assets/mus_picked.wav").await.unwrap();
     let transition_sound = load_sound("assets/mus_pick_item.wav").await.unwrap();
     let dead_sound = load_sound("assets/mus_picked.wav").await.unwrap();
-    let mut main_music_started = false;
+
     UI::init().await;
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
@@ -125,9 +115,13 @@ async fn main() {
                 game_taps = match game_taps {
                     Evt::None => Evt::Tap(now(), 0.250),
                     Evt::Tap(init, delay) if now() > (init + delay) => Evt::Tap(now(), delay),
-                    Evt::Tap(_, _) => Evt::DTap,
+                    Evt::Tap(_, _) => {
+                        game_state.send(&Evt::DTap);
+                        Evt::DTap
+                    }
                     Evt::DTap => Evt::Tap(now(), 0.250),
-                };
+                    _ => Evt::None,
+                }
             };
         }
 
@@ -135,82 +129,79 @@ async fn main() {
             Evt::None => UI::debug_touch(),
             Evt::Tap(init, _delay) => UI::debug_tap(init),
             Evt::DTap => UI::debug_double_tap(),
+            _ => (),
         };
 
-        if let (GS::Main | GS::Paused | GS::Dead, Evt::None | Evt::Tap(_, _)) =
-            (&game_state, &game_taps)
-        {
+        if matches!(
+            &game_state.state,
+            Manager::Idle | Manager::Main | Manager::Paused | Manager::GameOver
+        ) {
             Pointers::draw();
-        };
+        }
 
-        match (&game_state, &game_taps) {
-            (GS::Main, Evt::None) => {
-                UI::touch_window();
-            }
-            (GS::Main, Evt::Tap(_, _)) => UI::main_window(|| {
+        match &game_state.state {
+            Manager::Idle => UI::touch_window(|| {
+                game_state.send(&Evt::Menu);
+            }),
+            Manager::MainEntry => {
+                play_sound_once(&transition_sound);
                 enemies.reset();
                 player.reset();
-                game_state = GS::Playing;
-                game_taps = Evt::None;
-            }),
-            (GS::Main, Evt::DTap) => {}
-            (GS::Playing, Evt::None | Evt::Tap(_, _)) => {
-                if !main_music_started {
-                    main_music_started = true;
-                    //todo: It may be a little intense that the music starts at
-                    //todo: full volume right away, try to lower the volume at the beginning and raise it as the game begins.
-                    play_sound(
-                        &theme_music,
-                        PlaySoundParams {
-                            looped: true,
-                            volume: 0.2,
-                        },
-                    );
+                game_state.send(&Evt::Menu);
+            }
+            Manager::Main => UI::main_window(&mut game_state, || Evt::Play, || Evt::Exit),
+            Manager::PlayingEntry => {
+                //todo: It may be a little intense that the music starts at
+                //todo: full volume right away, try to lower the volume at the beginning and raise it as the game begins.
+                play_sound(
+                    &theme_music,
+                    PlaySoundParams {
+                        looped: true,
+                        volume: 0.2,
+                    },
+                );
+                game_state.send(&Evt::Play);
+            }
+            Manager::Playing => {
+                if is_key_pressed(KeyCode::Escape) {
+                    game_state.send(&Evt::Pause);
                 }
                 enemies.update();
                 player.update();
-                if is_key_pressed(KeyCode::Escape) {
-                    game_state = GS::Paused;
-                }
                 if enemies.collides_with(&mut player) {
                     play_sound_once(&dead_sound);
-                    game_over_at = now() + 1.25;
+                    exit_at = now() + 1.25;
                 }
-                if player.props.collided && now() > game_over_at {
-                    game_state = GS::Dead;
+                if player.props.collided && now() > exit_at {
+                    game_state.send(&Evt::Dead);
                 }
                 enemies.draw();
                 player.draw();
                 Universe::draw();
             }
-            (GS::Playing, Evt::DTap) => {
-                play_sound_once(&transition_sound);
+            Manager::PlayingExit(from) => {
                 stop_sound(&theme_music);
-                game_state = GS::Paused;
-                game_taps = Evt::None;
+                if matches!(from, Evt::Dead) {
+                    game_state.send(&Evt::Dead);
+                } else {
+                    game_state.send(&Evt::Pause);
+                };
             }
-            (GS::Paused, Evt::None | Evt::Tap(_, _)) => {
+            Manager::PausedEntry => {
+                play_sound_once(&transition_sound);
+                game_state.send(&Evt::Pause);
+            }
+            Manager::Paused => {
                 if is_key_pressed(KeyCode::Escape) {
-                    game_state = GS::Playing;
+                    game_state.send(&Evt::Play);
                 }
                 UI::game_paused();
             }
-            (GS::Paused, Evt::DTap) => {
-                play_sound_once(&transition_sound);
-                main_music_started = false;
-                game_state = GS::Playing;
-                game_taps = Evt::None;
-            }
-            (GS::Dead, Evt::None | Evt::Tap(_, _)) => {
-                stop_sound(&theme_music);
-                main_music_started = false;
-                UI::game_over_window(|| {
-                    game_state = GS::Main;
-                    game_taps = Evt::Tap(now(), 0.250);
-                })
-            }
-            (GS::Dead, Evt::DTap) => {}
-        }
+            Manager::GameOver => UI::game_over_window(|| {
+                game_state.send(&Evt::Menu);
+            }),
+            Manager::Exit => std::process::exit(0),
+        };
 
         next_frame().await
     }
