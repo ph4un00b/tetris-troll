@@ -18,3 +18,18 @@ pub trait Organism {
     fn update(&mut self);
     fn draw(&mut self);
 }
+pub trait StateMachine {
+    fn send(&mut self, evt: &Evt);
+}
+
+#[derive(PartialEq, Clone)]
+pub enum Evt {
+    None,
+    Tap(f64, f64),
+    DTap,
+    Dead,
+    Play,
+    Menu,
+    Exit,
+    Pause,
+}
