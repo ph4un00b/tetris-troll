@@ -1,18 +1,15 @@
 use crate::player::Player;
 use crate::shared::Coso;
 use constants::MOVEMENT_SPEED;
-use enemies::Enemies;
 use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
 use macroquad::{miniquad::date::now, prelude::*};
 
 use manager::{GameMachine, Manager};
 use pointers::Pointers;
-use shared::{Evt, Organism, StateMachine};
+use shared::{Evt, StateMachine};
 use ui::UI;
-use universe::Universe;
+
 mod constants;
-mod enemies;
-mod enemy;
 mod manager;
 mod player;
 mod pointers;
@@ -20,7 +17,7 @@ mod shared;
 mod ui;
 mod universe;
 //todo: fix shader for mobile❗
-const FRAGMENT_SHADER: &str = include_str!("starfield-shader.glsl");
+const FRAGMENT_SHADER: &str = include_str!("background.glsl");
 /*
  * Macroquad automatically adds some uniforms to shaders.
  * The ones that exist available
@@ -48,31 +45,30 @@ async fn main() {
     simulate_mouse_with_touch(true);
 
     //? game shader init
-    let direction_modifier: f32 = 0.0;
-    let render_target = render_target(320, 150);
-    render_target.texture.set_filter(FilterMode::Nearest);
-    let material = load_material(
-        ShaderSource {
-            glsl_vertex: Some(VERTEX_SHADER),
-            glsl_fragment: Some(FRAGMENT_SHADER),
-            metal_shader: None,
-        },
-        MaterialParams {
-            uniforms: vec![
-                ("iResolution".to_owned(), UniformType::Float2),
-                ("direction_modifier".to_owned(), UniformType::Float1),
-            ],
-            ..Default::default()
-        },
-    )
-    .unwrap();
+    // let direction_modifier: f32 = 0.0;
+    // let render_target = render_target(320, 150);
+    // render_target.texture.set_filter(FilterMode::Nearest);
+    // let material = load_material(
+    //     ShaderSource {
+    //         glsl_vertex: Some(VERTEX_SHADER),
+    //         glsl_fragment: Some(FRAGMENT_SHADER),
+    //         metal_shader: None,
+    //     },
+    //     MaterialParams {
+    //         uniforms: vec![
+    //             ("iResolution".to_owned(), UniformType::Float2),
+    //             ("direction_modifier".to_owned(), UniformType::Float1),
+    //         ],
+    //         ..Default::default()
+    //     },
+    // )
+    // .unwrap();
     //? game inits
     let mut game_state = GameMachine::new().await;
     let mut game_taps = Evt::None;
     let mut exit_at = 0.0;
 
     rand::srand(now() as u64);
-    let mut enemies = Enemies::new();
     let mut player = Player::new(Coso {
         size: 52.0,
         speed: MOVEMENT_SPEED,
@@ -94,20 +90,20 @@ async fn main() {
     loop {
         clear_background(DARKPURPLE);
         //?shader
-        material.set_uniform("iResolution", (screen_width(), screen_height()));
-        material.set_uniform("direction_modifier", direction_modifier);
-        gl_use_material(&material);
-        draw_texture_ex(
-            &render_target.texture,
-            0.,
-            0.,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(screen_width(), screen_height())),
-                ..Default::default()
-            },
-        );
-        gl_use_default_material();
+        // material.set_uniform("iResolution", (screen_width(), screen_height()));
+        // material.set_uniform("direction_modifier", direction_modifier);
+        // gl_use_material(&material);
+        // draw_texture_ex(
+        //     &render_target.texture,
+        //     0.,
+        //     0.,
+        //     WHITE,
+        //     DrawTextureParams {
+        //         dest_size: Some(vec2(screen_width(), screen_height())),
+        //         ..Default::default()
+        //     },
+        // );
+        // gl_use_default_material();
         //? end-shader
 
         for touch in touches() {
@@ -145,8 +141,6 @@ async fn main() {
             }),
             Manager::MainEntry => {
                 play_sound_once(&transition_sound);
-                enemies.reset();
-                player.reset();
                 game_state.send(&Evt::Menu);
             }
             Manager::Main => UI::main_window(&mut game_state, || Evt::Play, || Evt::Exit),
@@ -166,18 +160,6 @@ async fn main() {
                 if is_key_pressed(KeyCode::Escape) {
                     game_state.send(&Evt::Pause);
                 }
-                enemies.update();
-                player.update();
-                if enemies.collides_with(&mut player) {
-                    play_sound_once(&dead_sound);
-                    exit_at = now() + 1.25;
-                }
-                if player.props.collided && now() > exit_at {
-                    game_state.send(&Evt::Dead);
-                }
-                enemies.draw();
-                player.draw();
-                Universe::draw();
             }
             Manager::PlayingExit(from) => {
                 stop_sound(&theme_music);
