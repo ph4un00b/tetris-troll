@@ -1,5 +1,10 @@
 use crate::shared::{Evt, StateMachine};
 
+/*
+ * @refactor: this is a manual minimal state machine
+ * if you have a potential improvement over here
+ * please go ahead ╰(*°▽°*)╯
+ */
 impl StateMachine for GameMachine {
     fn send(&mut self, evt: &Evt) {
         match &self.state {
