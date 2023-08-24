@@ -1,0 +1,68 @@
+{
+    "@see:": "https://stately.ai/registry/new",
+    "id": "GameManager",
+    "initial": "IDLE_WINDOW",
+    "states": {
+        "IDLE_WINDOW": {
+            "on": {
+                "ON_MENU": {
+                    "target": "MAIN_WINDOW"
+                }
+            }
+        },
+        "MAIN_WINDOW": {
+            "entry": [
+                {
+                    "type": "reset_game"
+                },
+                {
+                    "type": "sound_fx"
+                }
+            ],
+            "on": {
+                "ON_PLAY": {
+                    "target": "PLAYING"
+                },
+                "ON_EXIT": {
+                    "target": "EXIT_GAME"
+                }
+            }
+        },
+        "PLAYING": {
+            "entry": {
+                "type": "start_music"
+            },
+            "exit": {
+                "type": "stop_music"
+            },
+            "on": {
+                "ON_PAUSE": {
+                    "target": "PAUSED"
+                },
+                "ON_DEAD": {
+                    "target": "GAME_OVER_WINDOW"
+                }
+            }
+        },
+        "EXIT_GAME": {
+            "type": "final"
+        },
+        "PAUSED": {
+            "entry": {
+                "type": "sound_fx"
+            },
+            "on": {
+                "ON_DOUBLE_TAP": {
+                    "target": "PLAYING"
+                }
+            }
+        },
+        "GAME_OVER_WINDOW": {
+            "on": {
+                "ON_MENU": {
+                    "target": "MAIN_WINDOW"
+                }
+            }
+        }
+    }
+}

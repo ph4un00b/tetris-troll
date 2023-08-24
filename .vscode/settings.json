@@ -5,6 +5,9 @@
   ],
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.showUnlinkedFileNotification": false,
+  "conventionalCommits.scopes": [
+    "🦾"
+  ],
   "cSpell.words": [
     "atari",
     "consts",
@@ -19,8 +22,5 @@
     "starfield",
     "tetris",
     "texcoord"
-  ],
-  "conventionalCommits.scopes": [
-    "🦾"
   ]
 }
