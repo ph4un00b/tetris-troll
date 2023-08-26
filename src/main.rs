@@ -8,6 +8,7 @@ use manager::{GameMachine, Manager};
 use pointers::Pointers;
 use shared::{Evt, StateMachine};
 use ui::UI;
+use universe::Universe;
 
 mod constants;
 mod manager;
@@ -86,6 +87,10 @@ async fn main() {
     let dead_sound = load_sound("assets/mus_picked.wav").await.unwrap();
 
     UI::init().await;
+    let screen_w = screen_width();
+    let screen_h = screen_height();
+    let screen = vec3(screen_w, screen_h, screen_w / screen_h);
+    let playfield = vec2((10. * screen_h) / 32., (24. * screen_h) / 32.);
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
         clear_background(DARKPURPLE);
@@ -121,13 +126,6 @@ async fn main() {
             };
         }
 
-        match &game_taps {
-            Evt::None => UI::debug_touch(),
-            Evt::Tap(init, _delay) => UI::debug_tap(init),
-            Evt::DTap => UI::debug_double_tap(),
-            _ => (),
-        };
-
         if matches!(
             &game_state.state,
             Manager::Idle | Manager::Main | Manager::Paused | Manager::GameOver
@@ -136,9 +134,13 @@ async fn main() {
         }
 
         match &game_state.state {
-            Manager::Idle => UI::touch_window(|| {
-                game_state.send(&Evt::Menu);
-            }),
+            Manager::Idle => {
+                // UI::touch_window(|| {
+                //     game_state.send(&Evt::Menu);
+                // });
+
+                Universe::draw(&screen, &playfield);
+            }
             Manager::MainEntry => {
                 play_sound_once(&transition_sound);
                 game_state.send(&Evt::Menu);
@@ -183,6 +185,13 @@ async fn main() {
                 game_state.send(&Evt::Menu);
             }),
             Manager::Exit => std::process::exit(0),
+        };
+
+        match &game_taps {
+            Evt::None => UI::debug_touch(),
+            Evt::Tap(init, _delay) => UI::debug_tap(init),
+            Evt::DTap => UI::debug_double_tap(),
+            _ => (),
         };
 
         next_frame().await

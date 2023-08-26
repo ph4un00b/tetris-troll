@@ -10,6 +10,7 @@
   ],
   "cSpell.words": [
     "atari",
+    "blok",
     "consts",
     "cosito",
     "DARKBROWN",
@@ -18,9 +19,15 @@
     "glsl",
     "macroquad",
     "miniquad",
+    "playfield",
+    "PLAYFIELD",
+    "SKYBLUE",
     "srand",
     "starfield",
     "tetris",
     "texcoord"
+  ],
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/clippy.yml"
   ]
 }
