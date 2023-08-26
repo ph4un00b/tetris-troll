@@ -8,7 +8,11 @@ use macroquad::{
     window::{screen_height, screen_width},
 };
 
-use crate::{constants::WINDOWS_SIZE, shared::StateMachine, Evt, GameMachine};
+use crate::{
+    constants::{DEBUG_COLOR, WINDOWS_SIZE},
+    shared::StateMachine,
+    Evt, GameMachine,
+};
 
 pub struct UI;
 
@@ -67,7 +71,7 @@ impl UI {
             (screen_width() / 2.0) - (text_dimensions.width / 2.0),
             100.0 + screen_height() / 2.0,
             60.0,
-            YELLOW,
+            DEBUG_COLOR,
         );
     }
 
@@ -81,7 +85,7 @@ impl UI {
             (screen_width() / 2.0) - (text_dimensions.width / 2.0),
             offset + 100.0 + screen_height() / 2.0,
             60.0,
-            YELLOW,
+            DEBUG_COLOR,
         );
         let text = &format!("time - {}", now());
         let text_dimensions = measure_text(text, None, 50, 1.0);
@@ -90,7 +94,7 @@ impl UI {
             (screen_width() / 2.0) - (text_dimensions.width / 2.0),
             offset + 160.0 + screen_height() / 2.0,
             60.0,
-            YELLOW,
+            DEBUG_COLOR,
         );
     }
 
@@ -102,7 +106,7 @@ impl UI {
             (screen_width() / 2.0) - (text_dimensions.width / 2.0),
             100.0 + screen_height() / 2.0,
             60.0,
-            YELLOW,
+            DEBUG_COLOR,
         );
     }
 
