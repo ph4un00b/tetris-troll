@@ -18,14 +18,14 @@ mod shared;
 mod ui;
 mod universe;
 //todo: fix shader for mobile❗
-const FRAGMENT_SHADER: &str = include_str!("background.glsl");
+const _FRAGMENT_SHADER: &str = include_str!("background.glsl");
 /*
  * Macroquad automatically adds some uniforms to shaders.
  * The ones that exist available
  *
  * _Time, Model, Projection, Texture and _ScreenTexture.
  */
-const VERTEX_SHADER: &str = "#version 100
+const _VERTEX_SHADER: &str = "#version 100
 attribute vec3 position;
 attribute vec2 texcoord;
 attribute vec4 color0;
@@ -67,10 +67,10 @@ async fn main() {
     //? game inits
     let mut game_state = GameMachine::new().await;
     let mut game_taps = Evt::None;
-    let mut exit_at = 0.0;
+    let _exit_at = 0.0;
 
     rand::srand(now() as u64);
-    let mut player = Player::new(Coso {
+    let _player = Player::new(Coso {
         size: 52.0,
         speed: MOVEMENT_SPEED,
         x: screen_width() / 2.0,
@@ -84,7 +84,7 @@ async fn main() {
     // let theme_music = load_sound("bg_polka.ogg").await.unwrap();
     // let theme_music = load_sound("assets/mus_picked.wav").await.unwrap();
     let transition_sound = load_sound("assets/mus_pick_item.wav").await.unwrap();
-    let dead_sound = load_sound("assets/mus_picked.wav").await.unwrap();
+    let _dead_sound = load_sound("assets/mus_picked.wav").await.unwrap();
 
     UI::init().await;
     let screen_w = screen_width();

@@ -1,7 +1,7 @@
 use macroquad::{
     hash,
     miniquad::date::now,
-    prelude::{load_file, vec2, RectOffset, WHITE, YELLOW},
+    prelude::{load_file, vec2, RectOffset, WHITE},
     text::{draw_text, measure_text},
     texture::load_image,
     ui::{root_ui, Skin},
@@ -110,7 +110,7 @@ impl UI {
         );
     }
 
-    pub fn touch_window<F: FnOnce()>(handle_func: F) {
+    pub fn _touch_window<F: FnOnce()>(handle_func: F) {
         root_ui().window(
             hash!(),
             vec2(

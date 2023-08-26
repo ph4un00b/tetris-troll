@@ -1,4 +1,4 @@
-use macroquad::prelude::{vec2, Color, Vec2, BLACK, BLUE, BROWN};
+use macroquad::prelude::{vec2, Color, Vec2, BLACK};
 
 pub const MOVEMENT_SPEED: f32 = 200.0;
 pub const WINDOWS_SIZE: Vec2 = vec2(1470.0, 420.0);
