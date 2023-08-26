@@ -1,7 +1,7 @@
 use crate::player::Player;
 use crate::shared::Coso;
 use constants::MOVEMENT_SPEED;
-use macroquad::audio::{load_sound, play_sound, play_sound_once, stop_sound, PlaySoundParams};
+use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
 use manager::{GameMachine, Manager};
@@ -79,7 +79,7 @@ async fn main() {
     });
 
     //? sound init
-    let theme_music = load_sound("assets/bg_return_default.wav").await.unwrap();
+    //? let theme_music = load_sound("assets/bg_return_default.wav").await.unwrap();
     // let theme_music = load_sound("assets/bg_caffeine.mp3").await.unwrap();
     // let theme_music = load_sound("bg_polka.ogg").await.unwrap();
     // let theme_music = load_sound("assets/mus_picked.wav").await.unwrap();
@@ -149,13 +149,13 @@ async fn main() {
             Manager::PlayingEntry => {
                 //todo: It may be a little intense that the music starts at
                 //todo: full volume right away, try to lower the volume at the beginning and raise it as the game begins.
-                play_sound(
-                    &theme_music,
-                    PlaySoundParams {
-                        looped: true,
-                        volume: 0.2,
-                    },
-                );
+                //? play_sound(
+                //?     &theme_music,
+                //?     PlaySoundParams {
+                //?         looped: true,
+                //?         volume: 0.2,
+                //?     },
+                //? );
                 game_state.send(&Evt::Play);
             }
             Manager::Playing => {
@@ -164,7 +164,7 @@ async fn main() {
                 }
             }
             Manager::PlayingExit(from) => {
-                stop_sound(&theme_music);
+                //? stop_sound(&theme_music);
                 if matches!(from, Evt::Dead) {
                     game_state.send(&Evt::Dead);
                 } else {
