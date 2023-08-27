@@ -1,13 +1,9 @@
 {
   "cSpell.language": "en,es",
-  "rust-analyzer.linkedProjects": [
-    ".\\Cargo.toml"
-  ],
+  "rust-analyzer.linkedProjects": [".\\Cargo.toml"],
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.showUnlinkedFileNotification": false,
-  "conventionalCommits.scopes": [
-    "🦾"
-  ],
+  "conventionalCommits.scopes": ["🦾"],
   "cSpell.words": [
     "atari",
     "blok",
@@ -27,7 +23,10 @@
     "tetris",
     "texcoord"
   ],
-  "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/clippy.yml"
-  ]
+  "github-actions.workflows.pinned.workflows": [".github/workflows/clippy.yml"],
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#14380bf0",
+    "titleBar.activeBackground": "#551450",
+    "titleBar.activeForeground": "#FAFBF3"
+  }
 }
