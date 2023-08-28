@@ -1,20 +1,20 @@
-use crate::player::Player;
-use crate::shared::Coso;
-use constants::MOVEMENT_SPEED;
+use crate::constants::{COLUMNS, ROWS};
+
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
 use manager::{GameMachine, Manager};
 use pointers::Pointers;
-use shared::{Evt, StateMachine};
+use shared::{Evt, Organism, StateMachine};
+use tetromino::{TetroK, Tetromino};
 use ui::UI;
 use universe::Universe;
 
 mod constants;
 mod manager;
-mod player;
 mod pointers;
 mod shared;
+mod tetromino;
 mod ui;
 mod universe;
 //todo: fix shader for mobile❗
@@ -70,13 +70,6 @@ async fn main() {
     let _exit_at = 0.0;
 
     rand::srand(now() as u64);
-    let _player = Player::new(Coso {
-        size: 52.0,
-        speed: MOVEMENT_SPEED,
-        x: screen_width() / 2.0,
-        y: screen_height() / 2.0,
-        collided: false,
-    });
 
     //? sound init
     //? let theme_music = load_sound("assets/bg_return_default.wav").await.unwrap();
@@ -91,6 +84,17 @@ async fn main() {
     let screen_h = screen_height();
     let screen = vec3(screen_w, screen_h, screen_w / screen_h);
     let playfield = vec2((10. * screen_h) / 32., (24. * screen_h) / 32.);
+    let block: Vec2 = vec2(playfield.x / ROWS as f32, playfield.y / COLUMNS as f32);
+
+    let mut tetrominos = vec![
+        Tetromino::from((TetroK::I, 1., 1.)),
+        Tetromino::from((TetroK::J, 2., 1.)),
+        Tetromino::from((TetroK::L, 3., 1.)),
+        Tetromino::from((TetroK::O, 4., 1.)),
+        Tetromino::from((TetroK::S, 5., 1.)),
+        Tetromino::from((TetroK::Z, 6., 1.)),
+        Tetromino::from((TetroK::T, 7., 1.)),
+    ];
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
         clear_background(DARKPURPLE);
@@ -139,7 +143,12 @@ async fn main() {
                 //     game_state.send(&Evt::Menu);
                 // });
 
-                Universe::draw(&screen, &playfield);
+                Universe::draw(&screen, &playfield, &block);
+
+                for tetro in tetrominos.iter_mut() {
+                    tetro.update();
+                    tetro.draw(&block);
+                }
             }
             Manager::MainEntry => {
                 play_sound_once(&transition_sound);
