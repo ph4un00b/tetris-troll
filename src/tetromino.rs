@@ -1,6 +1,6 @@
 use macroquad::{
     prelude::{Rect, Vec2, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE, YELLOW},
-    shapes::draw_circle,
+    shapes::{draw_circle, draw_rectangle},
     time::get_frame_time,
     window::{screen_height, screen_width},
 };
@@ -10,6 +10,7 @@ use crate::{
     shared::{Collision, Coso, Organism},
 };
 
+#[derive(Debug, Clone)]
 pub enum TetroK {
     I,
     J,
@@ -20,6 +21,7 @@ pub enum TetroK {
     Z,
 }
 
+#[derive(Debug, Clone)]
 pub struct Tetromino {
     kind: TetroK,
     pub props: Coso,
@@ -57,10 +59,11 @@ impl Organism for Tetromino {
     }
 
     fn draw(&mut self, block: &Vec2) {
-        draw_circle(
+        draw_rectangle(
             self.props.x * block.x,
             self.props.y * block.y,
-            20.0,
+            block.x,
+            block.y,
             self.props.color,
         );
     }
