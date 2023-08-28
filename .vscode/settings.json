@@ -1,6 +1,6 @@
 {
   "cSpell.language": "en,es",
-  "rust-analyzer.linkedProjects": [".\\Cargo.toml"],
+
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.showUnlinkedFileNotification": false,
   "conventionalCommits.scopes": ["🦾"],
@@ -9,8 +9,10 @@
     "blok",
     "consts",
     "cosito",
+    "Coso",
     "DARKBROWN",
     "DARKGRAY",
+    "DARKGREEN",
     "DARKPURPLE",
     "glsl",
     "macroquad",
@@ -21,6 +23,9 @@
     "srand",
     "starfield",
     "tetris",
+    "Tetro",
+    "Tetromino",
+    "tetrominos",
     "texcoord"
   ],
   "github-actions.workflows.pinned.workflows": [".github/workflows/clippy.yml"],
