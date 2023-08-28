@@ -1,5 +1,6 @@
 use macroquad::prelude::{Color, Rect, Vec2};
 
+#[derive(Debug, Clone)]
 pub struct Coso {
     pub size: f32,
     pub speed: f32,

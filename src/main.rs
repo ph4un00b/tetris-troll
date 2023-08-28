@@ -1,5 +1,6 @@
 use crate::constants::{COLUMNS, ROWS};
 
+use constants::MOVEMENT_SPEED;
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -87,14 +88,15 @@ async fn main() {
     let block: Vec2 = vec2(playfield.x / ROWS as f32, playfield.y / COLUMNS as f32);
 
     let mut tetrominos = vec![
-        Tetromino::from((TetroK::I, 1., 1.)),
-        Tetromino::from((TetroK::J, 2., 1.)),
-        Tetromino::from((TetroK::L, 3., 1.)),
-        Tetromino::from((TetroK::O, 4., 1.)),
-        Tetromino::from((TetroK::S, 5., 1.)),
-        Tetromino::from((TetroK::Z, 6., 1.)),
-        Tetromino::from((TetroK::T, 7., 1.)),
+        Tetromino::from((TetroK::I, 24., 1.)),
+        Tetromino::from((TetroK::J, 24., 1.)),
+        Tetromino::from((TetroK::L, 24., 1.)),
+        Tetromino::from((TetroK::O, 24., 1.)),
+        Tetromino::from((TetroK::S, 24., 1.)),
+        Tetromino::from((TetroK::Z, 24., 1.)),
+        Tetromino::from((TetroK::T, 24., 1.)),
     ];
+    let mut current_tetrios = vec![Tetromino::from((TetroK::O, 4., 1.))];
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
         clear_background(DARKPURPLE);
@@ -142,13 +144,42 @@ async fn main() {
                 // UI::touch_window(|| {
                 //     game_state.send(&Evt::Menu);
                 // });
+                draw_text(
+                    // format!("screen.H: {}", screen.y / MOVEMENT_SPEED).as_str(),
+                    format!("screen.H: {}", screen.y).as_str(),
+                    400.0,
+                    20.0,
+                    30.0,
+                    SKYBLUE,
+                );
 
                 Universe::draw(&screen, &playfield, &block);
 
-                for tetro in tetrominos.iter_mut() {
+                if current_tetrios.is_empty() {
+                    let n = rand::gen_range(0, tetrominos.len() - 1);
+                    current_tetrios.push(tetrominos[n].clone())
+                }
+
+                for tetro in current_tetrios.iter_mut() {
                     tetro.update();
                     tetro.draw(&block);
+                    draw_text(
+                        format!("y: {}", tetro.props.y).as_str(),
+                        200.0,
+                        20.0,
+                        30.0,
+                        SKYBLUE,
+                    );
+                    draw_text(
+                        format!("y: {}", tetro.props.y * block.y).as_str(),
+                        200.0,
+                        40.0,
+                        30.0,
+                        SKYBLUE,
+                    );
                 }
+
+                current_tetrios.retain(|t| t.props.y * block.y < screen.y);
             }
             Manager::MainEntry => {
                 play_sound_once(&transition_sound);
