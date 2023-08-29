@@ -15,6 +15,13 @@ mod constants;
 mod manager;
 mod pointers;
 mod shared;
+mod tetrio_I;
+mod tetrio_J;
+mod tetrio_L;
+mod tetrio_O;
+mod tetrio_S;
+mod tetrio_T;
+mod tetrio_Z;
 mod tetromino;
 mod ui;
 mod universe;
@@ -88,15 +95,15 @@ async fn main() {
     let block: Vec2 = vec2(playfield.x / ROWS as f32, playfield.y / COLUMNS as f32);
 
     let mut tetrominos = vec![
-        Tetromino::from((TetroK::I, 24., 1.)),
-        Tetromino::from((TetroK::J, 24., 1.)),
-        Tetromino::from((TetroK::L, 24., 1.)),
-        Tetromino::from((TetroK::O, 24., 1.)),
-        Tetromino::from((TetroK::S, 24., 1.)),
-        Tetromino::from((TetroK::Z, 24., 1.)),
-        Tetromino::from((TetroK::T, 24., 1.)),
+        Tetromino::from((TetroK::I, 12., 1.)),
+        Tetromino::from((TetroK::J, 12., 1.)),
+        Tetromino::from((TetroK::L, 12., 1.)),
+        Tetromino::from((TetroK::O, 12., 1.)),
+        Tetromino::from((TetroK::S, 12., 1.)),
+        Tetromino::from((TetroK::Z, 12., 1.)),
+        Tetromino::from((TetroK::T, 12., 1.)),
     ];
-    let mut current_tetrios = vec![Tetromino::from((TetroK::O, 4., 1.))];
+    let mut current_tetrios = vec![Tetromino::from((TetroK::O, 12., 1.))];
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
         clear_background(DARKPURPLE);

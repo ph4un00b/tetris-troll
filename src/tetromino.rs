@@ -1,6 +1,7 @@
 use macroquad::{
-    prelude::{Rect, Vec2, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE, YELLOW},
-    shapes::{draw_circle, draw_rectangle},
+    prelude::{
+        touches, Rect, TouchPhase, Vec2, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE, YELLOW,
+    },
     time::get_frame_time,
     window::{screen_height, screen_width},
 };
@@ -8,6 +9,13 @@ use macroquad::{
 use crate::{
     constants::MOVEMENT_SPEED,
     shared::{Collision, Coso, Organism},
+    tetrio_I::TetrioI,
+    tetrio_J::TetrioJ,
+    tetrio_L::TetrioL,
+    tetrio_O::TetrioO,
+    tetrio_S::TetrioS,
+    tetrio_T::TetrioT,
+    tetrio_Z::TetrioZ,
 };
 
 #[derive(Debug, Clone)]
@@ -20,12 +28,25 @@ pub enum TetroK {
     T,
     Z,
 }
-
+#[derive(Debug, Clone)]
+pub enum Clock {
+    // 12:00
+    P12,
+    // 03:00
+    P3,
+    // 06:00
+    P6,
+    // 09:00
+    P9,
+}
 #[derive(Debug, Clone)]
 pub struct Tetromino {
     kind: TetroK,
+    pub rotation: Clock,
+    current_rot: usize,
     pub props: Coso,
 }
+
 impl Tetromino {
     pub(crate) fn from(spec: (TetroK, f32, f32)) -> Tetromino {
         let (kind, x, y) = spec;
@@ -40,6 +61,8 @@ impl Tetromino {
         };
         Tetromino {
             kind,
+            current_rot: 0,
+            rotation: Clock::P12,
             props: Coso {
                 size: 52.0,
                 speed: MOVEMENT_SPEED,
@@ -56,16 +79,33 @@ impl Organism for Tetromino {
     fn update(&mut self) {
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
+
+        for touch in touches() {
+            if let TouchPhase::Started = touch.phase {
+                self.current_rot += 1;
+                let ops = vec![Clock::P12, Clock::P3, Clock::P6, Clock::P9];
+                self.rotation = ops[self.current_rot % 4].clone();
+            };
+        }
     }
 
     fn draw(&mut self, block: &Vec2) {
-        draw_rectangle(
-            self.props.x * block.x,
-            self.props.y * block.y,
-            block.x,
-            block.y,
-            self.props.color,
-        );
+        match self.kind {
+            // TetroK::I => TetrioZ::draw(self, block),
+            // TetroK::J => TetrioZ::draw(self, block),
+            // TetroK::L => TetrioZ::draw(self, block),
+            // TetroK::O => TetrioZ::draw(self, block),
+            // TetroK::T => TetrioZ::draw(self, block),
+            // TetroK::S => TetrioZ::draw(self, block),
+            // TetroK::Z => TetrioZ::draw(self, block),
+            TetroK::I => TetrioI::draw(self, block),
+            TetroK::J => TetrioJ::draw(self, block),
+            TetroK::L => TetrioL::draw(self, block),
+            TetroK::O => TetrioO::draw(self, block),
+            TetroK::T => TetrioT::draw(self, block),
+            TetroK::S => TetrioS::draw(self, block),
+            TetroK::Z => TetrioZ::draw(self, block),
+        }
     }
 
     fn reset(&mut self) {
