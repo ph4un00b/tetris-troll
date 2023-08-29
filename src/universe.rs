@@ -1,5 +1,5 @@
 use macroquad::{
-    prelude::{vec2, Vec2, Vec3, BLUE, BROWN, GREEN, SKYBLUE},
+    prelude::{Vec2, Vec3, BLUE, BROWN, GREEN, SKYBLUE},
     shapes::{draw_line, draw_rectangle, draw_rectangle_lines},
     text::draw_text,
 };

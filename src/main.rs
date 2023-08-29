@@ -1,6 +1,5 @@
 use crate::constants::{COLUMNS, ROWS};
 
-use constants::MOVEMENT_SPEED;
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -94,7 +93,7 @@ async fn main() {
     let playfield = vec2((10. * screen_h) / 32., (24. * screen_h) / 32.);
     let block: Vec2 = vec2(playfield.x / ROWS as f32, playfield.y / COLUMNS as f32);
 
-    let mut tetrominos = vec![
+    let tetrominos = vec![
         Tetromino::from((TetroK::I, 12., 1.)),
         Tetromino::from((TetroK::J, 12., 1.)),
         Tetromino::from((TetroK::L, 12., 1.)),
