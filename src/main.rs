@@ -14,12 +14,19 @@ mod constants;
 mod manager;
 mod pointers;
 mod shared;
+#[allow(non_snake_case)]
 mod tetrio_I;
+#[allow(non_snake_case)]
 mod tetrio_J;
+#[allow(non_snake_case)]
 mod tetrio_L;
+#[allow(non_snake_case)]
 mod tetrio_O;
+#[allow(non_snake_case)]
 mod tetrio_S;
+#[allow(non_snake_case)]
 mod tetrio_T;
+#[allow(non_snake_case)]
 mod tetrio_Z;
 mod tetromino;
 mod ui;
