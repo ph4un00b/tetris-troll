@@ -4,9 +4,15 @@ use macroquad::{
     text::draw_text,
 };
 
-use crate::constants::{COLUMNS, ROWS};
+use crate::{
+    constants::{COLUMNS, ROWS},
+    physics::Physics,
+};
 
-pub struct Universe;
+pub struct Universe {
+    pub physics: Physics,
+    pub block: Vec2,
+}
 
 impl Universe {
     pub fn draw(screen: &Vec3, playfield: &Vec2, block: &Vec2) {
