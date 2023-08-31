@@ -1,6 +1,6 @@
 use macroquad::{
     prelude::{
-        touches, Rect, TouchPhase, Vec2, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE, YELLOW,
+        touches, vec2, Rect, TouchPhase, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE, YELLOW,
     },
     time::get_frame_time,
     window::{screen_height, screen_width},
@@ -8,6 +8,7 @@ use macroquad::{
 
 use crate::{
     constants::MOVEMENT_SPEED,
+    physics::PhysicsEvent,
     shared::{Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
@@ -16,6 +17,7 @@ use crate::{
     tetrio_S::TetrioS,
     tetrio_T::TetrioT,
     tetrio_Z::TetrioZ,
+    universe::Universe,
 };
 
 #[derive(Debug, Clone)]
@@ -64,7 +66,8 @@ impl Tetromino {
             current_rot: 0,
             rotation: Clock::P12,
             props: Coso {
-                size: 52.0,
+                half: vec2(26., 26.),
+                size: vec2(52.0, 52.0),
                 speed: MOVEMENT_SPEED,
                 x,
                 y,
@@ -76,7 +79,7 @@ impl Tetromino {
 }
 
 impl Organism for Tetromino {
-    fn update(&mut self) {
+    fn update(&mut self, _world: &mut Universe, _physics_events: &mut Vec<PhysicsEvent>) {
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
 
@@ -89,22 +92,22 @@ impl Organism for Tetromino {
         }
     }
 
-    fn draw(&mut self, block: &Vec2) {
+    fn draw(&mut self, world: &mut Universe) {
         match self.kind {
-            // TetroK::I => TetrioZ::draw(self, block),
-            // TetroK::J => TetrioZ::draw(self, block),
-            // TetroK::L => TetrioZ::draw(self, block),
-            // TetroK::O => TetrioZ::draw(self, block),
-            // TetroK::T => TetrioZ::draw(self, block),
-            // TetroK::S => TetrioZ::draw(self, block),
-            // TetroK::Z => TetrioZ::draw(self, block),
-            TetroK::I => TetrioI::draw(self, block),
-            TetroK::J => TetrioJ::draw(self, block),
-            TetroK::L => TetrioL::draw(self, block),
-            TetroK::O => TetrioO::draw(self, block),
-            TetroK::T => TetrioT::draw(self, block),
-            TetroK::S => TetrioS::draw(self, block),
-            TetroK::Z => TetrioZ::draw(self, block),
+            // TetroK::I => TetrioZ::draw(self, &world.block),
+            // TetroK::J => TetrioZ::draw(self, &world.block),
+            // TetroK::L => TetrioZ::draw(self, &world.block),
+            // TetroK::O => TetrioZ::draw(self, &world.block),
+            // TetroK::T => TetrioZ::draw(self, &world.block),
+            // TetroK::S => TetrioZ::draw(self, &world.block),
+            // TetroK::Z => TetrioZ::draw(self, &world.block),
+            TetroK::I => TetrioI::draw(self, &world.block),
+            TetroK::J => TetrioJ::draw(self, &world.block),
+            TetroK::L => TetrioL::draw(self, &world.block),
+            TetroK::O => TetrioO::draw(self, &world.block),
+            TetroK::T => TetrioT::draw(self, &world.block),
+            TetroK::S => TetrioS::draw(self, &world.block),
+            TetroK::Z => TetrioZ::draw(self, &world.block),
         }
     }
 
@@ -130,10 +133,10 @@ impl Collision for Tetromino {
     //todo: draw helpers
     fn rect(&self) -> Rect {
         Rect {
-            x: self.props.x - self.props.size / 2.0,
-            y: self.props.y - self.props.size / 2.0,
-            w: self.props.size,
-            h: self.props.size,
+            x: self.props.x - self.props.size.x / 2.0,
+            y: self.props.y - self.props.size.y / 2.0,
+            w: self.props.size.x,
+            h: self.props.size.y,
         }
     }
 }

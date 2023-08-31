@@ -1,8 +1,11 @@
 use macroquad::prelude::{Color, Rect, Vec2};
 
+use crate::{physics::PhysicsEvent, universe::Universe};
+
 #[derive(Debug, Clone)]
 pub struct Coso {
-    pub size: f32,
+    pub half: Vec2,
+    pub size: Vec2,
     pub speed: f32,
     pub x: f32,
     pub y: f32,
@@ -17,8 +20,8 @@ pub trait Collision {
 
 pub trait Organism {
     fn reset(&mut self);
-    fn update(&mut self);
-    fn draw(&mut self, block: &Vec2);
+    fn update(&mut self, world: &mut Universe, physics_events: &mut Vec<PhysicsEvent>);
+    fn draw(&mut self, world: &mut Universe);
 }
 pub trait StateMachine {
     fn send(&mut self, evt: &Evt);
