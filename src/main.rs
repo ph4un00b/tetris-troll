@@ -127,26 +127,26 @@ async fn main() {
     let restitution = 0.8;
     let mut bloque = Bloque::new(
         &mut world,
-        vec2(12. * block.x, 22. * block.y),
+        vec2(12. * block.x, 2. * block.y),
         10.,
         restitution,
     );
     let mut bloque2 = Bloque::new(
         &mut world,
-        vec2(13.1 * block.x, 22. * block.y),
+        vec2(13.1 * block.x, 2. * block.y),
         10.5,
-        restitution,
+        restitution * 1.8,
     );
     let mut bloque3 = Bloque::new(
         &mut world,
-        vec2(14.1 * block.x, 22. * block.y),
+        vec2(14.1 * block.x, 2. * block.y),
         10.,
-        restitution,
+        restitution * 2.2,
     );
     let mut piso = Piso::new(
         &mut world,
         vec2(0.5 * (screen.x - (20. * block.x)), 24. * block.y),
-        vec2(20. * block.x, block.x * 4.),
+        vec2(20. * block.x, 1. * block.x),
     );
     loop {
         clear_background(DARKPURPLE);
