@@ -5,6 +5,7 @@
   "rust-analyzer.showUnlinkedFileNotification": false,
   "conventionalCommits.scopes": ["🦾"],
   "cSpell.words": [
+    "angvel",
     "atari",
     "blok",
     "consts",
@@ -15,6 +16,7 @@
     "DARKGREEN",
     "DARKPURPLE",
     "glsl",
+    "heightfield",
     "macroquad",
     "miniquad",
     "multibody",
@@ -35,7 +37,8 @@
     "tetromino",
     "Tetromino",
     "tetrominos",
-    "texcoord"
+    "texcoord",
+    "trimesh"
   ],
   "github-actions.workflows.pinned.workflows": [".github/workflows/clippy.yml"],
   "workbench.colorCustomizations": {
