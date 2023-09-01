@@ -12,6 +12,8 @@ use crate::{
 pub struct Universe {
     pub physics: Physics,
     pub block: Vec2,
+    pub screen: Vec3,
+    pub playfield: Vec2,
 }
 
 impl Universe {

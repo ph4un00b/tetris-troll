@@ -18,6 +18,9 @@ pub trait Collision {
     fn rect(&self) -> Rect;
 }
 
+pub trait Position {
+    fn y(&self) -> f32;
+}
 pub trait Organism {
     fn reset(&mut self);
     fn update(&mut self, world: &mut Universe, physics_events: &mut Vec<PhysicsEvent>);
