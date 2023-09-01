@@ -7,7 +7,7 @@ use rapier2d::prelude::{ColliderBuilder, RigidBodyBuilder};
 use crate::{
     constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
-    shared::{Collision, Coso, Organism, Position},
+    shared::{Coso, Organism, Position},
     universe::Universe,
 };
 
@@ -62,16 +62,6 @@ impl Bloque {
             },
             handler,
         }
-    }
-}
-
-impl Collision for Bloque {
-    fn collides_with(&self, _other: &macroquad::prelude::Rect) -> bool {
-        todo!()
-    }
-
-    fn rect(&self) -> macroquad::prelude::Rect {
-        todo!()
     }
 }
 
