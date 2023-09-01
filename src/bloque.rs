@@ -23,13 +23,25 @@ impl Bloque {
 }
 
 impl Bloque {
-    pub fn new(world: &mut Universe, position: Vec2) -> Self {
+    pub fn new(world: &mut Universe, position: Vec2, density: f32, restitution: f32) -> Self {
         let half = world.block * vec2(0.5, 0.5);
         let body = RigidBodyBuilder::dynamic()
+            // .angvel(1.)
             .position([position.x + half.x, position.y + half.y].into())
             .build();
         let coll = ColliderBuilder::cuboid(half.x, half.y)
-            .restitution(0.7 * 2.0)
+            // let coll = ColliderBuilder::ball(half.x)
+            // let coll = ColliderBuilder::new(SharedShape::ball(half.x))
+            //todo: below kinds lack drawing collision❗
+            // let coll = ColliderBuilder::capsule_x(0.5, 0.2)
+            // let coll = ColliderBuilder::capsule_y(0.5, 0.2);
+            // let coll = ColliderBuilder::trimesh(vertices, indices);
+            // let coll = ColliderBuilder::heightfield(heights, scale);
+            //? aqui puede haber error si unos de los cálculos
+            //? en el pipeline#step, sobre pasa la dimensión
+            //? del collider, y crea el efecto de traspaso
+            .restitution(restitution)
+            .density(density)
             .build();
         let handler = world.physics.rigid_body_set.insert(body);
         world.physics.collider_set.insert_with_parent(

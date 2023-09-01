@@ -123,11 +123,30 @@ async fn main() {
         block,
     };
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
-    let mut bloque = Bloque::new(&mut world, vec2(12. * block.x, 1. * block.y));
+
+    let restitution = 0.8;
+    let mut bloque = Bloque::new(
+        &mut world,
+        vec2(12. * block.x, 22. * block.y),
+        10.,
+        restitution,
+    );
+    let mut bloque2 = Bloque::new(
+        &mut world,
+        vec2(13.1 * block.x, 22. * block.y),
+        10.5,
+        restitution,
+    );
+    let mut bloque3 = Bloque::new(
+        &mut world,
+        vec2(14.1 * block.x, 22. * block.y),
+        10.,
+        restitution,
+    );
     let mut piso = Piso::new(
         &mut world,
         vec2(0.5 * (screen.x - (20. * block.x)), 24. * block.y),
-        vec2(20. * block.x, block.x),
+        vec2(20. * block.x, block.x * 4.),
     );
     loop {
         clear_background(DARKPURPLE);
@@ -225,6 +244,12 @@ async fn main() {
 
                 bloque.update(&mut world, &mut physics_events);
                 bloque.draw(&mut world);
+
+                bloque2.update(&mut world, &mut physics_events);
+                bloque2.draw(&mut world);
+
+                bloque3.update(&mut world, &mut physics_events);
+                bloque3.draw(&mut world);
                 piso.draw(&mut world);
                 world.physics.update(get_frame_time(), &mut physics_events);
                 world.physics.draw_colliders();
