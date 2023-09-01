@@ -58,7 +58,8 @@ impl Physics {
             steps_taken += 1;
 
             self.physics_pipeline.step(
-                &vector![0., 400.],
+                //? on mobile wasm it look very slow❗
+                &vector![0., 2100.],
                 // &vector![0., 0.],
                 &self.integration_parameters,
                 &mut self.island_manager,
@@ -133,7 +134,7 @@ impl Physics {
                         color,
                     );
                 }
-                _ => panic!("drawing shape is unsupported"),
+                _ => panic!("me dio paja hacedlo vos! ¯\\_(ツ)_/¯"),
             }
         }
     }
