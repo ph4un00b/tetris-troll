@@ -110,14 +110,12 @@ impl UI {
         );
     }
 
-    pub fn _touch_window<F: FnOnce()>(handle_func: F) {
+    #[allow(unused)]
+    pub fn touch_window<F: FnOnce()>(handle_func: F) {
         root_ui().window(
             hash!(),
-            vec2(
-                screen_width() / 2.0 - WINDOWS_SIZE.x / 2.0,
-                screen_height() / 2.0 - WINDOWS_SIZE.y / 2.0,
-            ),
-            WINDOWS_SIZE,
+            vec2(screen_width() / 2.0, screen_height() / 2.0),
+            vec2(screen_width(), screen_height()),
             |ui| {
                 if ui.button(vec2(45.0, 75.0), "toca!") {
                     handle_func();

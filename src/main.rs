@@ -1,6 +1,8 @@
 use crate::constants::{COLUMNS, ROWS};
 
 use bloque::Bloque;
+use constants::WASM_MOBILE_FONT_SIZE;
+use debug::DebugUI;
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -9,13 +11,14 @@ use physics::{Physics, PhysicsEvent};
 use piso::Piso;
 use pointers::Pointers;
 
-use shared::{Evt, Organism, StateMachine};
+use shared::{Evt, Organism, Position, StateMachine};
 use tetromino::{TetroK, Tetromino};
 use ui::UI;
 use universe::Universe;
 
 mod bloque;
 mod constants;
+mod debug;
 mod manager;
 mod physics;
 mod piso;
@@ -121,6 +124,8 @@ async fn main() {
     let mut world = Universe {
         physics: Physics::new(),
         block,
+        screen,
+        playfield,
     };
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
@@ -194,18 +199,11 @@ async fn main() {
                 if is_key_pressed(KeyCode::Escape) {
                     std::process::exit(0);
                 }
+                // todo: recheck las ui's❗
                 // UI::touch_window(|| {
                 //     game_state.send(&Evt::Menu);
                 // });
-                draw_text(
-                    // format!("screen.H: {}", screen.y / MOVEMENT_SPEED).as_str(),
-                    format!("screen.H: {}", screen.y).as_str(),
-                    400.0,
-                    20.0,
-                    30.0,
-                    SKYBLUE,
-                );
-
+                DebugUI::screen(&world);
                 Universe::draw(&screen, &playfield, &block);
 
                 if current_tetrios.is_empty() {
@@ -216,30 +214,14 @@ async fn main() {
                 for tetro in current_tetrios.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    draw_text(
-                        format!("y: {}", tetro.props.y).as_str(),
-                        200.0,
-                        20.0,
-                        30.0,
-                        SKYBLUE,
-                    );
-                    draw_text(
-                        format!("y: {}", tetro.props.y * block.y).as_str(),
-                        200.0,
-                        40.0,
-                        30.0,
-                        SKYBLUE,
-                    );
+                    DebugUI::current_tetro(&world, tetro);
                 }
 
                 current_tetrios.retain(|t| t.props.y * block.y < screen.y);
 
-                draw_text(
-                    format!("Ball altitude: {}", bloque.y()).as_str(),
-                    200.0,
-                    60.0,
-                    30.0,
-                    SKYBLUE,
+                DebugUI::item(
+                    vec2(1. * world.screen.x * 0.5, 2. * WASM_MOBILE_FONT_SIZE),
+                    format!("altura: {}", bloque.y()),
                 );
 
                 bloque.update(&mut world, &mut physics_events);
@@ -251,6 +233,7 @@ async fn main() {
                 bloque3.update(&mut world, &mut physics_events);
                 bloque3.draw(&mut world);
                 piso.draw(&mut world);
+
                 world.physics.update(get_frame_time(), &mut physics_events);
                 world.physics.draw_colliders();
             }

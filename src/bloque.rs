@@ -7,7 +7,7 @@ use rapier2d::prelude::{ColliderBuilder, RigidBodyBuilder};
 use crate::{
     constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
-    shared::{Collision, Coso, Organism},
+    shared::{Collision, Coso, Organism, Position},
     universe::Universe,
 };
 
@@ -16,8 +16,8 @@ pub struct Bloque {
     props: Coso,
 }
 
-impl Bloque {
-    pub fn y(&self) -> f32 {
+impl Position for Bloque {
+    fn y(&self) -> f32 {
         self.props.y
     }
 }
@@ -37,7 +37,7 @@ impl Bloque {
             // let coll = ColliderBuilder::capsule_y(0.5, 0.2);
             // let coll = ColliderBuilder::trimesh(vertices, indices);
             // let coll = ColliderBuilder::heightfield(heights, scale);
-            //? aqui puede haber error si unos de los cálculos
+            //? aquí puede haber error si unos de los cálculos
             //? en el pipeline#step, sobre pasa la dimensión
             //? del collider, y crea el efecto de traspaso
             .restitution(restitution)
