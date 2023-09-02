@@ -12,4 +12,4 @@ cp target/wasm32-unknown-unknown/release/tetris-troll.wasm web/
 
 ls -lh web
 
-basic-http-server web/
+basic-http-server web/ -a "0.0.0.0:4000"
