@@ -8,6 +8,7 @@
     - hecho en el ci produce hacia github pages :-D
 - [ ] point to egui-macroquad canonical when posible.
 - [ ] reduce wasm binary if possible.
+    - or https://github.com/WebAssembly/wabt❓
     - use https://github.com/rustwasm/wasm-snip❓
 
 # assets
