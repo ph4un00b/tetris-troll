@@ -15,7 +15,7 @@ copy target\wasm32-unknown-unknown\release\tetris-troll.wasm web\
 dir /s /b web
 
 :: Remember to replace "port_number" with the desired port number
-basic-http-server web/
+basic-http-server web/ -a "0.0.0.0:4000"
 
 endlocal
 
