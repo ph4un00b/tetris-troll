@@ -2,6 +2,8 @@
 // * minimal tweaks for my universe 😏
 // * updated for 2023 -> check toml❗
 // * @see https://github.com/noc7c9/deathball/blob/main/src/physics.rs
+// * @see https://pmndrs.github.io/react-three-rapier/#sensors
+// * @see https://www.rapier.rs/docs/user_guides/rust/common_mistakes/
 //! The goal of this module is to wrap rapier2d so that
 //! - use glam vectors so it works nicer with macroquad
 //! - exposes the minimal amount of complexity necessary for
