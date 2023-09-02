@@ -4,7 +4,10 @@
 - `http://localhost:4000/web/`
 
 # todo
-- [ ] automate prod releases.
+- [x] automate prod releases.
+    - hecho en el ci produce hacia github pages :-D
+- [ ] point to egui-macroquad canonical when posible.
+- [ ] reduce wasm binary if possible.
 
 # assets
 - Copyright 2009 "Nel giardino dello Zar (Polka)" Bruno Belotti <http://www.jamendo.com/en/artist/348519/bruno-belotti> Copyright 2012 Iwan Gabovitch "Nel giardino dello Zar (Polka) Loop" (simple editing to make it loop)

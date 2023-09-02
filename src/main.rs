@@ -236,6 +236,18 @@ async fn main() {
 
                 world.physics.update(get_frame_time(), &mut physics_events);
                 world.physics.draw_colliders();
+
+                // Process keys, mouse etc.
+
+                egui_macroquad::ui(|egui_ctx| {
+                    egui::Window::new("egui ❤ macroquad").show(egui_ctx, |ui| {
+                        ui.label("Test");
+                    });
+                });
+
+                // Draw things before egui
+
+                egui_macroquad::draw();
             }
             Manager::MainEntry => {
                 play_sound_once(&transition_sound);

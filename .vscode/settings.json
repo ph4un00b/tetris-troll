@@ -15,6 +15,7 @@
     "DARKGRAY",
     "DARKGREEN",
     "DARKPURPLE",
+    "egui",
     "glsl",
     "heightfield",
     "macroquad",
