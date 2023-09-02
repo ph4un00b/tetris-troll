@@ -9,6 +9,9 @@ edition = "2021"
 opt-level = 3
 
 [dependencies]
-macroquad = {version = "0.4.2", features = ["audio", "log-rs"]}
-macroquad-particles = "0.2.0"
+egui = "0.22.0"
+egui-macroquad = { git = "https://github.com/Bytekeeper/egui-macroquad.git", brach = "master" }
+macroquad =  { git = "https://github.com/Bytekeeper/macroquad.git", brach = "master", features = ["audio", "log-rs"] }
+# macroquad = {version = "0.4.2", features = ["audio", "log-rs"]}
+# macroquad-particles = "0.2.0"
 rapier2d = { version = "0.17.2", features = [ "simd-stable" ] }

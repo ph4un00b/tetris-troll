@@ -1,0 +1,7 @@
+/target
+/Cargo.lock
+/web
+/assets
+/dist
+
+*/node_modules
