@@ -153,6 +153,9 @@ async fn main() {
         vec2(0.5 * (screen.x - (20. * block.x)), 24. * block.y),
         vec2(20. * block.x, 1. * block.x),
     );
+
+    let mut c = 0;
+    let mut tetro_y = 0.0;
     loop {
         clear_background(DARKPURPLE);
         //?shader
@@ -203,7 +206,6 @@ async fn main() {
                 // UI::touch_window(|| {
                 //     game_state.send(&Evt::Menu);
                 // });
-                DebugUI::screen(&world);
                 Universe::draw(&screen, &playfield, &block);
 
                 if current_tetrios.is_empty() {
@@ -214,15 +216,10 @@ async fn main() {
                 for tetro in current_tetrios.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    DebugUI::current_tetro(&world, tetro);
+                    tetro_y = tetro.props.y;
                 }
 
                 current_tetrios.retain(|t| t.props.y * block.y < screen.y);
-
-                DebugUI::item(
-                    vec2(1. * world.screen.x * 0.5, 2. * WASM_MOBILE_FONT_SIZE),
-                    format!("altura: {}", bloque.y()),
-                );
 
                 bloque.update(&mut world, &mut physics_events);
                 bloque.draw(&mut world);
@@ -237,16 +234,15 @@ async fn main() {
                 world.physics.update(get_frame_time(), &mut physics_events);
                 world.physics.draw_colliders();
 
-                // Process keys, mouse etc.
-
                 egui_macroquad::ui(|egui_ctx| {
-                    egui::Window::new("egui ❤ macroquad").show(egui_ctx, |ui| {
-                        ui.label("Test");
+                    egui::Window::new("❤ debug").show(egui_ctx, |ui| {
+                        ui.label(format!("screen.H: {}", world.screen.y));
+                        ui.label(format!("screen.W: {}", world.screen.x));
+                        ui.label(format!("y: {}", tetro_y));
+                        ui.label(format!("y: {}", tetro_y * world.block.y));
+                        ui.label(format!("altura: {}", bloque.y()));
                     });
                 });
-
-                // Draw things before egui
-
                 egui_macroquad::draw();
             }
             Manager::MainEntry => {
@@ -304,4 +300,17 @@ async fn main() {
 
         next_frame().await
     }
+}
+
+fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
+    // Put the buttons and label on the same row:
+    ui.horizontal(|ui| {
+        if ui.button("-").clicked() {
+            *counter -= 1;
+        }
+        ui.label(counter.to_string());
+        if ui.button("+").clicked() {
+            *counter += 1;
+        }
+    });
 }
