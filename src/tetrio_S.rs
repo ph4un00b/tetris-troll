@@ -140,7 +140,7 @@ impl TetrioS {
                     [0, 1, 1, 0],
                 ],
                 Offset {
-                    up: 1,
+                    up: 2,
                     down: 0,
                     left: 1,
                     right: 0,
@@ -170,7 +170,7 @@ impl TetrioS {
                     [0, 1, 1, 0],
                 ],
                 Offset {
-                    up: 1,
+                    up: 2,
                     down: 0,
                     left: 1,
                     right: 0,
