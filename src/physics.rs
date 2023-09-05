@@ -123,7 +123,7 @@ impl Physics {
                     // }
                     let size = cuboid.half_extents * 2.;
                     let translation = translation - cuboid.half_extents;
-                    println!("{translation:?}, {size:?}");
+                    // println!("{translation:?}, {size:?}");
                     draw_rectangle(
                         //? (4. * block.x) - translation.x,
                         translation.x,
