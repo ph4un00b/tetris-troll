@@ -12,6 +12,7 @@ use crate::{
     tetrio_L::TetrioL,
     tetrio_O::TetrioO,
     tetrio_S::TetrioS,
+    tetrio_T::TetrioT,
     tetromino::{Offset, PieceMat4, Tetromino},
 };
 
@@ -37,13 +38,13 @@ impl Universe {
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
         // println!(">>{tetro:?}");
         let (piece, offsets) = match &tetro.kind {
-            crate::tetromino::TetroK::I => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::J => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::L => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::O => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::S => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::T => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::Z => TetrioS::mat4(tetro),
+            crate::tetromino::TetroK::I => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::J => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::L => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::O => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::S => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::T => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::Z => TetrioJ::mat4(tetro),
         };
 
         let mut bottom_offset = 0;
@@ -54,9 +55,9 @@ impl Universe {
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
-                    let playfield_row =
-                        (PLAYFIELD_H - 1 - PIECE_H) + row_idx + offsets.down + offsets.up;
+                    let playfield_row = (PLAYFIELD_H - PIECE_H) + (row_idx + offsets.down);
                     let playfield_col = 0 + col_idx;
+                    println!("playfield_row {playfield_row}");
                     self.game[playfield_col][playfield_row - bottom_offset] = *cell;
                 }
             }
@@ -67,10 +68,10 @@ impl Universe {
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
-                    println!("x {col_idx}, y {row_idx}");
-                    let playfield_row =
-                        (PLAYFIELD_H - 1 - PIECE_H) + row_idx + offsets.down + offsets.up;
+                    let playfield_row = (PLAYFIELD_H - PIECE_H) + (row_idx + offsets.down);
                     let playfield_col = 0 + col_idx;
+
+                    println!("playfield_row {playfield_row}");
                     if self.game[playfield_col][playfield_row - offset] == 1 {
                         return true;
                     };
