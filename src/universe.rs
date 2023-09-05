@@ -5,8 +5,11 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{PLAYFIELD_H, PLAYFIELD_W},
+    constants::{PIECE_H, PLAYFIELD_H, PLAYFIELD_W},
     physics::Physics,
+    tetrio_I::TetrioI,
+    tetrio_J::TetrioJ,
+    tetromino::{Offset, PieceMat4, Tetromino},
 };
 
 pub struct Universe {
@@ -24,8 +27,54 @@ impl Universe {
             block,
             screen,
             playfield,
-            game: [[1; PLAYFIELD_H]; PLAYFIELD_W],
+            game: [[0; PLAYFIELD_H]; PLAYFIELD_W],
         }
+    }
+
+    pub(crate) fn add(&mut self, tetro: &Tetromino) {
+        // println!(">>{tetro:?}");
+        let (piece, offsets) = match &tetro.kind {
+            crate::tetromino::TetroK::I => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::J => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::L => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::O => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::S => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::T => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::Z => TetrioJ::mat4(tetro),
+        };
+
+        let mut bottom_offset = 0;
+        while self.collided_with_bottom(piece, &offsets, &bottom_offset) {
+            bottom_offset += 1;
+        }
+        println!("offset {bottom_offset}");
+        for (row_idx, row) in piece.iter().enumerate() {
+            for (col_idx, cell) in row.iter().enumerate() {
+                if *cell != 0 {
+                    let playfield_row =
+                        (PLAYFIELD_H - 1 - PIECE_H) + row_idx + offsets.down + offsets.up;
+                    let playfield_col = 0 + col_idx;
+                    self.game[playfield_col][playfield_row - bottom_offset] = *cell;
+                }
+            }
+        }
+    }
+
+    fn collided_with_bottom(&mut self, piece: PieceMat4, offsets: &Offset, offset: &usize) -> bool {
+        for (row_idx, row) in piece.iter().enumerate() {
+            for (col_idx, cell) in row.iter().enumerate() {
+                if *cell != 0 {
+                    println!("x {col_idx}, y {row_idx}");
+                    let playfield_row =
+                        (PLAYFIELD_H - 1 - PIECE_H) + row_idx + offsets.down + offsets.up;
+                    let playfield_col = 0 + col_idx;
+                    if self.game[playfield_col][playfield_row - offset] == 1 {
+                        return true;
+                    };
+                }
+            }
+        }
+        false
     }
 
     pub fn render(&self) {
