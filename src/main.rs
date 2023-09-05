@@ -1,8 +1,7 @@
-use crate::constants::{COLUMNS, ROWS};
+use crate::constants::{PLAYFIELD_H, PLAYFIELD_W};
 
 use bloque::Bloque;
-use constants::WASM_MOBILE_FONT_SIZE;
-use debug::DebugUI;
+
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -108,7 +107,10 @@ async fn main() {
     let screen_h = screen_height();
     let screen = vec3(screen_w, screen_h, screen_w / screen_h);
     let playfield = vec2((10. * screen_h) / 32., (24. * screen_h) / 32.);
-    let block: Vec2 = vec2(playfield.x / ROWS as f32, playfield.y / COLUMNS as f32);
+    let block: Vec2 = vec2(
+        playfield.x / PLAYFIELD_W as f32,
+        playfield.y / PLAYFIELD_H as f32,
+    );
 
     let tetrominos = vec![
         Tetromino::from((TetroK::I, 12., 1.)),
@@ -121,12 +123,8 @@ async fn main() {
     ];
     let mut current_tetrios = vec![Tetromino::from((TetroK::O, 12., 1.))];
     //?  Macroquad will clear the screen at the beginning of each frame.
-    let mut world = Universe {
-        physics: Physics::new(),
-        block,
-        screen,
-        playfield,
-    };
+    let mut world = Universe::new(Physics::new(), block, screen, playfield);
+
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
     let restitution = 0.8;
@@ -150,11 +148,11 @@ async fn main() {
     );
     let mut piso = Piso::new(
         &mut world,
-        vec2(0.5 * (screen.x - (20. * block.x)), 24. * block.y),
+        vec2(0.5 * (screen.x - (20. * block.x)), 31. * block.y),
         vec2(20. * block.x, 1. * block.x),
     );
 
-    let mut c = 0;
+    // let mut c = 0;
     let mut tetro_y = 0.0;
     loop {
         clear_background(DARKPURPLE);
@@ -206,20 +204,25 @@ async fn main() {
                 // UI::touch_window(|| {
                 //     game_state.send(&Evt::Menu);
                 // });
-                Universe::draw(&screen, &playfield, &block);
+                // Universe::draw(&screen, &playfield, &block);
+                world.render();
 
                 if current_tetrios.is_empty() {
                     let n = rand::gen_range(0, tetrominos.len() - 1);
-                    current_tetrios.push(tetrominos[n].clone())
+                    current_tetrios.push(tetrominos[n].clone());
                 }
 
                 for tetro in current_tetrios.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
                     tetro_y = tetro.props.y;
+                    if tetro.props.y * block.y >= (screen.y * 0.5) {
+                        println!(">>{tetro:?}");
+                        // world.add(&tetro);
+                    }
                 }
 
-                current_tetrios.retain(|t| t.props.y * block.y < screen.y);
+                current_tetrios.retain(|t| t.props.y * block.y < (screen.y * 0.5));
 
                 bloque.update(&mut world, &mut physics_events);
                 bloque.draw(&mut world);
@@ -300,17 +303,4 @@ async fn main() {
 
         next_frame().await
     }
-}
-
-fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
-    // Put the buttons and label on the same row:
-    ui.horizontal(|ui| {
-        if ui.button("-").clicked() {
-            *counter -= 1;
-        }
-        ui.label(counter.to_string());
-        if ui.button("+").clicked() {
-            *counter += 1;
-        }
-    });
 }
