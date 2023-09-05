@@ -1,6 +1,6 @@
 use macroquad::{prelude::Vec2, shapes::draw_rectangle};
 
-use crate::tetromino::Clock;
+use crate::tetromino::{Clock, Offset, PieceMat4};
 
 pub struct TetrioZ;
 impl TetrioZ {
@@ -126,6 +126,71 @@ impl TetrioZ {
                     t.props.color,
                 );
             }
+        }
+    }
+
+    pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (PieceMat4, Offset) {
+        match tetro.rotation {
+            Clock::P12 => (
+                [
+                    //? Z
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [1, 1, 0, 0],
+                    [0, 1, 1, 0],
+                ],
+                Offset {
+                    up: 2,
+                    down: 0,
+                    left: 0,
+                    right: 1,
+                },
+            ),
+            Clock::P3 => (
+                [
+                    //? Z
+                    [0, 0, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 1, 1, 0],
+                    [0, 1, 0, 0],
+                ],
+                Offset {
+                    up: 1,
+                    down: 0,
+                    left: 1,
+                    right: 1,
+                },
+            ),
+            Clock::P6 => (
+                [
+                    //? Z
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [1, 1, 0, 0],
+                    [0, 1, 1, 0],
+                ],
+                Offset {
+                    up: 2,
+                    down: 0,
+                    left: 0,
+                    right: 1,
+                },
+            ),
+            Clock::P9 => (
+                [
+                    //? Z
+                    [0, 0, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 1, 1, 0],
+                    [0, 1, 0, 0],
+                ],
+                Offset {
+                    up: 1,
+                    down: 0,
+                    left: 1,
+                    right: 1,
+                },
+            ),
         }
     }
 }

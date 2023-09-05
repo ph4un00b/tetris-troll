@@ -13,6 +13,7 @@ use crate::{
     tetrio_O::TetrioO,
     tetrio_S::TetrioS,
     tetrio_T::TetrioT,
+    tetrio_Z::TetrioZ,
     tetromino::{Offset, PieceMat4, Tetromino},
 };
 
@@ -38,13 +39,13 @@ impl Universe {
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
         // println!(">>{tetro:?}");
         let (piece, offsets) = match &tetro.kind {
-            crate::tetromino::TetroK::I => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::J => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::L => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::O => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::S => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::T => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::Z => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::I => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::J => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::L => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::O => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::S => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::T => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::Z => TetrioZ::mat4(tetro),
         };
 
         let mut bottom_offset = 0;
