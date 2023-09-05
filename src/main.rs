@@ -217,8 +217,7 @@ async fn main() {
                     tetro.draw(&mut world);
                     tetro_y = tetro.props.y;
                     if tetro.props.y * block.y >= (screen.y * 0.5) {
-                        println!(">>{tetro:?}");
-                        // world.add(&tetro);
+                        world.add(tetro);
                     }
                 }
 

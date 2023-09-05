@@ -1,6 +1,7 @@
 use macroquad::{
     prelude::{
-        touches, vec2, Rect, TouchPhase, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE, YELLOW,
+        touches, vec2, Color, Rect, TouchPhase, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE,
+        YELLOW,
     },
     time::get_frame_time,
     window::{screen_height, screen_width},
@@ -30,6 +31,38 @@ pub enum TetroK {
     T,
     Z,
 }
+impl TetroK {
+    pub(crate) fn color(&self) -> Color {
+        match self {
+            TetroK::I => SKYBLUE,
+            TetroK::J => DARKBLUE,
+            TetroK::L => ORANGE,
+            TetroK::O => YELLOW,
+            TetroK::S => DARKGREEN,
+            TetroK::T => PURPLE,
+            TetroK::Z => RED,
+        }
+    }
+}
+
+impl From<u8> for TetroK {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => TetroK::I,
+            2 => TetroK::J,
+            3 => TetroK::L,
+            4 => TetroK::O,
+            5 => TetroK::S,
+            6 => TetroK::T,
+            7 => TetroK::Z,
+            _ => unreachable!("piece not existent"),
+        }
+    }
+}
+
+trait Colour {
+    fn color(&self) -> Color;
+}
 #[derive(Debug, Clone)]
 pub enum Clock {
     // 12:00
@@ -41,9 +74,18 @@ pub enum Clock {
     // 09:00
     P9,
 }
+
+pub type PieceMat4 = [[u8; 4]; 4];
+pub struct Offset {
+    pub up: usize,
+    pub down: usize,
+    pub left: usize,
+    pub right: usize,
+}
+
 #[derive(Debug, Clone)]
 pub struct Tetromino {
-    kind: TetroK,
+    pub kind: TetroK,
     pub rotation: Clock,
     current_rot: usize,
     pub props: Coso,
