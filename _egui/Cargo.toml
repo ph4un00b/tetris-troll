@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 egui = "0.22.0"
-egui-macroquad = { git = "https://github.com/Bytekeeper/egui-macroquad.git", brach = "master" }
-macroquad =  { git = "https://github.com/Bytekeeper/macroquad.git", brach = "master" }
+egui-macroquad = { git = "https://github.com/ph4un00b/egui-macroquad.git", brach = "master" }
+macroquad =  { git = "https://github.com/ph4un00b/macroquad.git", brach = "master" }
