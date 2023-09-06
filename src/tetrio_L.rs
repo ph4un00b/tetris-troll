@@ -3,129 +3,135 @@ use macroquad::{
     shapes::draw_rectangle,
 };
 
-use crate::tetromino::{Clock, Offset, PieceMat4};
+use crate::{
+    shared::{normalize, normalize_to_discrete, normalize_to_discrete_f32},
+    tetromino::{Clock, Offset, PieceMat4},
+    universe::Universe,
+};
 
 pub struct TetrioL;
 impl TetrioL {
-    pub(crate) fn draw(t: &crate::tetromino::Tetromino, block: &Vec2) {
+    pub(crate) fn draw(t: &crate::tetromino::Tetromino, world: &Universe) {
         match t.rotation {
             Clock::P12 => {
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    // normalize_to_discrete_f32(t.props.x, world) * world.block.x
+                    //     + (t.props.x * world.block.x),
+                    1. * normalize(t.props.x, world),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    1. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * normalize(t.props.x, world),
+                    1. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    2. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * normalize(t.props.x, world),
+                    2. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    2. * block.x + (t.props.x * block.x),
-                    2. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * normalize(t.props.x, world) + world.block.x,
+                    2. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
             }
             Clock::P3 => {
                 draw_rectangle(
-                    0. * block.x + (t.props.x * block.x),
-                    1. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    0. * world.block.x + (t.props.x * world.block.x),
+                    1. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    0. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    0. * world.block.x + (t.props.x * world.block.x),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * world.block.x + (t.props.x * world.block.x),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    2. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    2. * world.block.x + (t.props.x * world.block.x),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
             }
             Clock::P6 => {
                 draw_rectangle(
-                    0. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    0. * world.block.x + (t.props.x * world.block.x),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * world.block.x + (t.props.x * world.block.x),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    1. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * world.block.x + (t.props.x * world.block.x),
+                    1. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    2. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * world.block.x + (t.props.x * world.block.x),
+                    2. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
             }
             Clock::P9 => {
                 draw_rectangle(
-                    3. * block.x + (t.props.x * block.x),
-                    0. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    3. * world.block.x + (t.props.x * world.block.x),
+                    0. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    3. * block.x + (t.props.x * block.x),
-                    1. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    3. * world.block.x + (t.props.x * world.block.x),
+                    1. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    2. * block.x + (t.props.x * block.x),
-                    1. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    2. * world.block.x + (t.props.x * world.block.x),
+                    1. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
                 draw_rectangle(
-                    1. * block.x + (t.props.x * block.x),
-                    1. * block.y + (t.props.y * block.y),
-                    block.x,
-                    block.y,
+                    1. * world.block.x + (t.props.x * world.block.x),
+                    1. * world.block.y + (t.props.y * world.block.y),
+                    world.block.x,
+                    world.block.y,
                     t.props.color,
                 );
             }
@@ -161,7 +167,7 @@ impl TetrioL {
                     up: 1,
                     down: 1,
                     left: 0,
-                    right: 0,
+                    right: 1,
                 },
             ),
             Clock::P6 => (
@@ -176,7 +182,7 @@ impl TetrioL {
                     up: 0,
                     down: 1,
                     left: 1,
-                    right: 2,
+                    right: 1,
                 },
             ),
             Clock::P9 => (
@@ -190,7 +196,7 @@ impl TetrioL {
                 Offset {
                     up: 1,
                     down: 1,
-                    left: 0,
+                    left: 1,
                     right: 0,
                 },
             ),
