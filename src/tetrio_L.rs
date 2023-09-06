@@ -1,4 +1,7 @@
-use macroquad::{prelude::Vec2, shapes::draw_rectangle};
+use macroquad::{
+    prelude::{Vec2, ORANGE},
+    shapes::draw_rectangle,
+};
 
 use crate::tetromino::{Clock, Offset, PieceMat4};
 
@@ -135,9 +138,9 @@ impl TetrioL {
                 [
                     //? L
                     [0, 0, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 1, 1, 0],
+                    [0, 3, 0, 0],
+                    [0, 3, 0, 0],
+                    [0, 3, 3, 0],
                 ],
                 Offset {
                     up: 1,
@@ -150,8 +153,8 @@ impl TetrioL {
                 [
                     //? L
                     [0, 0, 0, 0],
-                    [1, 1, 1, 0],
-                    [1, 0, 0, 0],
+                    [3, 3, 3, 0],
+                    [3, 0, 0, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -164,9 +167,9 @@ impl TetrioL {
             Clock::P6 => (
                 [
                     //? L
-                    [0, 1, 1, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 1, 0],
+                    [0, 3, 3, 0],
+                    [0, 0, 3, 0],
+                    [0, 0, 3, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -180,8 +183,8 @@ impl TetrioL {
                 [
                     //? L
                     [0, 0, 0, 0],
-                    [0, 0, 0, 1],
-                    [0, 1, 1, 1],
+                    [0, 0, 0, 3],
+                    [0, 3, 3, 3],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -192,5 +195,9 @@ impl TetrioL {
                 },
             ),
         }
+    }
+
+    pub(crate) fn color() -> macroquad::prelude::Color {
+        ORANGE
     }
 }

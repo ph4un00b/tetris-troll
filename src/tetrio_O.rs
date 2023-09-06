@@ -1,4 +1,7 @@
-use macroquad::{prelude::Vec2, shapes::draw_rectangle};
+use macroquad::{
+    prelude::{Vec2, YELLOW},
+    shapes::draw_rectangle,
+};
 
 use crate::tetromino::{Clock, Offset, PieceMat4};
 
@@ -135,8 +138,8 @@ impl TetrioO {
                 [
                     //? O
                     [0, 0, 0, 0],
-                    [0, 1, 1, 0],
-                    [0, 1, 1, 0],
+                    [0, 4, 4, 0],
+                    [0, 4, 4, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -150,8 +153,8 @@ impl TetrioO {
                 [
                     //? O
                     [0, 0, 0, 0],
-                    [0, 1, 1, 0],
-                    [0, 1, 1, 0],
+                    [0, 4, 4, 0],
+                    [0, 4, 4, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -165,8 +168,8 @@ impl TetrioO {
                 [
                     //? O
                     [0, 0, 0, 0],
-                    [0, 1, 1, 0],
-                    [0, 1, 1, 0],
+                    [0, 4, 4, 0],
+                    [0, 4, 4, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -180,8 +183,8 @@ impl TetrioO {
                 [
                     //? O
                     [0, 0, 0, 0],
-                    [0, 1, 1, 0],
-                    [0, 1, 1, 0],
+                    [0, 4, 4, 0],
+                    [0, 4, 4, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -192,5 +195,9 @@ impl TetrioO {
                 },
             ),
         }
+    }
+
+    pub(crate) fn color() -> macroquad::prelude::Color {
+        YELLOW
     }
 }

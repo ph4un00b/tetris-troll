@@ -1,4 +1,7 @@
-use macroquad::{prelude::Vec2, shapes::draw_rectangle};
+use macroquad::{
+    prelude::{Vec2, DARKBLUE},
+    shapes::draw_rectangle,
+};
 
 use crate::tetromino::{Clock, Offset, PieceMat4};
 
@@ -135,9 +138,9 @@ impl TetrioJ {
                 [
                     //? J
                     [0, 0, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 1, 0],
-                    [0, 1, 1, 0],
+                    [0, 0, 2, 0],
+                    [0, 0, 2, 0],
+                    [0, 2, 2, 0],
                 ],
                 Offset {
                     up: 1,
@@ -150,8 +153,8 @@ impl TetrioJ {
                 [
                     //? J
                     [0, 0, 0, 0],
-                    [1, 0, 0, 0],
-                    [1, 1, 1, 0],
+                    [2, 0, 0, 0],
+                    [2, 2, 2, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -164,9 +167,9 @@ impl TetrioJ {
             Clock::P6 => (
                 [
                     //? J
-                    [0, 1, 1, 0],
-                    [0, 1, 0, 0],
-                    [0, 1, 0, 0],
+                    [0, 2, 2, 0],
+                    [0, 2, 0, 0],
+                    [0, 2, 0, 0],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -180,8 +183,8 @@ impl TetrioJ {
                 [
                     //? J
                     [0, 0, 0, 0],
-                    [0, 1, 1, 1],
-                    [0, 0, 0, 1],
+                    [0, 2, 2, 2],
+                    [0, 0, 0, 2],
                     [0, 0, 0, 0],
                 ],
                 Offset {
@@ -192,5 +195,9 @@ impl TetrioJ {
                 },
             ),
         }
+    }
+
+    pub(crate) fn color() -> macroquad::prelude::Color {
+        DARKBLUE
     }
 }
