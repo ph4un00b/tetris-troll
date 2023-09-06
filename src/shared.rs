@@ -1,6 +1,12 @@
-use macroquad::prelude::{Color, Rect, Vec2};
+use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
 use crate::{physics::PhysicsEvent, universe::Universe};
+
+pub fn normalize(position_x: f32, world: &Universe) -> usize {
+    let left_pad = 0.5 * (world.screen.x - world.playfield.x);
+    let value = (position_x - left_pad) / world.block.x;
+    clamp(value.floor(), 0.0, 9.0) as usize
+}
 
 #[derive(Debug, Clone)]
 pub struct Coso {

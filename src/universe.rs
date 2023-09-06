@@ -49,7 +49,7 @@ impl Universe {
         };
 
         let mut bottom_offset = 0;
-        while self.collided_with_bottom(piece, &offsets, &bottom_offset) {
+        while self.collided_with_bottom(tetro, piece, &offsets, &bottom_offset) {
             bottom_offset += 1;
         }
 
@@ -60,13 +60,19 @@ impl Universe {
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
                     let x = col_idx;
                     println!("playfield_row {y}");
-                    self.game[x][y - bottom_offset] = *value;
+                    self.game[x + tetro.playfield_x][y - bottom_offset] = *value;
                 }
             }
         }
     }
 
-    fn collided_with_bottom(&mut self, piece: PieceMat4, offsets: &Offset, offset: &usize) -> bool {
+    fn collided_with_bottom(
+        &mut self,
+        t: &Tetromino,
+        piece: PieceMat4,
+        offsets: &Offset,
+        offset: &usize,
+    ) -> bool {
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
@@ -74,7 +80,7 @@ impl Universe {
                     let x = col_idx;
 
                     println!("playfield_row {y}");
-                    if self.game[x][y - offset] > 0 {
+                    if self.game[x + t.playfield_x][y - offset] > 0 {
                         return true;
                     };
                 }
