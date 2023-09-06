@@ -1,4 +1,7 @@
-use macroquad::{prelude::Vec2, shapes::draw_rectangle};
+use macroquad::{
+    prelude::{Vec2, SKYBLUE},
+    shapes::draw_rectangle,
+};
 
 use crate::tetromino::{Clock, Offset, PieceMat4};
 
@@ -192,5 +195,9 @@ impl TetrioI {
                 },
             ),
         }
+    }
+
+    pub(crate) fn color() -> macroquad::prelude::Color {
+        SKYBLUE
     }
 }

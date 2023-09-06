@@ -5,7 +5,7 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{PIECE_H, PLAYFIELD_H, PLAYFIELD_W},
+    constants::{PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     physics::Physics,
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
@@ -14,7 +14,7 @@ use crate::{
     tetrio_S::TetrioS,
     tetrio_T::TetrioT,
     tetrio_Z::TetrioZ,
-    tetromino::{Offset, PieceMat4, Tetromino},
+    tetromino::{Offset, PieceMat4, TetroK, Tetromino},
 };
 
 pub struct Universe {
@@ -39,12 +39,12 @@ impl Universe {
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
         // println!(">>{tetro:?}");
         let (piece, offsets) = match &tetro.kind {
-            crate::tetromino::TetroK::I => TetrioZ::mat4(tetro),
-            crate::tetromino::TetroK::J => TetrioZ::mat4(tetro),
-            crate::tetromino::TetroK::L => TetrioZ::mat4(tetro),
-            crate::tetromino::TetroK::O => TetrioZ::mat4(tetro),
-            crate::tetromino::TetroK::S => TetrioZ::mat4(tetro),
-            crate::tetromino::TetroK::T => TetrioZ::mat4(tetro),
+            crate::tetromino::TetroK::I => TetrioI::mat4(tetro),
+            crate::tetromino::TetroK::J => TetrioJ::mat4(tetro),
+            crate::tetromino::TetroK::L => TetrioL::mat4(tetro),
+            crate::tetromino::TetroK::O => TetrioO::mat4(tetro),
+            crate::tetromino::TetroK::S => TetrioS::mat4(tetro),
+            crate::tetromino::TetroK::T => TetrioT::mat4(tetro),
             crate::tetromino::TetroK::Z => TetrioZ::mat4(tetro),
         };
 
@@ -56,8 +56,8 @@ impl Universe {
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
-                    let playfield_row = (PLAYFIELD_H - PIECE_H) + (row_idx + offsets.down);
-                    let playfield_col = 0 + col_idx;
+                    let playfield_row = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
+                    let playfield_col = col_idx;
                     println!("playfield_row {playfield_row}");
                     self.game[playfield_col][playfield_row - bottom_offset] = *cell;
                 }
@@ -69,11 +69,11 @@ impl Universe {
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
-                    let playfield_row = (PLAYFIELD_H - PIECE_H) + (row_idx + offsets.down);
-                    let playfield_col = 0 + col_idx;
+                    let playfield_row = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
+                    let playfield_col = col_idx;
 
                     println!("playfield_row {playfield_row}");
-                    if self.game[playfield_col][playfield_row - offset] == 1 {
+                    if self.game[playfield_col][playfield_row - offset] > 0 {
                         return true;
                     };
                 }
@@ -92,13 +92,16 @@ impl Universe {
         const GAP: f32 = 1.;
 
         for (row_idx, row) in self.game.iter().enumerate() {
-            for (col_idx, cell) in row.iter().enumerate() {
+            for (col_idx, value) in row.iter().enumerate() {
                 draw_rectangle(
                     pad_x + (self.block.x * (row_idx as f32 * GAP)),
                     pad_y + self.block.y * (col_idx as f32 * GAP),
                     self.block.x,
                     self.block.y,
-                    if *cell == 1 { GREEN } else { BROWN },
+                    match *value {
+                        1..=7 => TetroK::from(*value).color(),
+                        _ => BROWN,
+                    },
                 );
             }
         }

@@ -34,13 +34,13 @@ pub enum TetroK {
 impl TetroK {
     pub(crate) fn color(&self) -> Color {
         match self {
-            TetroK::I => SKYBLUE,
-            TetroK::J => DARKBLUE,
-            TetroK::L => ORANGE,
-            TetroK::O => YELLOW,
-            TetroK::S => DARKGREEN,
-            TetroK::T => PURPLE,
-            TetroK::Z => RED,
+            TetroK::I => TetrioI::color(),
+            TetroK::J => TetrioJ::color(),
+            TetroK::L => TetrioL::color(),
+            TetroK::O => TetrioO::color(),
+            TetroK::S => TetrioS::color(),
+            TetroK::T => TetrioT::color(),
+            TetroK::Z => TetrioZ::color(),
         }
     }
 }

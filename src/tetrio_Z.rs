@@ -1,4 +1,7 @@
-use macroquad::{prelude::Vec2, shapes::draw_rectangle};
+use macroquad::{
+    prelude::{Vec2, RED},
+    shapes::draw_rectangle,
+};
 
 use crate::tetromino::{Clock, Offset, PieceMat4};
 
@@ -136,8 +139,8 @@ impl TetrioZ {
                     //? Z
                     [0, 0, 0, 0],
                     [0, 0, 0, 0],
-                    [1, 1, 0, 0],
-                    [0, 1, 1, 0],
+                    [7, 7, 0, 0],
+                    [0, 7, 7, 0],
                 ],
                 Offset {
                     up: 2,
@@ -150,9 +153,9 @@ impl TetrioZ {
                 [
                     //? Z
                     [0, 0, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 1, 1, 0],
-                    [0, 1, 0, 0],
+                    [0, 0, 7, 0],
+                    [0, 7, 7, 0],
+                    [0, 7, 0, 0],
                 ],
                 Offset {
                     up: 1,
@@ -166,8 +169,8 @@ impl TetrioZ {
                     //? Z
                     [0, 0, 0, 0],
                     [0, 0, 0, 0],
-                    [1, 1, 0, 0],
-                    [0, 1, 1, 0],
+                    [7, 7, 0, 0],
+                    [0, 7, 7, 0],
                 ],
                 Offset {
                     up: 2,
@@ -180,9 +183,9 @@ impl TetrioZ {
                 [
                     //? Z
                     [0, 0, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 1, 1, 0],
-                    [0, 1, 0, 0],
+                    [0, 0, 7, 0],
+                    [0, 7, 7, 0],
+                    [0, 7, 0, 0],
                 ],
                 Offset {
                     up: 1,
@@ -192,5 +195,9 @@ impl TetrioZ {
                 },
             ),
         }
+    }
+
+    pub(crate) fn color() -> macroquad::prelude::Color {
+        RED
     }
 }
