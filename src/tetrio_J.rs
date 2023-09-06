@@ -161,7 +161,7 @@ impl TetrioJ {
                     up: 1,
                     down: 1,
                     left: 0,
-                    right: 0,
+                    right: 1,
                 },
             ),
             Clock::P6 => (
@@ -176,7 +176,7 @@ impl TetrioJ {
                     up: 0,
                     down: 1,
                     left: 1,
-                    right: 2,
+                    right: 1,
                 },
             ),
             Clock::P9 => (
@@ -190,7 +190,7 @@ impl TetrioJ {
                 Offset {
                     up: 1,
                     down: 1,
-                    left: 0,
+                    left: 1,
                     right: 0,
                 },
             ),
