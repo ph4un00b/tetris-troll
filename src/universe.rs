@@ -52,14 +52,15 @@ impl Universe {
         while self.collided_with_bottom(piece, &offsets, &bottom_offset) {
             bottom_offset += 1;
         }
+
         println!("offset {bottom_offset}");
         for (row_idx, row) in piece.iter().enumerate() {
-            for (col_idx, cell) in row.iter().enumerate() {
-                if *cell != 0 {
-                    let playfield_row = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-                    let playfield_col = col_idx;
-                    println!("playfield_row {playfield_row}");
-                    self.game[playfield_col][playfield_row - bottom_offset] = *cell;
+            for (col_idx, value) in row.iter().enumerate() {
+                if *value != 0 {
+                    let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
+                    let x = col_idx;
+                    println!("playfield_row {y}");
+                    self.game[x][y - bottom_offset] = *value;
                 }
             }
         }
@@ -69,11 +70,11 @@ impl Universe {
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
-                    let playfield_row = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-                    let playfield_col = col_idx;
+                    let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
+                    let x = col_idx;
 
-                    println!("playfield_row {playfield_row}");
-                    if self.game[playfield_col][playfield_row - offset] > 0 {
+                    println!("playfield_row {y}");
+                    if self.game[x][y - offset] > 0 {
                         return true;
                     };
                 }
