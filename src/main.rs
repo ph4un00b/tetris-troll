@@ -10,7 +10,7 @@ use physics::{Physics, PhysicsEvent};
 use piso::Piso;
 use pointers::Pointers;
 
-use shared::{Evt, Organism, Position, StateMachine};
+use shared::{normalize, Evt, Organism, Position, StateMachine};
 use tetromino::{TetroK, Tetromino};
 use ui::UI;
 use universe::Universe;
@@ -153,6 +153,7 @@ async fn main() {
     );
 
     // let mut c = 0;
+    let mut tetro_x = 0.0;
     let mut tetro_y = 0.0;
     loop {
         clear_background(DARKPURPLE);
@@ -215,6 +216,7 @@ async fn main() {
                 for tetro in current_tetrios.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
+                    tetro_x = tetro.props.x;
                     tetro_y = tetro.props.y;
                     if tetro.props.y * block.y >= (screen.y * 0.5) {
                         world.add(tetro);
@@ -243,6 +245,9 @@ async fn main() {
                         ui.label(format!("y: {}", tetro_y));
                         ui.label(format!("y: {}", tetro_y * world.block.y));
                         ui.label(format!("altura: {}", bloque.y()));
+                        //? x handler
+                        ui.label(format!("x: {}", tetro_x));
+                        ui.label(format!("x playfield: {}", normalize(tetro_x, &world)));
                     });
                 });
                 egui_macroquad::draw();

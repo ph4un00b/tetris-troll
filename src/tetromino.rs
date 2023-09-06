@@ -3,6 +3,7 @@ use macroquad::{
         touches, vec2, Color, Rect, TouchPhase, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE,
         YELLOW,
     },
+    shapes::draw_circle,
     time::get_frame_time,
     window::{screen_height, screen_width},
 };
@@ -10,7 +11,7 @@ use macroquad::{
 use crate::{
     constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
-    shared::{Collision, Coso, Organism},
+    shared::{normalize, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -55,7 +56,7 @@ impl From<u8> for TetroK {
             5 => TetroK::S,
             6 => TetroK::T,
             7 => TetroK::Z,
-            _ => unreachable!("piece not existent"),
+            _ => unreachable!("piece non existent"),
         }
     }
 }
@@ -89,6 +90,8 @@ pub struct Tetromino {
     pub rotation: Clock,
     current_rot: usize,
     pub props: Coso,
+    pub playfield_x: usize,
+    // playfield_y: usize,
 }
 
 impl Tetromino {
@@ -116,12 +119,13 @@ impl Tetromino {
                 collided: false,
                 color,
             },
+            playfield_x: 0,
         }
     }
 }
 
 impl Organism for Tetromino {
-    fn update(&mut self, _world: &mut Universe, _physics_events: &mut Vec<PhysicsEvent>) {
+    fn update(&mut self, world: &mut Universe, _physics_events: &mut Vec<PhysicsEvent>) {
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
 
@@ -131,18 +135,16 @@ impl Organism for Tetromino {
                 let ops = vec![Clock::P12, Clock::P3, Clock::P6, Clock::P9];
                 self.rotation = ops[self.current_rot % 4].clone();
             };
+
+            draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
+            //? usar clamp from macroquad
+            self.props.x = touch.position.x;
+            self.playfield_x = normalize(self.props.x, world);
         }
     }
 
     fn draw(&mut self, world: &mut Universe) {
         match self.kind {
-            // TetroK::I => TetrioZ::draw(self, &world.block),
-            // TetroK::J => TetrioZ::draw(self, &world.block),
-            // TetroK::L => TetrioZ::draw(self, &world.block),
-            // TetroK::O => TetrioZ::draw(self, &world.block),
-            // TetroK::T => TetrioZ::draw(self, &world.block),
-            // TetroK::S => TetrioZ::draw(self, &world.block),
-            // TetroK::Z => TetrioZ::draw(self, &world.block),
             TetroK::I => TetrioI::draw(self, &world.block),
             TetroK::J => TetrioJ::draw(self, &world.block),
             TetroK::L => TetrioL::draw(self, &world.block),
