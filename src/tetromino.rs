@@ -142,8 +142,17 @@ impl Organism for Tetromino {
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
+            let left_pad = 0.5 * (world.screen.x - world.playfield.x);
 
-            self.props.x = normalize_to_piece(touch.position.x, world, self.props.size.x as usize);
+            let x = normalize_to_piece(touch.position.x, world, self.props.size.x as usize);
+            let x_pos = normalize_to_discrete(x, world);
+
+            self.props.x = clamp(
+                touch.position.x,
+                left_pad + 0.0,
+                left_pad + (world.block.x * x_pos as f32),
+            );
+
             self.playfield_x = clamp(
                 normalize_to_discrete(self.props.x, world),
                 0,
