@@ -114,7 +114,7 @@ impl Tetromino {
             current_rot: 0,
             rotation,
             props: Coso {
-                half: vec2(26., 26.),
+                half: vec2(0., 0.),
                 size,
                 speed: MOVEMENT_SPEED,
                 x: 1.0,
