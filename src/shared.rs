@@ -2,10 +2,23 @@ use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
 use crate::{physics::PhysicsEvent, universe::Universe};
 
-pub fn normalize(position_x: f32, world: &Universe) -> usize {
+pub fn normalize_to_discrete(position_x: f32, world: &Universe) -> usize {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
     let value = (position_x - left_pad) / world.block.x;
     clamp(value.floor(), 0.0, 9.0) as usize
+}
+
+pub fn normalize(value: f32, world: &Universe) -> f32 {
+    let left_pad = 0.5 * (world.screen.x - world.playfield.x);
+    // let max = left_pad + world.playfield.x - (PIECE_SIZE as f32 * world.block.x);
+    let max = left_pad + world.playfield.x;
+    clamp(value, left_pad, max)
+}
+
+pub fn normalize_piece(value: f32, world: &Universe, width: usize) -> f32 {
+    let left_pad = 0.5 * (world.screen.x - world.playfield.x);
+    let max = left_pad + world.playfield.x - (width as f32 * world.block.x);
+    clamp(value, left_pad, max)
 }
 
 #[derive(Debug, Clone)]

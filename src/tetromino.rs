@@ -1,17 +1,14 @@
 use macroquad::{
-    prelude::{
-        touches, vec2, Color, Rect, TouchPhase, DARKBLUE, DARKGREEN, ORANGE, PURPLE, RED, SKYBLUE,
-        YELLOW,
-    },
-    shapes::draw_circle,
+    prelude::{clamp, touches, vec2, Color, Rect, TouchPhase, SKYBLUE},
+    shapes::{draw_circle, draw_rectangle},
     time::get_frame_time,
     window::{screen_height, screen_width},
 };
 
 use crate::{
-    constants::MOVEMENT_SPEED,
+    constants::{MOVEMENT_SPEED, PIECE_SIZE},
     physics::PhysicsEvent,
-    shared::{normalize, Collision, Coso, Organism},
+    shared::{normalize, normalize_piece, normalize_to_discrete, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -42,6 +39,18 @@ impl TetroK {
             TetroK::S => TetrioS::color(),
             TetroK::T => TetrioT::color(),
             TetroK::Z => TetrioZ::color(),
+        }
+    }
+
+    fn size(&self, rotation: Clock) -> macroquad::prelude::Vec2 {
+        match self {
+            TetroK::I => TetrioI::size(rotation),
+            TetroK::J => TetrioJ::size(rotation),
+            TetroK::L => TetrioL::size(rotation),
+            TetroK::O => TetrioO::size(rotation),
+            TetroK::S => TetrioS::size(rotation),
+            TetroK::T => TetrioT::size(rotation),
+            TetroK::Z => TetrioZ::size(rotation),
         }
     }
 }
@@ -96,25 +105,19 @@ pub struct Tetromino {
 
 impl Tetromino {
     pub(crate) fn from(spec: (TetroK, f32, f32)) -> Tetromino {
-        let (kind, x, y) = spec;
-        let color = match kind {
-            TetroK::I => SKYBLUE,
-            TetroK::J => DARKBLUE,
-            TetroK::L => ORANGE,
-            TetroK::O => YELLOW,
-            TetroK::S => DARKGREEN,
-            TetroK::T => PURPLE,
-            TetroK::Z => RED,
-        };
+        let (kind, _x, y) = spec;
+        let color = kind.color();
+        let rotation = Clock::P12;
+        let size = kind.size(rotation.clone());
         Tetromino {
             kind,
             current_rot: 0,
-            rotation: Clock::P12,
+            rotation,
             props: Coso {
                 half: vec2(26., 26.),
-                size: vec2(52.0, 52.0),
+                size,
                 speed: MOVEMENT_SPEED,
-                x,
+                x: 1.0,
                 y,
                 collided: false,
                 color,
@@ -134,24 +137,46 @@ impl Organism for Tetromino {
                 self.current_rot += 1;
                 let ops = vec![Clock::P12, Clock::P3, Clock::P6, Clock::P9];
                 self.rotation = ops[self.current_rot % 4].clone();
+                self.props.size = self.kind.size(self.rotation.clone());
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-            //? usar clamp from macroquad
-            self.props.x = touch.position.x;
-            self.playfield_x = normalize(self.props.x, world);
+
+            self.props.x = normalize(touch.position.x, world);
+            self.playfield_x = clamp(
+                normalize_to_discrete(self.props.x, world),
+                0,
+                9 - self.props.size.x as usize + 1,
+            );
         }
     }
 
     fn draw(&mut self, world: &mut Universe) {
-        match self.kind {
-            TetroK::I => TetrioI::draw(self, &world.block),
-            TetroK::J => TetrioJ::draw(self, &world.block),
-            TetroK::L => TetrioL::draw(self, &world.block),
-            TetroK::O => TetrioO::draw(self, &world.block),
-            TetroK::T => TetrioT::draw(self, &world.block),
-            TetroK::S => TetrioS::draw(self, &world.block),
-            TetroK::Z => TetrioZ::draw(self, &world.block),
+        let (piece, offsets) = match self.kind {
+            TetroK::I => TetrioI::mat4(self),
+            TetroK::J => TetrioJ::mat4(self),
+            TetroK::L => TetrioL::mat4(self),
+            TetroK::O => TetrioO::mat4(self),
+            TetroK::T => TetrioT::mat4(self),
+            TetroK::S => TetrioS::mat4(self),
+            TetroK::Z => TetrioZ::mat4(self),
+        };
+
+        for (row_idx, row) in piece.iter().enumerate() {
+            for (col_idx, cell) in row.iter().enumerate() {
+                if *cell != 0 {
+                    let x = col_idx as f32 - offsets.left as f32;
+                    let y = row_idx as f32;
+                    let width = PIECE_SIZE - (offsets.left + offsets.right);
+                    draw_rectangle(
+                        x * world.block.x + (normalize_piece(self.props.x, world, width)),
+                        y * world.block.y + (self.props.y * world.block.y),
+                        world.block.x,
+                        world.block.y,
+                        self.props.color,
+                    );
+                }
+            }
         }
     }
 

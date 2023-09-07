@@ -58,8 +58,7 @@ impl Universe {
             for (col_idx, value) in row.iter().enumerate() {
                 if *value != 0 {
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-                    let x = col_idx;
-                    println!("playfield_row {y}");
+                    let x = col_idx - offsets.left;
                     self.game[x + tetro.playfield_x][y - bottom_offset] = *value;
                 }
             }
@@ -68,7 +67,7 @@ impl Universe {
 
     fn collided_with_bottom(
         &mut self,
-        t: &Tetromino,
+        tetro: &Tetromino,
         piece: PieceMat4,
         offsets: &Offset,
         offset: &usize,
@@ -77,10 +76,8 @@ impl Universe {
             for (col_idx, cell) in row.iter().enumerate() {
                 if *cell != 0 {
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-                    let x = col_idx;
-
-                    println!("playfield_row {y}");
-                    if self.game[x + t.playfield_x][y - offset] > 0 {
+                    let x = col_idx - offsets.left;
+                    if self.game[x + tetro.playfield_x][y - offset] > 0 {
                         return true;
                     };
                 }
