@@ -6,9 +6,9 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{MOVEMENT_SPEED, PIECE_SIZE},
+    constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
-    shared::{normalize, normalize_piece, normalize_to_discrete, Collision, Coso, Organism},
+    shared::{normalize_to_discrete, normalize_to_piece, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -109,6 +109,7 @@ impl Tetromino {
         let color = kind.color();
         let rotation = Clock::P12;
         let size = kind.size(rotation.clone());
+
         Tetromino {
             kind,
             current_rot: 0,
@@ -142,7 +143,7 @@ impl Organism for Tetromino {
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
 
-            self.props.x = normalize(touch.position.x, world);
+            self.props.x = normalize_to_piece(touch.position.x, world, self.props.size.x as usize);
             self.playfield_x = clamp(
                 normalize_to_discrete(self.props.x, world),
                 0,
@@ -167,9 +168,8 @@ impl Organism for Tetromino {
                 if *cell != 0 {
                     let x = col_idx as f32 - offsets.left as f32;
                     let y = row_idx as f32;
-                    let width = PIECE_SIZE - (offsets.left + offsets.right);
                     draw_rectangle(
-                        x * world.block.x + (normalize_piece(self.props.x, world, width)),
+                        x * world.block.x + (self.props.x),
                         y * world.block.y + (self.props.y * world.block.y),
                         world.block.x,
                         world.block.y,
