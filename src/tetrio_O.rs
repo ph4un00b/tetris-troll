@@ -1,5 +1,5 @@
 use macroquad::{
-    prelude::{Vec2, YELLOW},
+    prelude::{vec2, Vec2, YELLOW},
     shapes::draw_rectangle,
 };
 
@@ -7,6 +7,7 @@ use crate::tetromino::{Clock, Offset, PieceMat4};
 
 pub struct TetrioO;
 impl TetrioO {
+    #[allow(unused)]
     pub(crate) fn draw(t: &crate::tetromino::Tetromino, block: &Vec2) {
         match t.rotation {
             Clock::P12 => {
@@ -199,5 +200,11 @@ impl TetrioO {
 
     pub(crate) fn color() -> macroquad::prelude::Color {
         YELLOW
+    }
+
+    pub(crate) fn size(rotation: Clock) -> macroquad::prelude::Vec2 {
+        match rotation {
+            Clock::P12 | Clock::P3 | Clock::P6 | Clock::P9 => vec2(2.0, 2.0),
+        }
     }
 }

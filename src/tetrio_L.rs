@@ -1,16 +1,17 @@
 use macroquad::{
-    prelude::{Vec2, ORANGE},
+    prelude::{vec2, ORANGE},
     shapes::draw_rectangle,
 };
 
 use crate::{
-    shared::{normalize, normalize_to_discrete, normalize_to_discrete_f32},
+    shared::normalize,
     tetromino::{Clock, Offset, PieceMat4},
     universe::Universe,
 };
 
 pub struct TetrioL;
 impl TetrioL {
+    #[allow(unused)]
     pub(crate) fn draw(t: &crate::tetromino::Tetromino, world: &Universe) {
         match t.rotation {
             Clock::P12 => {
@@ -205,5 +206,14 @@ impl TetrioL {
 
     pub(crate) fn color() -> macroquad::prelude::Color {
         ORANGE
+    }
+
+    pub(crate) fn size(rotation: Clock) -> macroquad::prelude::Vec2 {
+        match rotation {
+            Clock::P12 => vec2(2.0, 3.0),
+            Clock::P3 => vec2(3.0, 2.0),
+            Clock::P6 => vec2(2.0, 3.0),
+            Clock::P9 => vec2(3.0, 2.0),
+        }
     }
 }
