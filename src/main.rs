@@ -154,6 +154,7 @@ async fn main() {
 
     // let mut c = 0;
     let mut tetro_x = 0;
+    let mut tetro_x2 = 0.0;
     let mut tetro_y = 0.0;
     let mut g_piece = 0;
     loop {
@@ -219,6 +220,7 @@ async fn main() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
                     tetro_x = tetro.playfield_x;
+                    tetro_x2 = tetro.props.x;
                     tetro_y = tetro.props.y;
                     if tetro.props.y * block.y >= (screen.y * 1.0) {
                         world.add(tetro);
@@ -248,8 +250,8 @@ async fn main() {
                         ui.label(format!("y: {}", tetro_y * world.block.y));
                         ui.label(format!("altura: {}", bloque.y()));
                         //? x handler
-                        ui.label(format!("x: {}", tetro_x));
-                        // ui.label(format!("x playfield: {}"));
+                        ui.label(format!("x: {tetro_x}",));
+                        ui.label(format!("x playfield: {tetro_x2}"));
                     });
                 });
                 egui_macroquad::draw();

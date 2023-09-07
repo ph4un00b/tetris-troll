@@ -49,7 +49,7 @@ impl Universe {
         };
 
         let mut bottom_offset = 0;
-        while self.collided_with_bottom(tetro, piece, &offsets, &bottom_offset) {
+        while self.collides_With_floor(tetro, piece, &offsets, &bottom_offset) {
             bottom_offset += 1;
         }
 
@@ -65,7 +65,7 @@ impl Universe {
         }
     }
 
-    fn collided_with_bottom(
+    fn collides_With_floor(
         &mut self,
         tetro: &Tetromino,
         piece: PieceMat4,
