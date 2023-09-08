@@ -15,7 +15,7 @@ pub fn normalize(value: f32, world: &World) -> f32 {
     clamp(value, left_pad, max)
 }
 
-pub fn normalize_to_piece(value: f32, world: &World, width: usize) -> f32 {
+pub fn normalize_to_playfield(value: f32, world: &World, width: usize) -> f32 {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
     let max = left_pad + world.playfield.x - (width as f32 * world.block.x);
     clamp(value, left_pad, max)

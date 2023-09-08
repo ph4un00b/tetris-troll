@@ -8,7 +8,7 @@ use macroquad::{
 use crate::{
     constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
-    shared::{normalize_to_discrete, normalize_to_piece, Collision, Coso, Organism},
+    shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -130,7 +130,7 @@ impl Tetromino {
     fn remap_x(&self, current_x: f32, world: &World) -> (f32, usize) {
         //todo: cache if necessary❓
         let left_padding = 0.5 * (world.screen.x - world.playfield.x);
-        let x_normalized = normalize_to_piece(current_x, world, self.props.size.x as usize);
+        let x_normalized = normalize_to_playfield(current_x, world, self.props.size.x as usize);
         let x_position = normalize_to_discrete(x_normalized, world);
 
         let new_x = clamp(
@@ -153,11 +153,10 @@ impl Organism for Tetromino {
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
 
-        println!("x: {}", self.props.x);
         for touch in touches() {
             if let TouchPhase::Started = touch.phase {
                 self.current_rot += 1;
-                let ops = vec![Clock::P12, Clock::P3, Clock::P6, Clock::P9];
+                let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
                 self.rotation = ops[self.current_rot % 4].clone();
                 self.props.size = self.kind.size(self.rotation.clone());
             };
