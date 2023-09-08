@@ -7,7 +7,7 @@ use rapier2d::prelude::ColliderBuilder;
 use crate::{
     physics::PhysicsEvent,
     shared::{Collision, Coso, Organism},
-    universe::Universe,
+    universe::World,
 };
 
 pub struct Piso {
@@ -15,7 +15,7 @@ pub struct Piso {
 }
 
 impl Piso {
-    pub fn new(world: &mut Universe, position: Vec2, size: Vec2) -> Self {
+    pub fn new(world: &mut World, position: Vec2, size: Vec2) -> Self {
         let half = size * vec2(0.5, 0.5);
         let coll = ColliderBuilder::cuboid(half.x, half.y)
             .translation([position.x + half.x, position.y + half.y].into())
@@ -51,11 +51,11 @@ impl Organism for Piso {
         todo!()
     }
 
-    fn update(&mut self, _world: &mut Universe, _physics_events: &mut Vec<PhysicsEvent>) {
+    fn update(&mut self, _world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
         todo!()
     }
 
-    fn draw(&mut self, _world: &mut Universe) {
+    fn draw(&mut self, _world: &mut World) {
         draw_rectangle(
             self.props.x,
             self.props.y,

@@ -6,13 +6,13 @@ use macroquad::{
 use crate::{
     shared::normalize,
     tetromino::{Clock, Offset, PieceMat4},
-    universe::Universe,
+    universe::World,
 };
 
 pub struct TetrioL;
 impl TetrioL {
     #[allow(unused)]
-    pub(crate) fn draw(t: &crate::tetromino::Tetromino, world: &Universe) {
+    pub(crate) fn draw(t: &crate::tetromino::Tetromino, world: &World) {
         match t.rotation {
             Clock::P12 => {
                 draw_rectangle(

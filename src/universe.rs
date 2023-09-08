@@ -17,7 +17,7 @@ use crate::{
     tetromino::{Offset, PieceMat4, TetroK, Tetromino},
 };
 
-pub struct Universe {
+pub struct World {
     pub physics: Physics,
     pub block: Vec2,
     pub screen: Vec3,
@@ -25,7 +25,7 @@ pub struct Universe {
     game: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
 }
 
-impl Universe {
+impl World {
     pub fn new(physics: Physics, block: Vec2, screen: Vec3, playfield: Vec2) -> Self {
         Self {
             physics,

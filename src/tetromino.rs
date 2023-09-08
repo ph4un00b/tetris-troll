@@ -16,7 +16,7 @@ use crate::{
     tetrio_S::TetrioS,
     tetrio_T::TetrioT,
     tetrio_Z::TetrioZ,
-    universe::Universe,
+    universe::World,
 };
 
 #[derive(Debug, Clone)]
@@ -127,20 +127,20 @@ impl Tetromino {
         }
     }
 
-    fn remap_x(&self, current_x: f32, universe: &Universe) -> (f32, usize) {
+    fn remap_x(&self, current_x: f32, world: &World) -> (f32, usize) {
         //todo: cache if necessary❓
-        let left_padding = 0.5 * (universe.screen.x - universe.playfield.x);
-        let x_normalized = normalize_to_piece(current_x, universe, self.props.size.x as usize);
-        let x_position = normalize_to_discrete(x_normalized, universe);
+        let left_padding = 0.5 * (world.screen.x - world.playfield.x);
+        let x_normalized = normalize_to_piece(current_x, world, self.props.size.x as usize);
+        let x_position = normalize_to_discrete(x_normalized, world);
 
         let new_x = clamp(
             current_x,
             left_padding + 0.0,
-            left_padding + (universe.block.x * x_position as f32),
+            left_padding + (world.block.x * x_position as f32),
         );
 
         let discrete_x = clamp(
-            normalize_to_discrete(current_x, universe),
+            normalize_to_discrete(current_x, world),
             0,
             9 - self.props.size.x as usize + 1,
         );
@@ -149,7 +149,7 @@ impl Tetromino {
 }
 
 impl Organism for Tetromino {
-    fn update(&mut self, world: &mut Universe, _physics_events: &mut Vec<PhysicsEvent>) {
+    fn update(&mut self, world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
 
@@ -169,7 +169,7 @@ impl Organism for Tetromino {
         (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
     }
 
-    fn draw(&mut self, world: &mut Universe) {
+    fn draw(&mut self, world: &mut World) {
         let (piece, offsets) = match self.kind {
             TetroK::I => TetrioI::mat4(self),
             TetroK::J => TetrioJ::mat4(self),

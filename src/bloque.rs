@@ -8,7 +8,7 @@ use crate::{
     constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
     shared::{Coso, Organism, Position},
-    universe::Universe,
+    universe::World,
 };
 
 pub struct Bloque {
@@ -23,7 +23,7 @@ impl Position for Bloque {
 }
 
 impl Bloque {
-    pub fn new(world: &mut Universe, position: Vec2, density: f32, restitution: f32) -> Self {
+    pub fn new(world: &mut World, position: Vec2, density: f32, restitution: f32) -> Self {
         let half = world.block * vec2(0.5, 0.5);
         let body = RigidBodyBuilder::dynamic()
             // .angvel(1.)
@@ -70,13 +70,13 @@ impl Organism for Bloque {
         todo!()
     }
 
-    fn update(&mut self, world: &mut Universe, _physics_events: &mut Vec<PhysicsEvent>) {
+    fn update(&mut self, world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
         let body = &world.physics.rigid_body_set[self.handler];
         self.props.x = body.translation().x - self.props.half.x;
         self.props.y = body.translation().y - self.props.half.y;
     }
 
-    fn draw(&mut self, _world: &mut Universe) {
+    fn draw(&mut self, _world: &mut World) {
         draw_rectangle(
             self.props.x,
             self.props.y,

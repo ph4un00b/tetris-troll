@@ -13,7 +13,7 @@ use pointers::Pointers;
 use shared::{Evt, Organism, Position, StateMachine};
 use tetromino::{TetroK, Tetromino};
 use ui::UI;
-use universe::Universe;
+use universe::World;
 
 mod bloque;
 mod constants;
@@ -113,7 +113,7 @@ async fn main() {
     );
 
     //?  Macroquad will clear the screen at the beginning of each frame.
-    let mut world = Universe::new(Physics::new(), block, screen, playfield);
+    let mut world = World::new(Physics::new(), block, screen, playfield);
     let tetrominos = vec![
         Tetromino::from(TetroK::I),
         Tetromino::from(TetroK::J),
