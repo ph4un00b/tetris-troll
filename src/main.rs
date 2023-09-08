@@ -112,19 +112,18 @@ async fn main() {
         playfield.y / PLAYFIELD_H as f32,
     );
 
-    let tetrominos = vec![
-        Tetromino::from((TetroK::I, 12., 1.)),
-        Tetromino::from((TetroK::J, 12., 1.)),
-        Tetromino::from((TetroK::L, 12., 1.)),
-        Tetromino::from((TetroK::O, 12., 1.)),
-        Tetromino::from((TetroK::S, 12., 1.)),
-        Tetromino::from((TetroK::Z, 12., 1.)),
-        Tetromino::from((TetroK::T, 12., 1.)),
-    ];
-    let mut current_tetrios = vec![Tetromino::from((TetroK::O, 12., 1.))];
     //?  Macroquad will clear the screen at the beginning of each frame.
     let mut world = Universe::new(Physics::new(), block, screen, playfield);
-
+    let tetrominos = vec![
+        Tetromino::from(TetroK::I),
+        Tetromino::from(TetroK::J),
+        Tetromino::from(TetroK::L),
+        Tetromino::from(TetroK::O),
+        Tetromino::from(TetroK::S),
+        Tetromino::from(TetroK::Z),
+        Tetromino::from(TetroK::T),
+    ];
+    let mut current_tetrios = vec![Tetromino::from(TetroK::O)];
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
     let restitution = 0.8;
@@ -153,9 +152,9 @@ async fn main() {
     );
 
     // let mut c = 0;
-    let mut tetro_x = 0;
-    let mut tetro_x2 = 0.0;
-    let mut tetro_y = 0.0;
+    let mut tetro_x = 0_usize;
+    let mut tetro_x2 = 0.0_f32;
+    let mut tetro_y = 0.0_f32;
     let mut g_piece = 0;
     loop {
         clear_background(DARKPURPLE);

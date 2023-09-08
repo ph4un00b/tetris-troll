@@ -104,8 +104,8 @@ pub struct Tetromino {
 }
 
 impl Tetromino {
-    pub(crate) fn from(spec: (TetroK, f32, f32)) -> Tetromino {
-        let (kind, _x, y) = spec;
+    pub(crate) fn from(spec: TetroK) -> Tetromino {
+        let kind = spec;
         let color = kind.color();
         let rotation = Clock::P12;
         let size = kind.size(rotation.clone());
@@ -118,8 +118,9 @@ impl Tetromino {
                 half: vec2(0., 0.),
                 size,
                 speed: MOVEMENT_SPEED,
-                x: 1.0,
-                y,
+                //? pixels in width
+                x: (screen_width() * 0.5) - (size.x * 0.5),
+                y: 0.0,
                 collided: false,
                 color,
             },
@@ -133,6 +134,7 @@ impl Organism for Tetromino {
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
 
+        println!("x: {}", self.props.x);
         for touch in touches() {
             if let TouchPhase::Started = touch.phase {
                 self.current_rot += 1;
@@ -159,6 +161,22 @@ impl Organism for Tetromino {
                 9 - self.props.size.x as usize + 1,
             );
         }
+
+        let left_pad = 0.5 * (world.screen.x - world.playfield.x);
+        let x = normalize_to_piece(self.props.x, world, self.props.size.x as usize);
+        let x_pos = normalize_to_discrete(x, world);
+
+        self.props.x = clamp(
+            self.props.x,
+            left_pad + 0.0,
+            left_pad + (world.block.x * x_pos as f32),
+        );
+
+        self.playfield_x = clamp(
+            normalize_to_discrete(self.props.x, world),
+            0,
+            9 - self.props.size.x as usize + 1,
+        );
     }
 
     fn draw(&mut self, world: &mut Universe) {
