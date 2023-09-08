@@ -13,7 +13,7 @@ pub struct TetrioL;
 impl TetrioL {
     #[allow(unused)]
     pub(crate) fn draw(t: &crate::tetromino::Tetromino, world: &World) {
-        match t.rotation {
+        match t.current_rotation {
             Clock::P12 => {
                 draw_rectangle(
                     // normalize_to_discrete_f32(t.props.x, world) * world.block.x
@@ -140,7 +140,7 @@ impl TetrioL {
     }
 
     pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (PieceMat4, Offset) {
-        match tetro.rotation {
+        match tetro.current_rotation {
             Clock::P12 => (
                 [
                     //? L

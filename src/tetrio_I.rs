@@ -9,7 +9,7 @@ pub struct TetrioI;
 impl TetrioI {
     #[allow(unused)]
     pub(crate) fn draw(t: &crate::tetromino::Tetromino, block: &Vec2) {
-        match t.rotation {
+        match t.current_rotation {
             Clock::P12 => {
                 draw_rectangle(
                     0. * block.x + (t.props.x * block.x),
@@ -134,7 +134,7 @@ impl TetrioI {
     }
 
     pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (PieceMat4, Offset) {
-        match tetro.rotation {
+        match tetro.current_rotation {
             Clock::P12 => (
                 [
                     //? I

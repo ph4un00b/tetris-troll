@@ -6,7 +6,7 @@ use macroquad::{
 };
 
 use crate::{
-    constants::MOVEMENT_SPEED,
+    constants::{MOVEMENT_SPEED, PLAYFIELD_W},
     physics::PhysicsEvent,
     shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
     tetrio_I::TetrioI,
@@ -96,8 +96,8 @@ pub struct Offset {
 #[derive(Debug, Clone)]
 pub struct Tetromino {
     pub kind: TetroK,
-    pub rotation: Clock,
-    current_rot: usize,
+    pub current_rotation: Clock,
+    rotation_index: usize,
     pub props: Coso,
     pub playfield_x: usize,
     // playfield_y: usize,
@@ -112,8 +112,8 @@ impl Tetromino {
 
         Tetromino {
             kind,
-            current_rot: 0,
-            rotation,
+            rotation_index: 0,
+            current_rotation: rotation,
             props: Coso {
                 half: vec2(0., 0.),
                 size,
@@ -142,7 +142,7 @@ impl Tetromino {
         let discrete_x = clamp(
             normalize_to_discrete(current_x, world),
             0,
-            9 - self.props.size.x as usize + 1,
+            PLAYFIELD_W - self.props.size.x as usize,
         );
         (new_x, discrete_x)
     }
@@ -155,10 +155,10 @@ impl Organism for Tetromino {
 
         for touch in touches() {
             if let TouchPhase::Started = touch.phase {
-                self.current_rot += 1;
+                self.rotation_index += 1;
                 let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
-                self.rotation = ops[self.current_rot % 4].clone();
-                self.props.size = self.kind.size(self.rotation.clone());
+                self.current_rotation = ops[self.rotation_index % 4].clone();
+                self.props.size = self.kind.size(self.current_rotation.clone());
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
@@ -179,16 +179,22 @@ impl Organism for Tetromino {
             TetroK::Z => TetrioZ::mat4(self),
         };
 
+        let block_x = world.block.x;
+        let block_y = world.block.y;
+        let current_x = self.props.x;
+        let current_y = self.props.y * block_y;
+
         for (row_idx, row) in piece.iter().enumerate() {
-            for (col_idx, cell) in row.iter().enumerate() {
-                if *cell != 0 {
-                    let x = col_idx as f32 - offsets.left as f32;
-                    let y = row_idx as f32;
+            for (col_idx, value) in row.iter().enumerate() {
+                if *value != 0 {
+                    let x_pos = col_idx as f32 - offsets.left as f32;
+                    let y_pos = row_idx as f32;
+
                     draw_rectangle(
-                        x * world.block.x + (self.props.x),
-                        y * world.block.y + (self.props.y * world.block.y),
-                        world.block.x,
-                        world.block.y,
+                        x_pos * block_x + current_x,
+                        y_pos * block_y + current_y,
+                        block_x,
+                        block_y,
                         self.props.color,
                     );
                 }
