@@ -118,7 +118,6 @@ impl Tetromino {
                 half: vec2(0., 0.),
                 size,
                 speed: MOVEMENT_SPEED,
-                //? pixels in width
                 x: (screen_width() * 0.5) - (size.x * 0.5),
                 y: 0.0,
                 collided: false,
@@ -126,6 +125,26 @@ impl Tetromino {
             },
             playfield_x: 0,
         }
+    }
+
+    fn remap_x(&self, current_x: f32, universe: &Universe) -> (f32, usize) {
+        //todo: cache if necessary❓
+        let left_padding = 0.5 * (universe.screen.x - universe.playfield.x);
+        let x_normalized = normalize_to_piece(current_x, universe, self.props.size.x as usize);
+        let x_position = normalize_to_discrete(x_normalized, universe);
+
+        let new_x = clamp(
+            current_x,
+            left_padding + 0.0,
+            left_padding + (universe.block.x * x_position as f32),
+        );
+
+        let discrete_x = clamp(
+            normalize_to_discrete(current_x, universe),
+            0,
+            9 - self.props.size.x as usize + 1,
+        );
+        (new_x, discrete_x)
     }
 }
 
@@ -144,39 +163,10 @@ impl Organism for Tetromino {
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-            let left_pad = 0.5 * (world.screen.x - world.playfield.x);
-
-            let x = normalize_to_piece(touch.position.x, world, self.props.size.x as usize);
-            let x_pos = normalize_to_discrete(x, world);
-
-            self.props.x = clamp(
-                touch.position.x,
-                left_pad + 0.0,
-                left_pad + (world.block.x * x_pos as f32),
-            );
-
-            self.playfield_x = clamp(
-                normalize_to_discrete(self.props.x, world),
-                0,
-                9 - self.props.size.x as usize + 1,
-            );
+            (self.props.x, self.playfield_x) = self.remap_x(touch.position.x, world);
         }
 
-        let left_pad = 0.5 * (world.screen.x - world.playfield.x);
-        let x = normalize_to_piece(self.props.x, world, self.props.size.x as usize);
-        let x_pos = normalize_to_discrete(x, world);
-
-        self.props.x = clamp(
-            self.props.x,
-            left_pad + 0.0,
-            left_pad + (world.block.x * x_pos as f32),
-        );
-
-        self.playfield_x = clamp(
-            normalize_to_discrete(self.props.x, world),
-            0,
-            9 - self.props.size.x as usize + 1,
-        );
+        (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
     }
 
     fn draw(&mut self, world: &mut Universe) {
