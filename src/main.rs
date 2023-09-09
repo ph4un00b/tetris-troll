@@ -222,7 +222,7 @@ async fn main() {
                     tetro_x2 = tetro.props.x;
                     tetro_y = tetro.props.y;
                     if tetro.props.y * block.y >= (screen.y * 1.0) {
-                        world.add(tetro);
+                        world.add_with_control_flow(tetro);
                     }
                 }
 

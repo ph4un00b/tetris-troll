@@ -1,20 +1,14 @@
+use std::ops::ControlFlow;
+
 use macroquad::{
-    prelude::{Vec2, Vec3, BLUE, BROWN, GREEN, SKYBLUE},
+    prelude::{Vec2, Vec3, BLUE, BROWN},
     shapes::{draw_line, draw_rectangle, draw_rectangle_lines},
-    text::draw_text,
 };
 
 use crate::{
-    constants::{PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
+    constants::{EMPTY_POSITION, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     physics::Physics,
-    tetrio_I::TetrioI,
-    tetrio_J::TetrioJ,
-    tetrio_L::TetrioL,
-    tetrio_O::TetrioO,
-    tetrio_S::TetrioS,
-    tetrio_T::TetrioT,
-    tetrio_Z::TetrioZ,
-    tetromino::{Mat4, Offset, TetroK, Tetromino},
+    tetromino::{TetroK, Tetromino},
 };
 
 pub struct World {
@@ -36,55 +30,55 @@ impl World {
         }
     }
 
-    pub(crate) fn add(&mut self, tetro: &Tetromino) {
-        // println!(">>{tetro:?}");
-        let (piece, offsets) = match &tetro.kind {
-            crate::tetromino::TetroK::I => TetrioI::mat4(tetro),
-            crate::tetromino::TetroK::J => TetrioJ::mat4(tetro),
-            crate::tetromino::TetroK::L => TetrioL::mat4(tetro),
-            crate::tetromino::TetroK::O => TetrioO::mat4(tetro),
-            crate::tetromino::TetroK::S => TetrioS::mat4(tetro),
-            crate::tetromino::TetroK::T => TetrioT::mat4(tetro),
-            crate::tetromino::TetroK::Z => TetrioZ::mat4(tetro),
-        };
+    //* for (row_idx, row) in piece.iter().enumerate() {
+    //*     for (col_idx, value) in row.iter().enumerate() {
+    //*         if *value != 0 {
+    //*             let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
+    //*             let x = col_idx - offsets.left;
 
-        let mut bottom_offset = 0;
-        while self.collides_with_floor(tetro, piece, &offsets, &bottom_offset) {
-            bottom_offset += 1;
-        }
+    //*             self.game[x + tetro.playfield_x][y - bottom_offset] = *value;
+    //*         }
+    //*     }
+    //* }
+    pub(crate) fn add_with_control_flow(&mut self, tetro: &Tetromino) {
+        let mut offset = 0_usize;
 
-        println!("offset {bottom_offset}");
-        for (row_idx, row) in piece.iter().enumerate() {
-            for (col_idx, value) in row.iter().enumerate() {
-                if *value != 0 {
-                    let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-                    let x = col_idx - offsets.left;
-                    self.game[x + tetro.playfield_x][y - bottom_offset] = *value;
-                }
+        while process_tetromino(tetro, &mut |x, y, _value| {
+            if self.collides_in(x, y - offset) {
+                ControlFlow::Break(())
+            } else {
+                ControlFlow::Continue(())
             }
+        })
+        .is_break()
+        {
+            offset += 1;
         }
+
+        process_tetromino(tetro, &mut |x, y, value| {
+            self.game[x][y - offset] = value;
+
+            ControlFlow::Continue(())
+        });
     }
 
-    fn collides_with_floor(
-        &mut self,
-        tetro: &Tetromino,
-        piece: Mat4,
-        offsets: &Offset,
-        offset: &usize,
-    ) -> bool {
-        for (row_idx, row) in piece.iter().enumerate() {
-            for (col_idx, cell) in row.iter().enumerate() {
-                if *cell != 0 {
-                    let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-                    let x = col_idx - offsets.left;
-                    if self.game[x + tetro.playfield_x][y - offset] > 0 {
-                        return true;
-                    };
-                }
-            }
-        }
-        false
+    fn collides_in(&mut self, x: usize, y: usize) -> bool {
+        self.game[x][y] > 0
     }
+
+    // * for (row_idx, row) in piece.iter().enumerate() {
+    // *     for (col_idx, value) in row.iter().enumerate() {
+    // *         if *value != 0 {
+    // *             let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
+    // *             let x = col_idx - offsets.left;
+
+    // *             if self.game[x + tetro.playfield_x][y - offset] > 0 {
+    // *                 return true;
+    // *             };
+    // *         }
+    // *     }
+    // * }
+    // * false
 
     pub fn render(&self) {
         //? world
@@ -112,32 +106,40 @@ impl World {
 
         draw_rectangle_lines(pad_x, pad_y, self.playfield.x, self.playfield.y, 10., BLUE);
     }
+}
 
-    #[allow(unused)]
-    pub fn draw(screen: &Vec3, playfield: &Vec2, block: &Vec2) {
-        //? world
-        // * @see https://tetris.fandom.com/wiki/Playfield
-        draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
+// fn process_piece_option<TAny>(
+//     piece: Mat4,
+//     callback: &mut impl FnMut(usize, usize, u8) -> Option<TAny>,
+// ) -> Option<TAny> {
+//     for (row_idx, row) in piece.iter().enumerate() {
+//         for (col_idx, value) in row.iter().enumerate() {
+//             if let Some(val) = (*callback)(row_idx, col_idx, *value) {
+//                 return Some(val);
+//             }
+//         }
+//     }
+//     None
+// }
 
-        let pad_x: f32 = 0.5 * (screen.x - playfield.x);
-        let pad_y: f32 = screen.y * 0.2;
-        const GAP: f32 = 1.;
+fn process_tetromino(
+    tetro: &Tetromino,
+    callback: &mut impl FnMut(usize, usize, u8) -> ControlFlow<()>,
+) -> ControlFlow<()> {
+    for (pos_y, row) in tetro.piece.iter().enumerate() {
+        for (pos_x, piece_value) in row.iter().enumerate() {
+            if *piece_value == EMPTY_POSITION {
+                continue;
+            }
 
-        for row in 0..PLAYFIELD_W {
-            for col in 0..PLAYFIELD_H {
-                draw_rectangle(
-                    pad_x + (block.x * (row as f32 * GAP)),
-                    pad_y + block.y * (col as f32 * GAP),
-                    block.x,
-                    block.y,
-                    if (row + col) % 2 == 1 { GREEN } else { BROWN },
-                    // if self.game[row, col] == 1 { GREEN } else { BROWN },
-                );
+            let mapped_x = pos_x + tetro.playfield_x - tetro.offsets.left;
+            let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
+
+            let callback = (*callback)(mapped_x, mapped_y, *piece_value);
+            if callback.is_break() {
+                return callback;
             }
         }
-
-        draw_rectangle_lines(pad_x, pad_y, playfield.x, playfield.y, 10., BLUE);
-
-        draw_text("IT WORKS!", 20.0, 20.0, 30.0, SKYBLUE);
     }
+    ControlFlow::Continue(())
 }

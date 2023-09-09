@@ -86,6 +86,8 @@ pub enum Clock {
 }
 
 pub type Mat4 = [[u8; 4]; 4];
+
+#[derive(Debug, Clone)]
 pub struct Offset {
     pub up: usize,
     pub down: usize,
@@ -101,6 +103,8 @@ pub struct Tetromino {
     pub props: Coso,
     pub playfield_x: usize,
     // playfield_y: usize,
+    pub piece: Mat4,
+    pub offsets: Offset,
 }
 
 impl Tetromino {
@@ -124,6 +128,13 @@ impl Tetromino {
                 color,
             },
             playfield_x: 0,
+            piece: [[0; 4]; 4],
+            offsets: Offset {
+                up: 0,
+                down: 0,
+                left: 0,
+                right: 0,
+            },
         }
     }
 
@@ -150,6 +161,18 @@ impl Tetromino {
 
 impl Organism for Tetromino {
     fn update(&mut self, world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
+        let (piece, offsets) = match &self.kind {
+            crate::tetromino::TetroK::I => TetrioI::mat4(self),
+            crate::tetromino::TetroK::J => TetrioJ::mat4(self),
+            crate::tetromino::TetroK::L => TetrioL::mat4(self),
+            crate::tetromino::TetroK::O => TetrioO::mat4(self),
+            crate::tetromino::TetroK::S => TetrioS::mat4(self),
+            crate::tetromino::TetroK::T => TetrioT::mat4(self),
+            crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
+        };
+        self.piece = piece;
+        self.offsets = offsets;
+
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
 
