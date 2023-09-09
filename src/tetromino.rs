@@ -85,7 +85,7 @@ pub enum Clock {
     P9,
 }
 
-pub type PieceMat4 = [[u8; 4]; 4];
+pub type Mat4 = [[u8; 4]; 4];
 pub struct Offset {
     pub up: usize,
     pub down: usize,

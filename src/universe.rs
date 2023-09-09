@@ -14,7 +14,7 @@ use crate::{
     tetrio_S::TetrioS,
     tetrio_T::TetrioT,
     tetrio_Z::TetrioZ,
-    tetromino::{Offset, PieceMat4, TetroK, Tetromino},
+    tetromino::{Mat4, Offset, TetroK, Tetromino},
 };
 
 pub struct World {
@@ -68,7 +68,7 @@ impl World {
     fn collides_with_floor(
         &mut self,
         tetro: &Tetromino,
-        piece: PieceMat4,
+        piece: Mat4,
         offsets: &Offset,
         offset: &usize,
     ) -> bool {
