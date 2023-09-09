@@ -16,7 +16,7 @@ use crate::{
     tetrio_S::TetrioS,
     tetrio_T::TetrioT,
     tetrio_Z::TetrioZ,
-    universe::World,
+    world::World,
 };
 
 #[derive(Debug, Clone)]

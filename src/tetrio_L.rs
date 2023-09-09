@@ -6,7 +6,7 @@ use macroquad::{
 use crate::{
     shared::normalize,
     tetromino::{Clock, Mat4, Offset},
-    universe::World,
+    world::World,
 };
 
 pub struct TetrioL;

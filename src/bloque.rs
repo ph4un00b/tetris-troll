@@ -8,7 +8,7 @@ use crate::{
     constants::MOVEMENT_SPEED,
     physics::PhysicsEvent,
     shared::{Coso, Organism, Position},
-    universe::World,
+    world::World,
 };
 
 pub struct Bloque {

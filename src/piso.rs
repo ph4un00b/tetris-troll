@@ -7,7 +7,7 @@ use rapier2d::prelude::ColliderBuilder;
 use crate::{
     physics::PhysicsEvent,
     shared::{Collision, Coso, Organism},
-    universe::World,
+    world::World,
 };
 
 pub struct Piso {

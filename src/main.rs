@@ -13,7 +13,7 @@ use pointers::Pointers;
 use shared::{Evt, Organism, Position, StateMachine};
 use tetromino::{TetroK, Tetromino};
 use ui::UI;
-use universe::World;
+use world::World;
 
 mod bloque;
 mod constants;
@@ -39,7 +39,7 @@ mod tetrio_T;
 mod tetrio_Z;
 mod tetromino;
 mod ui;
-mod universe;
+mod world;
 //todo: fix shader for mobile❗
 const _FRAGMENT_SHADER: &str = include_str!("background.glsl");
 /*

@@ -1,6 +1,6 @@
 use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
-use crate::{physics::PhysicsEvent, universe::World};
+use crate::{physics::PhysicsEvent, world::World};
 
 pub fn normalize_to_discrete(position_x: f32, world: &World) -> usize {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
