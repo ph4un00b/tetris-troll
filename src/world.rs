@@ -34,7 +34,7 @@ impl World {
             block,
             screen,
             playfield,
-            game: [[0; PLAYFIELD_H]; PLAYFIELD_W],
+            game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
         }
     }
 
@@ -50,7 +50,7 @@ impl World {
         let mut offset = 0_usize;
 
         let check_collision = tetro.process(&mut |x, y, _value| {
-            if self.game[x][y - offset] > 0 {
+            if self.game[x][y - offset] > 0_u8 {
                 ControlFlow::Break(())
             } else {
                 ControlFlow::Continue(())
@@ -72,7 +72,7 @@ impl World {
         let mut offset = 0_usize;
 
         let check_collision =
-            tetro.try_process(&mut |x, y, _value| (self.game[x][y - offset] > 0).then_some(()));
+            tetro.try_process(&mut |x, y, _value| (self.game[x][y - offset] > 0_u8).then_some(()));
 
         while check_collision.is_some() {
             offset += 1;
@@ -93,10 +93,10 @@ impl World {
                     if *tetro_value == NONE_VALUE {
                         continue;
                     }
-                    let x = (pos_x + tetro.playfield_x) - tetro.offsets.left;
+                    let x = pos_x + tetro.playfield_x - tetro.offsets.left;
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
 
-                    if self.game[x][y - offset] > 0 {
+                    if self.game[x][y - offset] > 0_u8 {
                         return true;
                     };
                 }
@@ -113,7 +113,7 @@ impl World {
                 if *tetro_value == NONE_VALUE {
                     continue;
                 }
-                let x = (pos_x + tetro.playfield_x) - tetro.offsets.left;
+                let x = pos_x + tetro.playfield_x - tetro.offsets.left;
                 let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
                 self.game[x][y - offset] = *tetro_value;
             }
