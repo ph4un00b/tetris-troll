@@ -23,7 +23,8 @@ pub struct World {
 #[allow(unused)]
 pub enum Strat {
     ControlFlow,
-    Option,
+    /// BIG TODO
+    ///Option,
     Duplicated,
 }
 
@@ -41,7 +42,8 @@ impl World {
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
         match game_configs::ADD_STRATEGY {
             Strat::ControlFlow => self.add_with_control_flow(tetro),
-            Strat::Option => self.add_with_option(tetro),
+            /// BIG TODO
+            //Strat::Option => self.add_with_option(tetro),
             Strat::Duplicated => self.add_with_duplication(tetro),
         }
     }
@@ -49,45 +51,51 @@ impl World {
     pub(crate) fn add_with_control_flow(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
-        let check_collision = tetro.process(&mut |x, y, _value| {
-            if self.game[x][y - offset] > 0_u8 {
-                ControlFlow::Break(())
+        let check_collision = tetro.process(|x, y, _value| {
+            let game: &[u8; 24] = &self.game[x];
+
+            if game[y - offset] as u8 > 0_u8 {
+                ControlFlow::Break(true)
             } else {
                 ControlFlow::Continue(())
             }
         });
 
-        while check_collision.is_break() {
+        while check_collision {
             offset += 1;
         }
 
-        tetro.process(&mut |x, y, value| {
-            self.game[x][y - offset] = value;
+        let a = tetro.process(|x, y, value| {
+            (self.game[x] as [u8; 24])[y - offset] = value;
 
             ControlFlow::Continue(())
         });
+        a
     }
+    /// BIG TODO
+    /*
+        pub(crate) fn add_with_option(&mut self, tetro: &Tetromino) {
+            let mut offset = 0_usize;
 
-    pub(crate) fn add_with_option(&mut self, tetro: &Tetromino) {
-        let mut offset = 0_usize;
+            let check_collision =
+                tetro.process(|x, y, _value| (self.game[x][y - offset] > 0_u8).then_some(()));
 
-        let check_collision =
-            tetro.try_process(&mut |x, y, _value| (self.game[x][y - offset] > 0_u8).then_some(()));
+            while check_collision.is_some() {
+                offset += 1;
+            }
 
-        while check_collision.is_some() {
-            offset += 1;
+            tetro.process(|x, y, value| {
+                self.game[x][y - offset] = value;
+                None as Option<()>
+            });
         }
-
-        tetro.try_process::<()>(&mut |x, y, value| {
-            self.game[x][y - offset] = value;
-            None
-        });
-    }
-
+    */
     pub(crate) fn add_with_duplication(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
-        let check_collision = |ref offset| {
+        // ref == &
+        // dentro de este clousure genero un nuevo offset por el trait copy, no lo movio
+        let check_collision = |offset| {
             for (pos_y, row) in tetro.piece.iter().enumerate() {
                 for (pos_x, tetro_value) in row.iter().enumerate() {
                     if *tetro_value == NONE_VALUE {
