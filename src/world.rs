@@ -6,7 +6,7 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{EMPTY_POSITION, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
+    constants::{PLAYFIELD_H, PLAYFIELD_W},
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
@@ -19,6 +19,8 @@ pub struct World {
     pub playfield: Vec2,
     game: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
 }
+
+#[allow(unused)]
 pub enum Strat {
     ControlFlow,
     Option,
@@ -78,22 +80,17 @@ impl World {
     pub(crate) fn add_with_option(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
-        while process_tetromino_with_option(tetro, &mut |x, y, _value| {
-            self.collides_in(x, y - offset).then_some(())
-        })
-        .is_some()
-        {
+        let check_collision =
+            tetro.try_process(&mut |x, y, _value| (self.game[x][y - offset] > 0).then_some(()));
+
+        while check_collision.is_some() {
             offset += 1;
         }
 
-        process_tetromino_with_option::<()>(tetro, &mut |x, y, value| {
+        tetro.try_process::<()>(&mut |x, y, value| {
             self.game[x][y - offset] = value;
             None
         });
-    }
-
-    fn collides_in(&mut self, x: usize, y: usize) -> bool {
-        self.game[x][y] > 0
     }
 
     // * for (row_idx, row) in piece.iter().enumerate() {
@@ -136,25 +133,4 @@ impl World {
 
         draw_rectangle_lines(pad_x, pad_y, self.playfield.x, self.playfield.y, 10., BLUE);
     }
-}
-
-fn process_tetromino_with_option<TValue>(
-    tetro: &Tetromino,
-    callback: &mut impl FnMut(usize, usize, u8) -> Option<TValue>,
-) -> Option<TValue> {
-    for (pos_y, row) in tetro.piece.iter().enumerate() {
-        for (pos_x, piece_value) in row.iter().enumerate() {
-            if *piece_value == EMPTY_POSITION {
-                continue;
-            }
-
-            let mapped_x = pos_x + tetro.playfield_x - tetro.offsets.left;
-            let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
-
-            if let Some(val) = (*callback)(mapped_x, mapped_y, *piece_value) {
-                return Some(val);
-            }
-        }
-    }
-    None
 }

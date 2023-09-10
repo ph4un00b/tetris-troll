@@ -7,7 +7,7 @@ pub const DEBUG_COLOR: Color = BLACK;
 pub const PLAYFIELD_W: usize = 10;
 pub const PLAYFIELD_H: usize = 24;
 pub const PIECE_SIZE: usize = 4;
-pub const EMPTY_POSITION: u8 = 0;
+pub const NONE_VALUE: u8 = 0;
 // pub const WASM_MOBILE_FONT_SIZE: f32 = 30.0;
 
 // pub const ASPECT_RATIO: f32 = WINDOWS_SIZE.x / WINDOWS_SIZE.y;

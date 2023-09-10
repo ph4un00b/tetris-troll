@@ -8,7 +8,7 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{EMPTY_POSITION, MOVEMENT_SPEED, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
+    constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     physics::PhysicsEvent,
     shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
     tetrio_I::TetrioI,
@@ -146,7 +146,7 @@ impl Tetromino {
     ) -> ControlFlow<()> {
         for (pos_y, row) in self.piece.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
-                if *piece_value == EMPTY_POSITION {
+                if *piece_value == NONE_VALUE {
                     continue;
                 }
 
@@ -160,6 +160,27 @@ impl Tetromino {
             }
         }
         ControlFlow::Continue(())
+    }
+
+    pub fn try_process<TValue>(
+        &self,
+        callback: &mut impl FnMut(usize, usize, u8) -> Option<TValue>,
+    ) -> Option<TValue> {
+        for (pos_y, row) in self.piece.iter().enumerate() {
+            for (pos_x, piece_value) in row.iter().enumerate() {
+                if *piece_value == NONE_VALUE {
+                    continue;
+                }
+
+                let mapped_x = pos_x + self.playfield_x - self.offsets.left;
+                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
+
+                if let Some(val) = (*callback)(mapped_x, mapped_y, *piece_value) {
+                    return Some(val);
+                }
+            }
+        }
+        None
     }
 
     fn remap_x(&self, current_x: f32, world: &World) -> (f32, usize) {
