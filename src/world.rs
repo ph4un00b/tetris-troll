@@ -93,7 +93,6 @@ impl World {
                     if *tetro_value == NONE_VALUE {
                         continue;
                     }
-
                     let x = (pos_x + tetro.playfield_x) - tetro.offsets.left;
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
 
@@ -114,10 +113,8 @@ impl World {
                 if *tetro_value == NONE_VALUE {
                     continue;
                 }
-
                 let x = (pos_x + tetro.playfield_x) - tetro.offsets.left;
                 let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
-
                 self.game[x][y - offset] = *tetro_value;
             }
         }

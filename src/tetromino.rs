@@ -143,19 +143,21 @@ impl Tetromino {
     pub fn process(
         &self,
         callback: &mut impl FnMut(usize, usize, u8) -> ControlFlow<()>,
+        // todo
+        // where
+        // F: FnMut(usize, usize, u8) -> ControlFlow<()>,
     ) -> ControlFlow<()> {
         for (pos_y, row) in self.piece.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
                 if *piece_value == NONE_VALUE {
                     continue;
                 }
-
                 let mapped_x = pos_x + self.playfield_x - self.offsets.left;
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
+                let result = callback(mapped_x, mapped_y, *piece_value);
 
-                let callback = (*callback)(mapped_x, mapped_y, *piece_value);
-                if callback.is_break() {
-                    return callback;
+                if result.is_break() {
+                    return result;
                 }
             }
         }
@@ -175,7 +177,7 @@ impl Tetromino {
                 let mapped_x = pos_x + self.playfield_x - self.offsets.left;
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
 
-                if let Some(val) = (*callback)(mapped_x, mapped_y, *piece_value) {
+                if let Some(val) = callback(mapped_x, mapped_y, *piece_value) {
                     return Some(val);
                 }
             }
