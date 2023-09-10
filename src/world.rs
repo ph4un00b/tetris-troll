@@ -56,19 +56,19 @@ impl World {
     pub(crate) fn add_with_control_flow(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
-        while process_tetromino(tetro, &mut |x, y, _value| {
-            if self.collides_in(x, y - offset) {
+        let check_collision = tetro.process(&mut |x, y, _value| {
+            if self.game[x][y - offset] > 0 {
                 ControlFlow::Break(())
             } else {
                 ControlFlow::Continue(())
             }
-        })
-        .is_break()
-        {
+        });
+
+        while check_collision.is_break() {
             offset += 1;
         }
 
-        process_tetromino(tetro, &mut |x, y, value| {
+        tetro.process(&mut |x, y, value| {
             self.game[x][y - offset] = value;
 
             ControlFlow::Continue(())
@@ -157,26 +157,4 @@ fn process_tetromino_with_option<TValue>(
         }
     }
     None
-}
-
-fn process_tetromino(
-    tetro: &Tetromino,
-    callback: &mut impl FnMut(usize, usize, u8) -> ControlFlow<()>,
-) -> ControlFlow<()> {
-    for (pos_y, row) in tetro.piece.iter().enumerate() {
-        for (pos_x, piece_value) in row.iter().enumerate() {
-            if *piece_value == EMPTY_POSITION {
-                continue;
-            }
-
-            let mapped_x = pos_x + tetro.playfield_x - tetro.offsets.left;
-            let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
-
-            let callback = (*callback)(mapped_x, mapped_y, *piece_value);
-            if callback.is_break() {
-                return callback;
-            }
-        }
-    }
-    ControlFlow::Continue(())
 }

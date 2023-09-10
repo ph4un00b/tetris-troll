@@ -1,3 +1,5 @@
+use std::ops::ControlFlow;
+
 use macroquad::{
     prelude::{clamp, touches, vec2, Color, Rect, TouchPhase, SKYBLUE},
     shapes::{draw_circle, draw_rectangle},
@@ -6,7 +8,7 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{MOVEMENT_SPEED, PLAYFIELD_W},
+    constants::{EMPTY_POSITION, MOVEMENT_SPEED, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     physics::PhysicsEvent,
     shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
     tetrio_I::TetrioI,
@@ -136,6 +138,28 @@ impl Tetromino {
                 right: 0,
             },
         }
+    }
+
+    pub fn process(
+        &self,
+        callback: &mut impl FnMut(usize, usize, u8) -> ControlFlow<()>,
+    ) -> ControlFlow<()> {
+        for (pos_y, row) in self.piece.iter().enumerate() {
+            for (pos_x, piece_value) in row.iter().enumerate() {
+                if *piece_value == EMPTY_POSITION {
+                    continue;
+                }
+
+                let mapped_x = pos_x + self.playfield_x - self.offsets.left;
+                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
+
+                let callback = (*callback)(mapped_x, mapped_y, *piece_value);
+                if callback.is_break() {
+                    return callback;
+                }
+            }
+        }
+        ControlFlow::Continue(())
     }
 
     fn remap_x(&self, current_x: f32, world: &World) -> (f32, usize) {
