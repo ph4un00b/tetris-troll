@@ -7,6 +7,7 @@ use macroquad::{
 
 use crate::{
     constants::{EMPTY_POSITION, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
+    game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
 };
@@ -17,6 +18,11 @@ pub struct World {
     pub screen: Vec3,
     pub playfield: Vec2,
     game: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
+}
+pub enum Strat {
+    ControlFlow,
+    Option,
+    Duplicated,
 }
 
 impl World {
@@ -30,6 +36,13 @@ impl World {
         }
     }
 
+    pub(crate) fn add(&mut self, tetro: &Tetromino) {
+        match game_configs::ADD_STRAT {
+            Strat::ControlFlow => self.add_with_control_flow(tetro),
+            Strat::Option => self.add_with_option(tetro),
+            Strat::Duplicated => todo!(),
+        }
+    }
     //* for (row_idx, row) in piece.iter().enumerate() {
     //*     for (col_idx, value) in row.iter().enumerate() {
     //*         if *value != 0 {
@@ -59,6 +72,23 @@ impl World {
             self.game[x][y - offset] = value;
 
             ControlFlow::Continue(())
+        });
+    }
+
+    pub(crate) fn add_with_option(&mut self, tetro: &Tetromino) {
+        let mut offset = 0_usize;
+
+        while process_tetromino_with_option(tetro, &mut |x, y, _value| {
+            self.collides_in(x, y - offset).then_some(())
+        })
+        .is_some()
+        {
+            offset += 1;
+        }
+
+        process_tetromino_with_option::<()>(tetro, &mut |x, y, value| {
+            self.game[x][y - offset] = value;
+            None
         });
     }
 
@@ -108,19 +138,26 @@ impl World {
     }
 }
 
-// fn process_piece_option<TAny>(
-//     piece: Mat4,
-//     callback: &mut impl FnMut(usize, usize, u8) -> Option<TAny>,
-// ) -> Option<TAny> {
-//     for (row_idx, row) in piece.iter().enumerate() {
-//         for (col_idx, value) in row.iter().enumerate() {
-//             if let Some(val) = (*callback)(row_idx, col_idx, *value) {
-//                 return Some(val);
-//             }
-//         }
-//     }
-//     None
-// }
+fn process_tetromino_with_option<TValue>(
+    tetro: &Tetromino,
+    callback: &mut impl FnMut(usize, usize, u8) -> Option<TValue>,
+) -> Option<TValue> {
+    for (pos_y, row) in tetro.piece.iter().enumerate() {
+        for (pos_x, piece_value) in row.iter().enumerate() {
+            if *piece_value == EMPTY_POSITION {
+                continue;
+            }
+
+            let mapped_x = pos_x + tetro.playfield_x - tetro.offsets.left;
+            let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
+
+            if let Some(val) = (*callback)(mapped_x, mapped_y, *piece_value) {
+                return Some(val);
+            }
+        }
+    }
+    None
+}
 
 fn process_tetromino(
     tetro: &Tetromino,

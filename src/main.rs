@@ -18,6 +18,7 @@ use world::World;
 mod bloque;
 mod constants;
 mod debug;
+mod game_configs;
 mod manager;
 mod physics;
 mod piso;
@@ -222,7 +223,7 @@ async fn main() {
                     tetro_x2 = tetro.props.x;
                     tetro_y = tetro.props.y;
                     if tetro.props.y * block.y >= (screen.y * 1.0) {
-                        world.add_with_control_flow(tetro);
+                        world.add(tetro);
                     }
                 }
 
