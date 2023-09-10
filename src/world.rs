@@ -22,9 +22,8 @@ pub struct World {
 
 #[allow(unused)]
 pub enum Strat {
-    ControlFlow,
-    /// BIG TODO
-    ///Option,
+    Generic,
+    Runtime,
     Duplicated,
 }
 
@@ -39,63 +38,104 @@ impl World {
         }
     }
 
+    /*
+     *  factory:
+     *
+     * hecha deliberadamente por fines educativos
+     * y de referencia para contrastar las formas distintas
+     * para ejecutar est aparte de la lógica.
+     */
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
         match game_configs::ADD_STRATEGY {
-            Strat::ControlFlow => self.add_with_control_flow(tetro),
-            /// BIG TODO
-            //Strat::Option => self.add_with_option(tetro),
+            Strat::Generic => self.add_with_control_flow(tetro),
+            Strat::Runtime => self.add_with_runtime(tetro),
             Strat::Duplicated => self.add_with_duplication(tetro),
         }
     }
 
+    /*
+     * Notas para los lurkers
+     *
+     * 1. usamos ControlFlow trait
+     * @see https://doc.rust-lang.org/std/ops/enum.ControlFlow.html
+     *
+     * 2. Tetromino#process usa genéricos no hay runtime penalty.
+     *
+     * 4. queda prolijo
+     */
     pub(crate) fn add_with_control_flow(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
-        let check_collision = tetro.process(|x, y, _value| {
-            let game: &[u8; 24] = &self.game[x];
-
-            if game[y - offset] as u8 > 0_u8 {
-                ControlFlow::Break(true)
-            } else {
-                ControlFlow::Continue(())
-            }
-        });
-
-        while check_collision {
+        while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
+            let has_collision = self.game[x][y - offset] > 0_u8;
+            has_collision.then_some(())
+        }) {
             offset += 1;
         }
 
-        let a = tetro.process(|x, y, value| {
-            (self.game[x] as [u8; 24])[y - offset] = value;
-
-            ControlFlow::Continue(())
+        tetro.process(|x, y, value| {
+            let game = &mut self.game;
+            game[x][y - offset] = value;
+            None
         });
-        a
     }
-    /// BIG TODO
+
     /*
-        pub(crate) fn add_with_option(&mut self, tetro: &Tetromino) {
-            let mut offset = 0_usize;
+     * Notas para los lurkers
+     *
+     * 1. usamos verificación en runtime.
+     * callback: &mut impl FnMut(usize, usize, u8) -> ControlFlow<()>,
+     *
+     * 4. no se queja por tipos, pero no es muy bonito el
+     * &mut que precede en el callback
+     *
+     * 5. queda prolijo
+     */
+    pub(crate) fn add_with_runtime(&mut self, tetro: &Tetromino) {
+        let mut offset = 0_usize;
 
-            let check_collision =
-                tetro.process(|x, y, _value| (self.game[x][y - offset] > 0_u8).then_some(()));
-
-            while check_collision.is_some() {
-                offset += 1;
-            }
-
-            tetro.process(|x, y, value| {
-                self.game[x][y - offset] = value;
-                None as Option<()>
-            });
+        while let ControlFlow::Break(()) = tetro.process_with_runtime(&mut |x, y, _value| {
+            let has_collision = self.game[x][y - offset] > 0_u8;
+            has_collision.then_some(())
+        }) {
+            offset += 1;
         }
-    */
+
+        tetro.process_with_runtime(&mut |x, y, value| {
+            self.game[x][y - offset] = value;
+            None
+        });
+    }
+
+    /*
+     * Notas para los lurkers
+     *
+     * 1. hay cierta duplicación de lógica
+     *
+     * 2. no hay verificación en runtime
+     *
+     * 3. funciona sin problema 😊
+     *
+     * 4. es muy verboso, todo esta explicito
+     */
+
     pub(crate) fn add_with_duplication(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
-        // ref == &
-        // dentro de este clousure genero un nuevo offset por el trait copy, no lo movio
+        // * ref == &
+        // * dentro de este closure generó un nuevo offset por el trait copy, no lo movió
         let check_collision = |offset| {
+            /*
+             * Todo: generic_iter
+             * Vec
+             * &[Y]
+             * HashMap
+             *
+             * fn generic_iter<I>(iter: I)
+             * where
+             *    I: IntoIterator,
+             * {}
+             */
             for (pos_y, row) in tetro.piece.iter().enumerate() {
                 for (pos_x, tetro_value) in row.iter().enumerate() {
                     if *tetro_value == NONE_VALUE {
@@ -103,7 +143,6 @@ impl World {
                     }
                     let x = pos_x + tetro.playfield_x - tetro.offsets.left;
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
-
                     if self.game[x][y - offset] > 0_u8 {
                         return true;
                     };

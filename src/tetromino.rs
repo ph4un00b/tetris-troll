@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::ControlFlow};
+use std::ops::ControlFlow;
 
 use macroquad::{
     prelude::{clamp, touches, vec2, Color, Rect, TouchPhase, SKYBLUE},
@@ -139,17 +139,16 @@ impl Tetromino {
             },
         }
     }
-    /// BIG TODO
-    /// Confirmar que solo necesites devolver un boolean, de ser necesario podrias devolver un
-    /// Option<T>
-    pub fn process<TValue: Default, F>(
+
+    pub fn process<F>(
         &self,
-        /* Definis como queres tratar el tipo ->*/
-        mut callback: F, /* <- Definis como tienes que pasar
-                         el tipo */ // todo
-    ) -> TValue
+        //* Definís como querés tratar el tipo
+        mut
+        //* Definís como tienes que pasar el tipo
+        callback: F,
+    ) -> ControlFlow<()>
     where
-        F: FnMut(usize, usize, u8) -> ControlFlow<TValue>,
+        F: FnMut(usize, usize, u8) -> Option<()>,
     {
         for (pos_y, row) in self.piece.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
@@ -158,39 +157,35 @@ impl Tetromino {
                 }
                 let mapped_x = pos_x + self.playfield_x - self.offsets.left;
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
-                let ControlFlow::Break(result) = callback(mapped_x, mapped_y, *piece_value) else {
-                    continue;
-                };
-
-                return result;
-            }
-        }
-        Default::default()
-    }
-    /// BIG TODO
-    /*
-        pub fn try_process<TValue, F>(&self, mut callback: F) -> Option<TValue>
-        where
-            F: FnMut(usize, usize, u8) -> Option<TValue>,
-        {
-            for (pos_y, row) in self.piece.iter().enumerate() {
-                for (pos_x, piece_value) in row.iter().enumerate() {
-                    if *piece_value == NONE_VALUE {
-                        continue;
-                    }
-
-                    let mapped_x = pos_x + self.playfield_x - self.offsets.left;
-                    let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
-                    //TODO
-                    let result = callback(mapped_x, mapped_y, *piece_value);
-                    if result.is_some() {
-                        return result;
-                    }
+                let result = callback(mapped_x, mapped_y, *piece_value);
+                if result.is_some() {
+                    return ControlFlow::Break(());
                 }
             }
-            None
         }
-    */
+        ControlFlow::Continue(())
+    }
+
+    pub fn process_with_runtime(
+        &self,
+        callback: &mut impl FnMut(usize, usize, u8) -> Option<()>,
+    ) -> ControlFlow<()> {
+        for (pos_y, row) in self.piece.iter().enumerate() {
+            for (pos_x, piece_value) in row.iter().enumerate() {
+                if *piece_value == NONE_VALUE {
+                    continue;
+                }
+                let mapped_x = pos_x + self.playfield_x - self.offsets.left;
+                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
+                let result = (*callback)(mapped_x, mapped_y, *piece_value);
+                if result.is_some() {
+                    return ControlFlow::Break(());
+                }
+            }
+        }
+        ControlFlow::Continue(())
+    }
+
     fn remap_x(&self, current_x: f32, world: &World) -> (f32, usize) {
         //todo: cache if necessary❓
         let left_padding = 0.5 * (world.screen.x - world.playfield.x);
