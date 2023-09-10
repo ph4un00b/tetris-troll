@@ -6,7 +6,7 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{PLAYFIELD_H, PLAYFIELD_W},
+    constants::{NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
@@ -39,22 +39,13 @@ impl World {
     }
 
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
-        match game_configs::ADD_STRAT {
+        match game_configs::ADD_STRATEGY {
             Strat::ControlFlow => self.add_with_control_flow(tetro),
             Strat::Option => self.add_with_option(tetro),
-            Strat::Duplicated => todo!(),
+            Strat::Duplicated => self.add_with_duplication(tetro),
         }
     }
-    //* for (row_idx, row) in piece.iter().enumerate() {
-    //*     for (col_idx, value) in row.iter().enumerate() {
-    //*         if *value != 0 {
-    //*             let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-    //*             let x = col_idx - offsets.left;
 
-    //*             self.game[x + tetro.playfield_x][y - bottom_offset] = *value;
-    //*         }
-    //*     }
-    //* }
     pub(crate) fn add_with_control_flow(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
@@ -93,19 +84,44 @@ impl World {
         });
     }
 
-    // * for (row_idx, row) in piece.iter().enumerate() {
-    // *     for (col_idx, value) in row.iter().enumerate() {
-    // *         if *value != 0 {
-    // *             let y = (PLAYFIELD_H - PIECE_SIZE) + (row_idx + offsets.down);
-    // *             let x = col_idx - offsets.left;
+    pub(crate) fn add_with_duplication(&mut self, tetro: &Tetromino) {
+        let mut offset = 0_usize;
 
-    // *             if self.game[x + tetro.playfield_x][y - offset] > 0 {
-    // *                 return true;
-    // *             };
-    // *         }
-    // *     }
-    // * }
-    // * false
+        let check_collision = |ref offset| {
+            for (pos_y, row) in tetro.piece.iter().enumerate() {
+                for (pos_x, tetro_value) in row.iter().enumerate() {
+                    if *tetro_value == NONE_VALUE {
+                        continue;
+                    }
+
+                    let x = (pos_x + tetro.playfield_x) - tetro.offsets.left;
+                    let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
+
+                    if self.game[x][y - offset] > 0 {
+                        return true;
+                    };
+                }
+            }
+            false
+        };
+
+        while check_collision(offset) {
+            offset += 1;
+        }
+
+        for (pos_y, row) in tetro.piece.iter().enumerate() {
+            for (pos_x, tetro_value) in row.iter().enumerate() {
+                if *tetro_value == NONE_VALUE {
+                    continue;
+                }
+
+                let x = (pos_x + tetro.playfield_x) - tetro.offsets.left;
+                let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
+
+                self.game[x][y - offset] = *tetro_value;
+            }
+        }
+    }
 
     pub fn render(&self) {
         //? world

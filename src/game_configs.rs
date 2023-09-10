@@ -1,3 +1,3 @@
 use crate::world::Strat;
 
-pub const ADD_STRAT: Strat = Strat::Option;
+pub const ADD_STRATEGY: Strat = Strat::Duplicated;
