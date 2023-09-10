@@ -47,7 +47,7 @@ impl World {
      */
     pub(crate) fn add(&mut self, tetro: &Tetromino) {
         match game_configs::ADD_STRATEGY {
-            Strat::Generic => self.add_with_control_flow(tetro),
+            Strat::Generic => self.add_with_generic(tetro),
             Strat::Runtime => self.add_with_runtime(tetro),
             Strat::Duplicated => self.add_with_duplication(tetro),
         }
@@ -63,7 +63,7 @@ impl World {
      *
      * 4. queda prolijo
      */
-    pub(crate) fn add_with_control_flow(&mut self, tetro: &Tetromino) {
+    pub(crate) fn add_with_generic(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
         while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
