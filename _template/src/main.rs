@@ -88,7 +88,11 @@ async fn main() {
     UI::init().await;
     //?  Macroquad will clear the screen at the beginning of each frame.
     loop {
-        clear_background(DARKPURPLE);
+        if cfg!(unix) || cfg!(windows) {
+            clear_background(DARKBLUE);
+        } else {
+            clear_background(DARKPURPLE);
+        };
         //?shader
         // material.set_uniform("iResolution", (screen_width(), screen_height()));
         // material.set_uniform("direction_modifier", direction_modifier);
