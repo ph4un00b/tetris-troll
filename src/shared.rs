@@ -2,17 +2,21 @@ use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
 use crate::{physics::PhysicsEvent, world::World};
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum X {
     Left,
     Right,
 }
+
+#[allow(unused)]
 #[derive(Debug)]
 pub enum Y {
     Top,
     Bottom,
 }
 
+#[allow(unused)]
 pub fn remap_to_canvas(
     coord: macroquad::prelude::Vec2,
     component_size: macroquad::prelude::Vec2,
@@ -20,6 +24,20 @@ pub fn remap_to_canvas(
     canvas_coord: macroquad::prelude::Vec2,
     pad: macroquad::prelude::Vec2,
 ) -> (f32, f32) {
+    //? usage:
+    //? (self.props.x, ..) = remap_to_canvas(
+    //?     vec2(self.props.x, self.props.y),
+    //?     vec2(
+    //?         self.props.size.x * world.block.x,
+    //?         self.props.size.y * world.block.y,
+    //?     ),
+    //?     world.playfield,
+    //?     vec2(
+    //?         (world.screen.x - world.playfield.x) * 0.5,
+    //?         (world.screen.y - world.playfield.y) * 0.5,
+    //?     ),
+    //?     world.block,
+    //? );
     let px = if (coord.x - component_size.x) < ((canvas_coord.x + canvas_size.x) * 0.5) {
         X::Left
     } else {
