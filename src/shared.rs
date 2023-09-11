@@ -2,6 +2,52 @@ use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
 use crate::{physics::PhysicsEvent, world::World};
 
+#[derive(Debug)]
+pub enum X {
+    Left,
+    Right,
+}
+#[derive(Debug)]
+pub enum Y {
+    Top,
+    Bottom,
+}
+
+pub fn remap_to_canvas(
+    coord: macroquad::prelude::Vec2,
+    component_size: macroquad::prelude::Vec2,
+    canvas_size: macroquad::prelude::Vec2,
+    canvas_coord: macroquad::prelude::Vec2,
+    pad: macroquad::prelude::Vec2,
+) -> (f32, f32) {
+    let px = if (coord.x - component_size.x) < ((canvas_coord.x + canvas_size.x) * 0.5) {
+        X::Left
+    } else {
+        X::Right
+    };
+    let py = if (coord.y - component_size.y) < ((canvas_coord.y + canvas_size.y) * 0.5) {
+        Y::Top
+    } else {
+        Y::Bottom
+    };
+
+    match (px, py) {
+        (X::Left, Y::Top) => (canvas_coord.x + pad.x, canvas_coord.y + pad.y),
+        (X::Left, Y::Bottom) => (
+            canvas_coord.x + pad.x,
+            canvas_coord.y + (canvas_size.y * 0.5) + pad.y,
+        ),
+        (X::Right, Y::Top) => (
+            (canvas_coord.x + canvas_size.x) - (component_size.x + pad.x),
+            canvas_coord.y + pad.y,
+        ),
+        (X::Right, Y::Bottom) => (
+            (canvas_coord.x + canvas_size.x) - (component_size.x + pad.x),
+            canvas_coord.y + (canvas_size.y * 0.5) + pad.y,
+        ),
+    }
+}
+
 pub fn normalize_to_discrete(position_x: f32, world: &World) -> usize {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
     let value = (position_x - left_pad) / world.block.x;
