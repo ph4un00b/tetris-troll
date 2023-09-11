@@ -10,7 +10,9 @@ use macroquad::{
 use crate::{
     constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     physics::PhysicsEvent,
-    shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
+    shared::{
+        normalize_to_discrete, normalize_to_playfield, remap_to_canvas, Collision, Coso, Organism,
+    },
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -124,7 +126,9 @@ impl Tetromino {
                 half: vec2(0., 0.),
                 size,
                 speed: MOVEMENT_SPEED,
-                x: (screen_width() * 0.5) - (size.x * 0.5),
+                // x: (screen_width() * 0.5) + 300.0,
+                x: 0.,
+                // x: 1.0,
                 y: 0.0,
                 collided: false,
                 color,
@@ -235,8 +239,21 @@ impl Organism for Tetromino {
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
             (self.props.x, self.playfield_x) = self.remap_x(touch.position.x, world);
         }
+        (self.props.x, ..) = remap_to_canvas(
+            vec2(self.props.x, self.props.y),
+            vec2(
+                self.props.size.x * world.block.x,
+                self.props.size.y * world.block.y,
+            ),
+            world.playfield,
+            vec2(
+                (world.screen.x - world.playfield.x) * 0.5,
+                (world.screen.y - world.playfield.y) * 0.5,
+            ),
+            world.block,
+        );
 
-        (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
+        // (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
     }
 
     fn draw(&mut self, world: &mut World) {
