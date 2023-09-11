@@ -2,6 +2,7 @@ use crate::constants::{PLAYFIELD_H, PLAYFIELD_W};
 
 use bloque::Bloque;
 
+use constants::NUMBER_OF_TETROMINOS;
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -211,9 +212,13 @@ async fn main() {
                 world.render();
 
                 if current_tetrios.is_empty() {
-                    // let n = rand::gen_range(0, tetrominos.len() - 1);
-                    g_piece += 1;
-                    current_tetrios.push(tetrominos[g_piece % 7].clone());
+                    if cfg!(unix) || cfg!(windows) {
+                        g_piece += 1;
+                        current_tetrios.push(tetrominos[g_piece % NUMBER_OF_TETROMINOS].clone());
+                    } else {
+                        let n = rand::gen_range(0, NUMBER_OF_TETROMINOS);
+                        current_tetrios.push(tetrominos[n].clone());
+                    };
                 }
 
                 for tetro in current_tetrios.iter_mut() {
