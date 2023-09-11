@@ -1,7 +1,7 @@
 use std::ops::ControlFlow;
 
 use macroquad::{
-    prelude::{vec2, Vec2, Vec3, BLACK, BLUE, BROWN, GRAY, GREEN, PINK},
+    prelude::{Vec2, Vec3, BLACK, BLUE, BROWN},
     shapes::{draw_line, draw_rectangle, draw_rectangle_lines},
 };
 
@@ -192,37 +192,6 @@ impl World {
                 );
             }
         }
-        let screen = vec2(self.playfield.x, self.playfield.y);
-        //? grid 1:
-        //? 0, 0  	            | screen_x * 0.5, 0
-        draw_rectangle(0. + pad_x, 0. + pad_y, screen.x * 0.5, screen.y * 0.5, GRAY);
-        //? grid 2:
-        //? screen_x * 0.5, 0 	             | screen_x, 0
-        draw_rectangle(
-            screen.x * 0.5 + pad_x,
-            0. + pad_y,
-            screen.x * 0.5,
-            screen.y * 0.5,
-            GREEN,
-        );
-        //? grid 3:
-        //? 0, screen_y * 0.5 	    | screen_x * 0.5, screen_y * 0.5
-        draw_rectangle(
-            0. + pad_x,
-            screen.y * 0.5 + pad_y,
-            screen.x * 0.5,
-            screen.y * 0.5,
-            PINK,
-        );
-        //? grid 4:
-        //? screen_x * 0.5, screen_y * 0.5 	    | screen_x * 0.5, screen_y * 0.5
-        draw_rectangle(
-            screen.x * 0.5 + pad_x,
-            screen.y * 0.5 + pad_y,
-            screen.x * 0.5,
-            screen.y * 0.5,
-            BROWN,
-        );
         //? line
         draw_rectangle_lines(pad_x, pad_y, self.playfield.x, self.playfield.y, 10., BLACK);
     }
