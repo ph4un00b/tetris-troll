@@ -1,6 +1,11 @@
 use macroquad::prelude::{vec2, Color, Vec2, BLACK};
 
-pub const MOVEMENT_SPEED: f32 = 5.0;
+pub const MOVEMENT_SPEED: f32 = if cfg!(unix) || cfg!(windows) {
+    75.0
+} else {
+    //? "wasm"
+    5.0
+};
 //? creo que windows-size ya no tiene sentido❓
 pub const WINDOWS_SIZE: Vec2 = vec2(1470.0, 420.0);
 pub const DEBUG_COLOR: Color = BLACK;
