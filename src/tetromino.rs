@@ -177,7 +177,7 @@ impl Tetromino {
                 }
                 let mapped_x = pos_x + self.playfield_x - self.offsets.left;
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
-                let result = (*callback)(mapped_x, mapped_y, *piece_value);
+                let result = callback(mapped_x, mapped_y, *piece_value);
                 if result.is_some() {
                     return ControlFlow::Break(());
                 }

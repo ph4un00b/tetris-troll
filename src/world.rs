@@ -76,6 +76,7 @@ impl World {
         tetro.process(|x, y, value| {
             let game = &mut self.game;
             game[x][y - offset] = value;
+
             None
         });
     }
@@ -103,6 +104,7 @@ impl World {
 
         tetro.process_with_runtime(&mut |x, y, value| {
             self.game[x][y - offset] = value;
+
             None
         });
     }
