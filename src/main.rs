@@ -157,9 +157,13 @@ async fn main() {
     let mut tetro_x = 0_usize;
     let mut tetro_x2 = 0.0_f32;
     let mut tetro_y = 0.0_f32;
-    let mut g_piece = 0;
+    let mut g_piece = 0_usize;
     loop {
-        clear_background(DARKPURPLE);
+        if cfg!(unix) || cfg!(windows) {
+            clear_background(VIOLET);
+        } else {
+            clear_background(DARKBLUE);
+        };
         //?shader
         // material.set_uniform("iResolution", (screen_width(), screen_height()));
         // material.set_uniform("direction_modifier", direction_modifier);
