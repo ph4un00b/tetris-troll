@@ -3,7 +3,6 @@ use macroquad::prelude::{vec2, Color, Vec2, BLACK};
 pub const MOVEMENT_SPEED: f32 = if cfg!(unix) || cfg!(windows) {
     75.0
 } else {
-    //? "wasm"
     5.0
 };
 //? creo que windows-size ya no tiene sentido❓
@@ -13,6 +12,7 @@ pub const PLAYFIELD_W: usize = 10;
 pub const PLAYFIELD_H: usize = 24;
 pub const PIECE_SIZE: usize = 4;
 pub const NONE_VALUE: u8 = 0;
+pub const NUMBER_OF_TETROMINOS: usize = 7;
 // pub const WASM_MOBILE_FONT_SIZE: f32 = 30.0;
 
 // pub const ASPECT_RATIO: f32 = WINDOWS_SIZE.x / WINDOWS_SIZE.y;
