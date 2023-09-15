@@ -252,6 +252,7 @@ async fn main() {
                 world.physics.draw_colliders();
 
                 egui_macroquad::ui(|egui_ctx| {
+                    catppuccin_egui::set_theme(egui_ctx, catppuccin_egui::MOCHA);
                     egui::Window::new("❤ debug").show(egui_ctx, |ui| {
                         ui.label(format!("screen.H: {}", world.screen.y));
                         ui.label(format!("screen.W: {}", world.screen.x));
@@ -263,6 +264,7 @@ async fn main() {
                         ui.label(format!("x playfield: {tetro_x2}"));
                     });
                 });
+
                 egui_macroquad::draw();
             }
             Manager::MainEntry => {
