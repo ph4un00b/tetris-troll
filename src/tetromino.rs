@@ -1,7 +1,7 @@
 use std::ops::ControlFlow;
 
 use macroquad::{
-    prelude::{clamp, touches, vec2, Color, Rect, TouchPhase, SKYBLUE},
+    prelude::{clamp, is_key_down, touches, vec2, Color, KeyCode, Rect, TouchPhase, Vec2, SKYBLUE},
     shapes::{draw_circle, draw_rectangle},
     time::get_frame_time,
     window::{screen_height, screen_width},
@@ -98,15 +98,20 @@ pub struct Offset {
 }
 
 #[derive(Debug, Clone)]
+pub struct Playfield {
+    pub coords: Vec2,
+    pub piece: Mat4,
+    pub offsets: Offset,
+}
+
+#[derive(Debug, Clone)]
 pub struct Tetromino {
     pub kind: TetroK,
     pub current_rotation: Clock,
     rotation_index: usize,
     pub props: Coso,
-    pub playfield_x: usize,
+    pub playfield: Playfield,
     // playfield_y: usize,
-    pub piece: Mat4,
-    pub offsets: Offset,
 }
 
 impl Tetromino {
@@ -130,13 +135,15 @@ impl Tetromino {
                 collided: false,
                 color,
             },
-            playfield_x: 0,
-            piece: [[0; 4]; 4],
-            offsets: Offset {
-                up: 0,
-                down: 0,
-                left: 0,
-                right: 0,
+            playfield: Playfield {
+                piece: [[0; 4]; 4],
+                offsets: Offset {
+                    up: 0,
+                    down: 0,
+                    left: 0,
+                    right: 0,
+                },
+                coords: vec2(0., 0.),
             },
         }
     }
@@ -151,13 +158,14 @@ impl Tetromino {
     where
         F: FnMut(usize, usize, u8) -> Option<()>,
     {
-        for (pos_y, row) in self.piece.iter().enumerate() {
+        for (pos_y, row) in self.playfield.piece.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
                 if *piece_value == NONE_VALUE {
                     continue;
                 }
-                let mapped_x = pos_x + self.playfield_x - self.offsets.left;
-                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
+                let mapped_x =
+                    pos_x + self.playfield.coords.x as usize - self.playfield.offsets.left;
+                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.playfield.offsets.down);
                 let result = callback(mapped_x, mapped_y, *piece_value);
                 if result.is_some() {
                     return ControlFlow::Break(());
@@ -171,13 +179,14 @@ impl Tetromino {
         &self,
         callback: &mut impl FnMut(usize, usize, u8) -> Option<()>,
     ) -> ControlFlow<()> {
-        for (pos_y, row) in self.piece.iter().enumerate() {
+        for (pos_y, row) in self.playfield.piece.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
                 if *piece_value == NONE_VALUE {
                     continue;
                 }
-                let mapped_x = pos_x + self.playfield_x - self.offsets.left;
-                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.offsets.down);
+                let mapped_x =
+                    pos_x + self.playfield.coords.x as usize - self.playfield.offsets.left;
+                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.playfield.offsets.down);
                 let result = callback(mapped_x, mapped_y, *piece_value);
                 if result.is_some() {
                     return ControlFlow::Break(());
@@ -187,7 +196,7 @@ impl Tetromino {
         ControlFlow::Continue(())
     }
 
-    fn remap_x(&self, current_x: f32, world: &World) -> (f32, usize) {
+    fn remap_x(&self, current_x: f32, world: &World) -> (f32, f32) {
         //todo: cache if necessary❓
         let left_padding = 0.5 * (world.screen.x - world.playfield.x);
         let x_normalized = normalize_to_playfield(current_x, world, self.props.size.x as usize);
@@ -200,9 +209,9 @@ impl Tetromino {
         );
 
         let discrete_x = clamp(
-            normalize_to_discrete(current_x, world),
-            0,
-            PLAYFIELD_W - self.props.size.x as usize,
+            normalize_to_discrete(current_x, world) as f32,
+            0.,
+            PLAYFIELD_W as f32 - self.props.size.x,
         );
         (new_x, discrete_x)
     }
@@ -219,11 +228,11 @@ impl Organism for Tetromino {
             crate::tetromino::TetroK::T => TetrioT::mat4(self),
             crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
         };
-        self.piece = piece;
-        self.offsets = offsets;
+        self.playfield.piece = piece;
+        self.playfield.offsets = offsets;
 
-        let delta_time = get_frame_time();
-        self.props.y += self.props.speed * delta_time;
+        // let delta_time = get_frame_time();
+        // self.props.y += self.props.speed * delta_time;
 
         for touch in touches() {
             if let TouchPhase::Started = touch.phase {
@@ -234,10 +243,29 @@ impl Organism for Tetromino {
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-            (self.props.x, self.playfield_x) = self.remap_x(touch.position.x, world);
+            (self.props.x, self.playfield.coords.x) = self.remap_x(touch.position.x, world);
         }
 
-        (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
+        if is_key_down(KeyCode::Right) {
+            self.props.x += MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::Left) {
+            self.props.x -= MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::D) {
+            self.props.x += MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::A) {
+            self.props.x -= MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::Down) {
+            self.props.y += MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::Up) {
+            self.props.y -= MOVEMENT_SPEED;
+        }
+
+        // (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
     }
 
     fn draw(&mut self, world: &mut World) {
@@ -254,7 +282,8 @@ impl Organism for Tetromino {
         let block_x = world.block.x;
         let block_y = world.block.y;
         let current_x = self.props.x;
-        let current_y = self.props.y * block_y;
+        // let current_y = self.props.y * block_y;
+        let current_y = self.props.y;
 
         for (row_idx, row) in piece.iter().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
