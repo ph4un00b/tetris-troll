@@ -1,7 +1,7 @@
 use std::ops::ControlFlow;
 
 use macroquad::{
-    prelude::{Vec2, Vec3, BLACK, BLUE, BROWN},
+    prelude::{Vec2, Vec3, BLACK, BLUE, BROWN, GREEN},
     shapes::{draw_line, draw_rectangle, draw_rectangle_lines},
 };
 
@@ -67,12 +67,14 @@ impl World {
         let mut offset = 0_usize;
 
         while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
+            //? println!("x: {x}, y: {y}, off {offset}");
             let has_collision = self.game[x][y - offset] > 0_u8;
             has_collision.then_some(())
         }) {
             offset += 1;
         }
 
+        println!("off {offset}");
         tetro.process(|x, y, value| {
             let game = &mut self.game;
             game[x][y - offset] = value;
@@ -194,5 +196,7 @@ impl World {
         }
         //? line
         draw_rectangle_lines(pad_x, pad_y, self.playfield.x, self.playfield.y, 10., BLACK);
+        //? screen borders
+        draw_rectangle_lines(pad_x, pad_y, self.screen.x, self.screen.y, 10., GREEN);
     }
 }

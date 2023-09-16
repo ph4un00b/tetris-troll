@@ -10,7 +10,10 @@ use macroquad::{
 use crate::{
     constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
     physics::PhysicsEvent,
-    shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
+    shared::{
+        normalize_to_discrete, normalize_to_discrete_y, normalize_to_playfield,
+        normalize_to_playfield_y, Collision, Coso, Organism,
+    },
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -104,7 +107,7 @@ pub struct Tetromino {
     rotation_index: usize,
     pub props: Coso,
     pub playfield_x: usize,
-    // playfield_y: usize,
+    pub playfield_y: usize,
     pub piece: Mat4,
     pub offsets: Offset,
 }
@@ -130,7 +133,6 @@ impl Tetromino {
                 collided: false,
                 color,
             },
-            playfield_x: 0,
             piece: [[0; 4]; 4],
             offsets: Offset {
                 up: 0,
@@ -138,6 +140,8 @@ impl Tetromino {
                 left: 0,
                 right: 0,
             },
+            playfield_x: 0,
+            playfield_y: 0,
         }
     }
 
@@ -206,6 +210,28 @@ impl Tetromino {
         );
         (new_x, discrete_x)
     }
+
+    fn remap_y(&self, current_y: f32, world: &World) -> (f32, usize) {
+        //todo: cache if necessary❓
+        let padding = 0.5 * (world.screen.y - world.playfield.y);
+        let y_normalized = normalize_to_playfield_y(current_y, world, self.props.size.y as usize);
+        println!("y_normalized: {y_normalized}");
+        let y_position = normalize_to_discrete_y(y_normalized, world);
+        println!("y_position: {y_position}");
+
+        let new_y = clamp(
+            current_y,
+            padding + 0.0,
+            padding + (world.block.y * y_position as f32),
+        );
+
+        let discrete_y = clamp(
+            normalize_to_discrete_y(current_y, world),
+            0,
+            PLAYFIELD_H - self.props.size.y as usize,
+        );
+        (new_y, discrete_y)
+    }
 }
 
 impl Organism for Tetromino {
@@ -238,6 +264,8 @@ impl Organism for Tetromino {
         }
 
         (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
+        (.., self.playfield_y) = self.remap_y(self.props.y, world);
+        println!("remap-y {}", self.playfield_y);
     }
 
     fn draw(&mut self, world: &mut World) {

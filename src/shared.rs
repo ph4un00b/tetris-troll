@@ -1,6 +1,6 @@
 use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
-use crate::{physics::PhysicsEvent, world::World};
+use crate::{constants::PLAYFIELD_H, physics::PhysicsEvent, world::World};
 
 #[allow(unused)]
 #[derive(Debug)]
@@ -72,6 +72,13 @@ pub fn normalize_to_discrete(position_x: f32, world: &World) -> usize {
     clamp(value.floor(), 0.0, 9.0) as usize
 }
 
+pub fn normalize_to_discrete_y(position_y: f32, world: &World) -> usize {
+    let padding = 0.5 * (world.screen.y - world.playfield.y);
+    let value = (position_y - padding) / world.block.y;
+    let max = (PLAYFIELD_H as f32) - 1.0;
+    clamp(value.floor(), 0.0, max) as usize
+}
+
 pub fn normalize(value: f32, world: &World) -> f32 {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
     // let max = left_pad + world.playfield.x - (PIECE_SIZE as f32 * world.block.x);
@@ -83,6 +90,13 @@ pub fn normalize_to_playfield(value: f32, world: &World, width: usize) -> f32 {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
     let max = left_pad + world.playfield.x - (width as f32 * world.block.x);
     clamp(value, left_pad, max)
+}
+
+pub fn normalize_to_playfield_y(value: f32, world: &World, width: usize) -> f32 {
+    let padding = 0.5 * (world.screen.y - world.playfield.y);
+    let max = padding + world.playfield.y - (width as f32 * world.block.y);
+
+    clamp(value, padding, max)
 }
 
 #[derive(Debug, Clone)]

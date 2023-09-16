@@ -155,8 +155,9 @@ async fn main() {
 
     // let mut c = 0;
     let mut tetro_x = 0_usize;
+    let mut tetro_y = 0_usize;
     let mut tetro_x2 = 0.0_f32;
-    let mut tetro_y = 0.0_f32;
+    let mut tetro_y2 = 0.0_f32;
     let mut g_piece = 0_usize;
     loop {
         if cfg!(unix) || cfg!(windows) {
@@ -229,9 +230,14 @@ async fn main() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
                     tetro_x = tetro.playfield_x;
+                    tetro_y = tetro.playfield_y;
                     tetro_x2 = tetro.props.x;
-                    tetro_y = tetro.props.y;
-                    if tetro.props.y * block.y >= (screen.y * 1.0) {
+                    tetro_y2 = tetro.props.y;
+                    println!(
+                        "playfield_x: {}, playfield_y {}",
+                        tetro.playfield_x, tetro.playfield_y
+                    );
+                    if tetro.props.y * block.y >= (screen.y * 0.5) {
                         world.add(tetro);
                     }
                 }
@@ -256,12 +262,13 @@ async fn main() {
                     egui::Window::new("❤ debug").show(egui_ctx, |ui| {
                         ui.label(format!("screen.H: {}", world.screen.y));
                         ui.label(format!("screen.W: {}", world.screen.x));
-                        ui.label(format!("y: {}", tetro_y));
-                        ui.label(format!("y: {}", tetro_y * world.block.y));
+                        ui.label(format!("x: {tetro_x2}",));
+                        ui.label(format!("y: {}", tetro_y2));
+                        ui.label(format!("y: {}", tetro_y2 * world.block.y));
                         ui.label(format!("altura: {}", bloque.y()));
                         //? x handler
-                        ui.label(format!("x: {tetro_x}",));
-                        ui.label(format!("x playfield: {tetro_x2}"));
+                        ui.label(format!("x playfield: {tetro_x}"));
+                        ui.label(format!("y playfield: {tetro_y}"));
                     });
                 });
 
