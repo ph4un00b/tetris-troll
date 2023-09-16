@@ -1,7 +1,7 @@
 use macroquad::prelude::{vec2, Color, Vec2, BLACK};
 
 pub const MOVEMENT_SPEED: f32 = if cfg!(unix) || cfg!(windows) {
-    75.0
+    7.0
 } else {
     5.0
 };

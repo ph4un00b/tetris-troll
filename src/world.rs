@@ -138,13 +138,14 @@ impl World {
              *    I: IntoIterator,
              * {}
              */
-            for (pos_y, row) in tetro.piece.iter().enumerate() {
+            for (pos_y, row) in tetro.playfield.piece.iter().enumerate() {
                 for (pos_x, tetro_value) in row.iter().enumerate() {
                     if *tetro_value == NONE_VALUE {
                         continue;
                     }
-                    let x = pos_x + tetro.playfield_x - tetro.offsets.left;
-                    let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
+                    let x =
+                        pos_x + tetro.playfield.coords.x as usize - tetro.playfield.offsets.left;
+                    let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.playfield.offsets.down);
                     if self.game[x][y - offset] > 0_u8 {
                         return true;
                     };
@@ -157,13 +158,13 @@ impl World {
             offset += 1;
         }
 
-        for (pos_y, row) in tetro.piece.iter().enumerate() {
+        for (pos_y, row) in tetro.playfield.piece.iter().enumerate() {
             for (pos_x, tetro_value) in row.iter().enumerate() {
                 if *tetro_value == NONE_VALUE {
                     continue;
                 }
-                let x = pos_x + tetro.playfield_x - tetro.offsets.left;
-                let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.offsets.down);
+                let x = pos_x + tetro.playfield.coords.x as usize - tetro.playfield.offsets.left;
+                let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.playfield.offsets.down);
                 self.game[x][y - offset] = *tetro_value;
             }
         }

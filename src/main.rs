@@ -155,8 +155,8 @@ async fn main() {
 
     // let mut c = 0;
     let mut tetro_x = 0_usize;
-    let mut tetro_x2 = 0.0_f32;
-    let mut tetro_y = 0.0_f32;
+    let mut tetro_props_x = 0.0_f32;
+    let mut tetro_props_y = 0.0_f32;
     let mut g_piece = 0_usize;
     loop {
         if cfg!(unix) || cfg!(windows) {
@@ -228,15 +228,16 @@ async fn main() {
                 for tetro in current_tetrios.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    tetro_x = tetro.playfield_x;
-                    tetro_x2 = tetro.props.x;
-                    tetro_y = tetro.props.y;
-                    if tetro.props.y * block.y >= (screen.y * 1.0) {
-                        world.add(tetro);
-                    }
+                    tetro_x = tetro.playfield.coords.x as usize;
+                    tetro_props_x = tetro.props.x;
+                    tetro_props_y = tetro.props.y;
+                    // if tetro.props.y * block.y >= (screen.y * 1.0) {
+                    //     world.add(tetro);
+                    // }
                 }
 
-                current_tetrios.retain(|t| t.props.y * block.y < (screen.y * 1.0));
+                current_tetrios.retain(|tetro| tetro.playfield.coords.x < (screen.y * 1.0));
+                // current_tetrios.retain(|tetromino| tetromino < floor);
 
                 bloque.update(&mut world, &mut physics_events);
                 bloque.draw(&mut world);
@@ -256,12 +257,13 @@ async fn main() {
                     egui::Window::new("❤ debug").show(egui_ctx, |ui| {
                         ui.label(format!("screen.H: {}", world.screen.y));
                         ui.label(format!("screen.W: {}", world.screen.x));
-                        ui.label(format!("y: {}", tetro_y));
-                        ui.label(format!("y: {}", tetro_y * world.block.y));
+                        ui.label(format!("x: {}", tetro_props_x));
+                        ui.label(format!("y: {}", tetro_props_y));
+                        // ui.label(format!("y: {}", tetro_props_y * world.block.y));
                         ui.label(format!("altura: {}", bloque.y()));
                         //? x handler
-                        ui.label(format!("x: {tetro_x}",));
-                        ui.label(format!("x playfield: {tetro_x2}"));
+                        // ui.label(format!("x: {tetro_x}",));
+                        // ui.label(format!("x playfield: {tetro_x2}"));
                     });
                 });
 
