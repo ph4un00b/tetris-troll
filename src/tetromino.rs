@@ -100,7 +100,7 @@ pub struct Offset {
 #[derive(Debug, Clone)]
 pub struct Playfield {
     pub coord: Vec2,
-    pub piece: Mat4,
+    pub mat4: Mat4,
     pub offsets: Offset,
 }
 
@@ -111,7 +111,6 @@ pub struct Tetromino {
     rotation_index: usize,
     pub props: Coso,
     pub playfield: Playfield,
-    // playfield_y: usize,
 }
 
 impl Tetromino {
@@ -136,7 +135,7 @@ impl Tetromino {
                 color,
             },
             playfield: Playfield {
-                piece: [[0; 4]; 4],
+                mat4: [[0; 4]; 4],
                 offsets: Offset {
                     up: 0,
                     down: 0,
@@ -158,7 +157,7 @@ impl Tetromino {
     where
         F: FnMut(usize, usize, u8) -> Option<()>,
     {
-        for (pos_y, row) in self.playfield.piece.iter().enumerate() {
+        for (pos_y, row) in self.playfield.mat4.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
                 if *piece_value == NONE_VALUE {
                     continue;
@@ -179,7 +178,7 @@ impl Tetromino {
         &self,
         callback: &mut impl FnMut(usize, usize, u8) -> Option<()>,
     ) -> ControlFlow<()> {
-        for (pos_y, row) in self.playfield.piece.iter().enumerate() {
+        for (pos_y, row) in self.playfield.mat4.iter().enumerate() {
             for (pos_x, piece_value) in row.iter().enumerate() {
                 if *piece_value == NONE_VALUE {
                     continue;
@@ -228,7 +227,7 @@ impl Organism for Tetromino {
             crate::tetromino::TetroK::T => TetrioT::mat4(self),
             crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
         };
-        self.playfield.piece = piece;
+        self.playfield.mat4 = piece;
         self.playfield.offsets = offsets;
 
         // let delta_time = get_frame_time();

@@ -138,7 +138,7 @@ impl World {
              *    I: IntoIterator,
              * {}
              */
-            for (pos_y, row) in tetro.playfield.piece.iter().enumerate() {
+            for (pos_y, row) in tetro.playfield.mat4.iter().enumerate() {
                 for (pos_x, tetro_value) in row.iter().enumerate() {
                     if *tetro_value == NONE_VALUE {
                         continue;
@@ -157,7 +157,7 @@ impl World {
             offset += 1;
         }
 
-        for (pos_y, row) in tetro.playfield.piece.iter().enumerate() {
+        for (pos_y, row) in tetro.playfield.mat4.iter().enumerate() {
             for (pos_x, tetro_value) in row.iter().enumerate() {
                 if *tetro_value == NONE_VALUE {
                     continue;
