@@ -143,8 +143,7 @@ impl World {
                     if *tetro_value == NONE_VALUE {
                         continue;
                     }
-                    let x =
-                        pos_x + tetro.playfield.coords.x as usize - tetro.playfield.offsets.left;
+                    let x = pos_x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
                     let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.playfield.offsets.down);
                     if self.game[x][y - offset] > 0_u8 {
                         return true;
@@ -163,7 +162,7 @@ impl World {
                 if *tetro_value == NONE_VALUE {
                     continue;
                 }
-                let x = pos_x + tetro.playfield.coords.x as usize - tetro.playfield.offsets.left;
+                let x = pos_x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
                 let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.playfield.offsets.down);
                 self.game[x][y - offset] = *tetro_value;
             }

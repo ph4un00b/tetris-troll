@@ -228,7 +228,7 @@ async fn main() {
                 for tetro in current_tetrios.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    tetro_x = tetro.playfield.coords.x as usize;
+                    tetro_x = tetro.playfield.coord.x as usize;
                     tetro_props_x = tetro.props.x;
                     tetro_props_y = tetro.props.y;
                     // if tetro.props.y * block.y >= (screen.y * 1.0) {
@@ -236,7 +236,7 @@ async fn main() {
                     // }
                 }
 
-                current_tetrios.retain(|tetro| tetro.playfield.coords.x < (screen.y * 1.0));
+                current_tetrios.retain(|tetro| tetro.playfield.coord.x < (screen.y * 1.0));
                 // current_tetrios.retain(|tetromino| tetromino < floor);
 
                 bloque.update(&mut world, &mut physics_events);

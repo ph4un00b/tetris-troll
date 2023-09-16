@@ -99,7 +99,7 @@ pub struct Offset {
 
 #[derive(Debug, Clone)]
 pub struct Playfield {
-    pub coords: Vec2,
+    pub coord: Vec2,
     pub piece: Mat4,
     pub offsets: Offset,
 }
@@ -143,7 +143,7 @@ impl Tetromino {
                     left: 0,
                     right: 0,
                 },
-                coords: vec2(0., 0.),
+                coord: vec2(0., 0.),
             },
         }
     }
@@ -164,7 +164,7 @@ impl Tetromino {
                     continue;
                 }
                 let mapped_x =
-                    pos_x + self.playfield.coords.x as usize - self.playfield.offsets.left;
+                    pos_x + self.playfield.coord.x as usize - self.playfield.offsets.left;
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.playfield.offsets.down);
                 let result = callback(mapped_x, mapped_y, *piece_value);
                 if result.is_some() {
@@ -185,7 +185,7 @@ impl Tetromino {
                     continue;
                 }
                 let mapped_x =
-                    pos_x + self.playfield.coords.x as usize - self.playfield.offsets.left;
+                    pos_x + self.playfield.coord.x as usize - self.playfield.offsets.left;
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.playfield.offsets.down);
                 let result = callback(mapped_x, mapped_y, *piece_value);
                 if result.is_some() {
@@ -243,7 +243,7 @@ impl Organism for Tetromino {
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-            (self.props.x, self.playfield.coords.x) = self.remap_x(touch.position.x, world);
+            (self.props.x, self.playfield.coord.x) = self.remap_x(touch.position.x, world);
         }
 
         if is_key_down(KeyCode::Right) {
