@@ -125,7 +125,7 @@ async fn main() {
         Tetromino::from(TetroK::Z),
         Tetromino::from(TetroK::T),
     ];
-    let mut current_tetrios = vec![Tetromino::from(TetroK::O)];
+    let mut current_tetro = vec![Tetromino::from(TetroK::O)];
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
     let restitution = 0.8;
@@ -215,17 +215,17 @@ async fn main() {
                 // Universe::draw(&screen, &playfield, &block);
                 world.render();
 
-                if current_tetrios.is_empty() {
+                if current_tetro.is_empty() {
                     if cfg!(unix) || cfg!(windows) {
                         g_piece += 1;
-                        current_tetrios.push(tetrominos[g_piece % NUMBER_OF_TETROMINOS].clone());
+                        current_tetro.push(tetrominos[g_piece % NUMBER_OF_TETROMINOS].clone());
                     } else {
                         let n = rand::gen_range(0, NUMBER_OF_TETROMINOS);
-                        current_tetrios.push(tetrominos[n].clone());
+                        current_tetro.push(tetrominos[n].clone());
                     };
                 }
 
-                for tetro in current_tetrios.iter_mut() {
+                for tetro in current_tetro.iter_mut() {
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
                     tetro_x = tetro.playfield.coord.x as usize;
@@ -236,11 +236,11 @@ async fn main() {
                     // }
                 }
 
-                current_tetrios.retain(|tetro| tetro.playfield.coord.x < (screen.y * 1.0));
+                current_tetro.retain(|tetro| tetro.playfield.coord.y < (screen.y * 1.0));
                 // current_tetrios.retain(|tetromino| tetromino < floor);
 
                 bloque.update(&mut world, &mut physics_events);
-                bloque.draw(&mut world);
+                bloque.draw(&mut world); 
 
                 bloque2.update(&mut world, &mut physics_events);
                 bloque2.draw(&mut world);
