@@ -114,11 +114,14 @@ pub struct Tetromino {
 }
 
 impl Tetromino {
-    pub(crate) fn from(spec: TetroK) -> Tetromino {
+    pub(crate) fn from(spec: TetroK, world: &World) -> Tetromino {
         let kind = spec;
         let color = kind.color();
         let rotation = Clock::P12;
-        let size = kind.size(rotation.clone());
+        let size = vec2(
+            kind.size(rotation.clone()).x * world.block.x,
+            kind.size(rotation.clone()).y * world.block.y,
+        );
 
         Tetromino {
             kind,
@@ -128,7 +131,7 @@ impl Tetromino {
                 half: vec2(0., 0.),
                 size,
                 speed: MOVEMENT_SPEED,
-                x: screen_width() * 0.5,
+                x: 0.0,
                 // x: 1.0,
                 y: 0.0,
                 collided: false,
@@ -268,27 +271,17 @@ impl Organism for Tetromino {
     }
 
     fn draw(&mut self, world: &mut World) {
-        let (piece, offsets) = match self.kind {
-            TetroK::I => TetrioI::mat4(self),
-            TetroK::J => TetrioJ::mat4(self),
-            TetroK::L => TetrioL::mat4(self),
-            TetroK::O => TetrioO::mat4(self),
-            TetroK::T => TetrioT::mat4(self),
-            TetroK::S => TetrioS::mat4(self),
-            TetroK::Z => TetrioZ::mat4(self),
-        };
-
         let block_x = world.block.x;
         let block_y = world.block.y;
         let current_x = self.props.x;
         // let current_y = self.props.y * block_y;
         let current_y = self.props.y;
 
-        for (row_idx, row) in piece.iter().enumerate() {
+        for (row_idx, row) in self.playfield.mat4.iter().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
                 if *value != 0 {
-                    let x_pos = col_idx as f32 - offsets.left as f32;
-                    let y_pos = row_idx as f32;
+                    let x_pos = col_idx as f32 - self.playfield.offsets.left as f32;
+                    let y_pos = row_idx as f32 - self.playfield.offsets.up as f32;
 
                     draw_rectangle(
                         x_pos * block_x + current_x,
