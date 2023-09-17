@@ -1,7 +1,10 @@
 use std::ops::ControlFlow;
 
 use macroquad::{
-    prelude::{clamp, is_key_down, touches, vec2, Color, KeyCode, Rect, TouchPhase, Vec2, SKYBLUE},
+    prelude::{
+        clamp, is_key_down, is_key_released, touches, vec2, Color, KeyCode, Rect, TouchPhase, Vec2,
+        SKYBLUE,
+    },
     shapes::{draw_circle, draw_rectangle},
     time::get_frame_time,
     window::{screen_height, screen_width},
@@ -265,6 +268,12 @@ impl Organism for Tetromino {
         }
         if is_key_down(KeyCode::Up) {
             self.props.y -= MOVEMENT_SPEED;
+        }
+        if is_key_released(KeyCode::Space) {
+            self.rotation_index += 1;
+            let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
+            self.current_rotation = ops[self.rotation_index % 4].clone();
+            self.props.size = self.kind.size(self.current_rotation.clone());
         }
 
         // (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);

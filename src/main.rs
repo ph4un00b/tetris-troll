@@ -126,7 +126,7 @@ async fn main() {
         Tetromino::from(TetroK::Z, &world),
         Tetromino::from(TetroK::T, &world),
     ];
-    let mut current_tetro = vec![Tetromino::from(TetroK::O, &world)];
+    let mut current_tetro = vec![Tetromino::from(TetroK::L, &world)];
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
     let restitution = 0.8;
@@ -205,6 +205,16 @@ async fn main() {
         ) {
             Pointers::draw();
         }
+
+        if is_key_released(KeyCode::R) {
+            //? poor's man hot reload 😏
+            std::process::Command::new("cargo")
+                .arg("run")
+                .current_dir("Z:/projects/tetris-troll")
+                .spawn()
+                .expect("fallo el hot reload!");
+            panic!("algo no paso!")
+        };
 
         match &game_state.state {
             Manager::Idle => {
