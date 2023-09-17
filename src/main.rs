@@ -206,7 +206,7 @@ async fn main() {
             Pointers::draw();
         }
 
-        if is_key_released(KeyCode::R) {
+        if (cfg!(unix) || cfg!(windows)) && is_key_released(KeyCode::R) {
             //? poor's man hot reload 😏
             std::process::Command::new("cargo")
                 .arg("run")
