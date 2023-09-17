@@ -174,15 +174,15 @@ impl World {
         // * @see https://tetris.fandom.com/wiki/Playfield
         draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
 
-        let pad_x: f32 = 0.5 * (self.screen.x - self.playfield.x);
-        let pad_y: f32 = self.screen.y * 0.2;
+        let playfield_x: f32 = 0.5 * (self.screen.x - self.playfield.x);
+        let playfield_y: f32 = self.screen.y * 0.2;
         const GAP: f32 = 1.;
 
         for (row_idx, row) in self.game.iter().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
                 draw_rectangle(
-                    pad_x + (self.block.x * (row_idx as f32 * GAP)),
-                    pad_y + self.block.y * (col_idx as f32 * GAP),
+                    playfield_x + (self.block.x * (row_idx as f32 * GAP)),
+                    playfield_y + self.block.y * (col_idx as f32 * GAP),
                     self.block.x,
                     self.block.y,
                     match *value {
@@ -192,7 +192,15 @@ impl World {
                 );
             }
         }
+
         //? line
-        draw_rectangle_lines(pad_x, pad_y, self.playfield.x, self.playfield.y, 10., BLACK);
+        draw_rectangle_lines(
+            playfield_x,
+            playfield_y,
+            self.playfield.x,
+            self.playfield.y,
+            10.,
+            BLACK,
+        );
     }
 }
