@@ -159,6 +159,7 @@ async fn main() {
     let mut tetro_props_x = 0.0_f32;
     let mut tetro_props_y = 0.0_f32;
     let mut tetro_size_y = 0.0_f32;
+    let mut floor_y = 0.0_f32;
     let mut g_piece = 0_usize;
     let g_floor_y = (world.screen.y * 0.2) + world.playfield.y;
     loop {
@@ -238,6 +239,7 @@ async fn main() {
                 }
 
                 for tetro in current_tetro.iter_mut() {
+                    // println!("floor-y: {}", g_floor_y - tetro.props.size.y);
                     world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
@@ -245,6 +247,7 @@ async fn main() {
                     tetro_props_x = tetro.props.x;
                     tetro_props_y = tetro.props.y;
                     tetro_size_y = tetro.props.size.y;
+                    floor_y = g_floor_y - tetro.props.size.y;
                     if tetro.props.y >= g_floor_y - tetro.props.size.y {
                         world.add(tetro);
                     }
@@ -282,6 +285,7 @@ async fn main() {
                             ui.label(format!("coord x: {}", tetro_coord_x));
                             ui.label(format!("tetro-size y: {}", tetro_size_y));
                             ui.label(format!("piso y: {}", g_floor_y - tetro_size_y));
+                            ui.label(format!("piso-y: {}", floor_y));
                             // ui.label(format!("y: {}", tetro_props_y * world.block.y));
                             ui.label(format!("altura: {}", bloque.y()));
                             //? x handler

@@ -273,7 +273,10 @@ impl Organism for Tetromino {
             self.rotation_index += 1;
             let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
             self.current_rotation = ops[self.rotation_index % 4].clone();
-            self.props.size = self.kind.size(self.current_rotation.clone());
+            self.props.size = vec2(
+                self.kind.size(self.current_rotation.clone()).x * world.block.x,
+                self.kind.size(self.current_rotation.clone()).y * world.block.y,
+            );
         }
 
         // (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
