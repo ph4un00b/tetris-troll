@@ -117,15 +117,15 @@ async fn main() {
     //?  Macroquad will clear the screen at the beginning of each frame.
     let mut world = World::new(Physics::new(), block, screen, playfield);
     let tetrominos = vec![
-        Tetromino::from(TetroK::I),
-        Tetromino::from(TetroK::J),
-        Tetromino::from(TetroK::L),
-        Tetromino::from(TetroK::O),
-        Tetromino::from(TetroK::S),
-        Tetromino::from(TetroK::Z),
-        Tetromino::from(TetroK::T),
+        Tetromino::from(TetroK::I, &world),
+        Tetromino::from(TetroK::J, &world),
+        Tetromino::from(TetroK::L, &world),
+        Tetromino::from(TetroK::O, &world),
+        Tetromino::from(TetroK::S, &world),
+        Tetromino::from(TetroK::Z, &world),
+        Tetromino::from(TetroK::T, &world),
     ];
-    let mut current_tetro = vec![Tetromino::from(TetroK::O)];
+    let mut current_tetro = vec![Tetromino::from(TetroK::O, &world)];
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
     let restitution = 0.8;
@@ -154,10 +154,12 @@ async fn main() {
     );
 
     // let mut c = 0;
-    let mut tetro_x = 0_usize;
+    let mut tetro_coord_x = 0_usize;
     let mut tetro_props_x = 0.0_f32;
     let mut tetro_props_y = 0.0_f32;
+    let mut tetro_size_y = 0.0_f32;
     let mut g_piece = 0_usize;
+    let g_floor_y = (world.screen.y * 0.2) + world.playfield.y;
     loop {
         if cfg!(unix) || cfg!(windows) {
             clear_background(VIOLET);
@@ -213,7 +215,6 @@ async fn main() {
                 //     game_state.send(&Evt::Menu);
                 // });
                 // Universe::draw(&screen, &playfield, &block);
-                world.render();
 
                 if current_tetro.is_empty() {
                     if cfg!(unix) || cfg!(windows) {
@@ -226,21 +227,24 @@ async fn main() {
                 }
 
                 for tetro in current_tetro.iter_mut() {
+                    world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    tetro_x = tetro.playfield.coord.x as usize;
+                    tetro_coord_x = tetro.playfield.coord.x as usize;
                     tetro_props_x = tetro.props.x;
                     tetro_props_y = tetro.props.y;
-                    // if tetro.props.y * block.y >= (screen.y * 1.0) {
-                    //     world.add(tetro);
-                    // }
+                    tetro_size_y = tetro.props.size.y;
+                    if tetro.props.y >= g_floor_y - tetro.props.size.y {
+                        world.add(tetro);
+                    }
                 }
 
-                current_tetro.retain(|tetro| tetro.playfield.coord.y < (screen.y * 1.0));
+                current_tetro
+                    .retain(|tetro| tetro.playfield.coord.y < g_floor_y - tetro.props.size.y);
                 // current_tetrios.retain(|tetromino| tetromino < floor);
 
                 bloque.update(&mut world, &mut physics_events);
-                bloque.draw(&mut world); 
+                bloque.draw(&mut world);
 
                 bloque2.update(&mut world, &mut physics_events);
                 bloque2.draw(&mut world);
@@ -257,8 +261,11 @@ async fn main() {
                     egui::Window::new("❤ debug").show(egui_ctx, |ui| {
                         ui.label(format!("screen.H: {}", world.screen.y));
                         ui.label(format!("screen.W: {}", world.screen.x));
-                        ui.label(format!("x: {}", tetro_props_x));
-                        ui.label(format!("y: {}", tetro_props_y));
+                        ui.label(format!("tetro x: {}", tetro_props_x));
+                        ui.label(format!("tetro y: {}", tetro_props_y));
+                        ui.label(format!("coord x: {}", tetro_coord_x));
+                        ui.label(format!("tetro-size y: {}", tetro_size_y));
+                        ui.label(format!("piso y: {}", g_floor_y - tetro_size_y));
                         // ui.label(format!("y: {}", tetro_props_y * world.block.y));
                         ui.label(format!("altura: {}", bloque.y()));
                         //? x handler
