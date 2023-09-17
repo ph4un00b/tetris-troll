@@ -3,6 +3,7 @@ use crate::constants::{PLAYFIELD_H, PLAYFIELD_W};
 use bloque::Bloque;
 
 use constants::NUMBER_OF_TETROMINOS;
+use egui::Pos2;
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -258,20 +259,25 @@ async fn main() {
 
                 egui_macroquad::ui(|egui_ctx| {
                     catppuccin_egui::set_theme(egui_ctx, catppuccin_egui::MOCHA);
-                    egui::Window::new("❤ debug").show(egui_ctx, |ui| {
-                        ui.label(format!("screen.H: {}", world.screen.y));
-                        ui.label(format!("screen.W: {}", world.screen.x));
-                        ui.label(format!("tetro x: {}", tetro_props_x));
-                        ui.label(format!("tetro y: {}", tetro_props_y));
-                        ui.label(format!("coord x: {}", tetro_coord_x));
-                        ui.label(format!("tetro-size y: {}", tetro_size_y));
-                        ui.label(format!("piso y: {}", g_floor_y - tetro_size_y));
-                        // ui.label(format!("y: {}", tetro_props_y * world.block.y));
-                        ui.label(format!("altura: {}", bloque.y()));
-                        //? x handler
-                        // ui.label(format!("x: {tetro_x}",));
-                        // ui.label(format!("x playfield: {tetro_x2}"));
-                    });
+                    egui::Window::new("❤ debug")
+                        .current_pos(Pos2 {
+                            x: screen_w * 0.75,
+                            y: 0.0,
+                        })
+                        .show(egui_ctx, |ui| {
+                            ui.label(format!("screen.H: {}", world.screen.y));
+                            ui.label(format!("screen.W: {}", world.screen.x));
+                            ui.label(format!("tetro x: {}", tetro_props_x));
+                            ui.label(format!("tetro y: {}", tetro_props_y));
+                            ui.label(format!("coord x: {}", tetro_coord_x));
+                            ui.label(format!("tetro-size y: {}", tetro_size_y));
+                            ui.label(format!("piso y: {}", g_floor_y - tetro_size_y));
+                            // ui.label(format!("y: {}", tetro_props_y * world.block.y));
+                            ui.label(format!("altura: {}", bloque.y()));
+                            //? x handler
+                            // ui.label(format!("x: {tetro_x}",));
+                            // ui.label(format!("x playfield: {tetro_x2}"));
+                        });
                 });
 
                 egui_macroquad::draw();
