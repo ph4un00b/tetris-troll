@@ -157,8 +157,11 @@ async fn main() {
     // let mut c = 0;
     let mut tetro_coord_x = 0_usize;
     let mut tetro_props_x = 0.0_f32;
-    let mut tetro_props_y = 0.0_f32;
+    let mut tetro_size_x = 0.0_f32;
     let mut tetro_size_y = 0.0_f32;
+    let mut tetro_min_x = 0.0_f32;
+    let mut tetro_max_x = 0.0_f32;
+    let mut tetro_props_y = 0.0_f32;
     let mut floor_y = 0.0_f32;
     let mut g_piece = 0_usize;
     let g_floor_y = (world.screen.y * 0.2) + world.playfield.y;
@@ -245,8 +248,11 @@ async fn main() {
                     tetro.draw(&mut world);
                     tetro_coord_x = tetro.playfield.coord.x as usize;
                     tetro_props_x = tetro.props.x;
-                    tetro_props_y = tetro.props.y;
+                    tetro_size_x = tetro.props.size.x;
                     tetro_size_y = tetro.props.size.y;
+                    tetro_min_x = tetro.props.min_x;
+                    tetro_max_x = tetro.props.max_x;
+                    tetro_props_y = tetro.props.y;
                     floor_y = g_floor_y - tetro.props.size.y;
                     if tetro.props.y >= g_floor_y - tetro.props.size.y {
                         world.add(tetro);
@@ -275,12 +281,18 @@ async fn main() {
                     egui::Window::new("❤ debug")
                         .current_pos(Pos2 {
                             x: screen_w * 0.75,
-                            y: 0.0,
+                            y: screen_h * 0.5,
                         })
                         .show(egui_ctx, |ui| {
+                            ui.label(format!("block.x: {}", world.block.x));
+                            ui.label(format!("block.y: {}", world.block.y));
                             ui.label(format!("screen.H: {}", world.screen.y));
                             ui.label(format!("screen.W: {}", world.screen.x));
                             ui.label(format!("tetro x: {}", tetro_props_x));
+                            ui.label(format!("size-x: {}", tetro_size_x));
+                            ui.label(format!("size-y: {}", tetro_size_y));
+                            ui.label(format!("min x: {}", tetro_min_x));
+                            ui.label(format!("max x: {}", tetro_max_x));
                             ui.label(format!("tetro y: {}", tetro_props_y));
                             ui.label(format!("coord x: {}", tetro_coord_x));
                             ui.label(format!("tetro-size y: {}", tetro_size_y));

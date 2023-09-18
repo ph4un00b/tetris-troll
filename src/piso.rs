@@ -31,6 +31,10 @@ impl Piso {
                 y: position.y,
                 collided: false,
                 color: BLACK,
+                min_x: 0.0,
+                max_x: 0.0,
+                min_y: 0.0,
+                max_y: 0.0,
             },
         }
     }

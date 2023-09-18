@@ -125,6 +125,8 @@ impl Tetromino {
             kind.size(rotation.clone()).y * world.block.y,
         );
 
+        let (x, min_x, max_x) = normalize_x(0.0, world, size.x);
+        let (y, min_y, max_y) = normalize_y(0.0, world, size.y);
         Tetromino {
             kind,
             rotation_index: 0,
@@ -133,9 +135,12 @@ impl Tetromino {
                 half: vec2(0., 0.),
                 size,
                 speed: MOVEMENT_SPEED,
-                x: 0.0,
-                // x: 1.0,
-                y: 0.0,
+                x,
+                min_x,
+                max_x,
+                y,
+                min_y,
+                max_y,
                 collided: false,
                 color,
             },
@@ -200,14 +205,14 @@ impl Tetromino {
         ControlFlow::Continue(())
     }
 
-    fn remap_x(&self, current_x: f32, world: &World) -> (f32, f32) {
-        //todo: cache if necessary❓
-        let x_normalized = normalize_x(current_x, world, self.props.size.x);
-        let x_coord = playfield_x(x_normalized, world);
+    // fn remap_x(&self, current_x: f32, world: &World) -> (f32, f32) {
+    //     //todo: cache if necessary❓
+    //     let x_normalized = normalize_x(current_x, world, self.props.size.x);
+    //     let x_coord = playfield_x(x_normalized, world);
 
-        println!(">>> norm-x2: {x_normalized}, {x_coord}");
-        (x_normalized, x_coord as f32)
-    }
+    //     println!(">>> norm-x2: {x_normalized}, {x_coord}");
+    //     (x_normalized, x_coord as f32)
+    // }
 }
 
 impl Organism for Tetromino {
@@ -221,58 +226,66 @@ impl Organism for Tetromino {
             crate::tetromino::TetroK::T => TetrioT::mat4(self),
             crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
         };
+
         self.playfield.mat4 = piece;
         self.playfield.offsets = offsets;
 
-        // let delta_time = get_frame_time();
-        // self.props.y += self.props.speed * delta_time;
+        if cfg!(unix) || cfg!(windows) {
+            // let delta_time = get_frame_time();
+            // self.props.y += self.props.speed * delta_time;
 
-        for touch in touches() {
-            if let TouchPhase::Started = touch.phase {
+            if is_key_down(KeyCode::Right) {
+                self.props.x += MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::Left) {
+                self.props.x -= MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::D) {
+                self.props.x += MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::A) {
+                self.props.x -= MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::Down) {
+                self.props.y += MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::Up) {
+                self.props.y -= MOVEMENT_SPEED;
+            }
+
+            if is_key_released(KeyCode::Space) {
                 self.rotation_index += 1;
                 let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
                 self.current_rotation = ops[self.rotation_index % 4].clone();
-                self.props.size = self.kind.size(self.current_rotation.clone());
-            };
+                self.props.size = vec2(
+                    self.kind.size(self.current_rotation.clone()).x * world.block.x,
+                    self.kind.size(self.current_rotation.clone()).y * world.block.y,
+                );
+            }
 
-            draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-            self.props.x = normalize_x(touch.position.x, world, self.props.size.x);
-            self.props.y = normalize_y(touch.position.y, world, self.props.size.y);
-            // (self.props.x, self.playfield.coord.x) = self.remap_x(touch.position.x, world);
-        }
+            self.props.x = normalize_x(self.props.x, world, self.props.size.x).0;
+            self.props.y = normalize_y(self.props.y, world, self.props.size.y).0;
+            self.playfield.coord.x = playfield_x(self.props.x, world) as f32;
+        } else {
+            for touch in touches() {
+                if let TouchPhase::Started = touch.phase {
+                    self.rotation_index += 1;
+                    let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
+                    self.current_rotation = ops[self.rotation_index % 4].clone();
+                    self.props.size = vec2(
+                        self.kind.size(self.current_rotation.clone()).x * world.block.x,
+                        self.kind.size(self.current_rotation.clone()).y * world.block.y,
+                    );
+                };
 
-        if is_key_down(KeyCode::Right) {
-            self.props.x += MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::Left) {
-            self.props.x -= MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::D) {
-            self.props.x += MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::A) {
-            self.props.x -= MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::Down) {
-            self.props.y += MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::Up) {
-            self.props.y -= MOVEMENT_SPEED;
-        }
-
-        if is_key_released(KeyCode::Space) {
-            self.rotation_index += 1;
-            let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
-            self.current_rotation = ops[self.rotation_index % 4].clone();
-            self.props.size = vec2(
-                self.kind.size(self.current_rotation.clone()).x * world.block.x,
-                self.kind.size(self.current_rotation.clone()).y * world.block.y,
-            );
-        }
-
-        self.props.x = normalize_x(self.props.x, world, self.props.size.x);
-        self.props.y = normalize_y(self.props.y, world, self.props.size.y);
-        // self.playfield.coord.x = playfield_x(self.props.x, world) as f32;
+                draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
+                (self.props.x, self.props.min_x, self.props.max_x) =
+                    normalize_x(touch.position.x, world, self.props.size.x);
+                (self.props.y, self.props.min_y, self.props.max_y) =
+                    normalize_y(touch.position.y, world, self.props.size.y);
+                // (self.props.x, self.playfield.coord.x) = self.remap_x(touch.position.x, world);
+            }
+        };
     }
 
     fn draw(&mut self, world: &mut World) {
