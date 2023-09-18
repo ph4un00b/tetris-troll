@@ -2,18 +2,17 @@ use std::ops::ControlFlow;
 
 use macroquad::{
     prelude::{
-        clamp, is_key_down, is_key_released, touches, vec2, Color, KeyCode, Rect, TouchPhase, Vec2,
+        is_key_down, is_key_released, touches, vec2, Color, KeyCode, Rect, TouchPhase, Vec2,
         SKYBLUE,
     },
     shapes::{draw_circle, draw_rectangle},
-    time::get_frame_time,
     window::{screen_height, screen_width},
 };
 
 use crate::{
-    constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
+    constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H},
     physics::PhysicsEvent,
-    shared::{normalize_to_discrete, normalize_to_playfield, Collision, Coso, Organism},
+    shared::{normalize_x, normalize_y, playfield_x, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -203,22 +202,11 @@ impl Tetromino {
 
     fn remap_x(&self, current_x: f32, world: &World) -> (f32, f32) {
         //todo: cache if necessary❓
-        let left_padding = 0.5 * (world.screen.x - world.playfield.x);
-        let x_normalized = normalize_to_playfield(current_x, world, self.props.size.x as usize);
-        let x_position = normalize_to_discrete(x_normalized, world);
+        let x_normalized = normalize_x(current_x, world, self.props.size.x);
+        let x_coord = playfield_x(x_normalized, world);
 
-        let new_x = clamp(
-            current_x,
-            left_padding + 0.0,
-            left_padding + (world.block.x * x_position as f32),
-        );
-
-        let discrete_x = clamp(
-            normalize_to_discrete(current_x, world) as f32,
-            0.,
-            PLAYFIELD_W as f32 - self.props.size.x,
-        );
-        (new_x, discrete_x)
+        println!(">>> norm-x2: {x_normalized}, {x_coord}");
+        (x_normalized, x_coord as f32)
     }
 }
 
@@ -248,7 +236,9 @@ impl Organism for Tetromino {
             };
 
             draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-            (self.props.x, self.playfield.coord.x) = self.remap_x(touch.position.x, world);
+            self.props.x = normalize_x(touch.position.x, world, self.props.size.x);
+            self.props.y = normalize_y(touch.position.y, world, self.props.size.y);
+            // (self.props.x, self.playfield.coord.x) = self.remap_x(touch.position.x, world);
         }
 
         if is_key_down(KeyCode::Right) {
@@ -269,6 +259,7 @@ impl Organism for Tetromino {
         if is_key_down(KeyCode::Up) {
             self.props.y -= MOVEMENT_SPEED;
         }
+
         if is_key_released(KeyCode::Space) {
             self.rotation_index += 1;
             let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
@@ -279,7 +270,9 @@ impl Organism for Tetromino {
             );
         }
 
-        // (self.props.x, self.playfield_x) = self.remap_x(self.props.x, world);
+        self.props.x = normalize_x(self.props.x, world, self.props.size.x);
+        self.props.y = normalize_y(self.props.y, world, self.props.size.y);
+        // self.playfield.coord.x = playfield_x(self.props.x, world) as f32;
     }
 
     fn draw(&mut self, world: &mut World) {
