@@ -12,7 +12,7 @@ use macroquad::{
 use crate::{
     constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H},
     physics::PhysicsEvent,
-    shared::{normalize_x, normalize_y, playfield_x, Collision, Coso, Organism},
+    shared::{normalize_x, normalize_y, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -205,14 +205,44 @@ impl Tetromino {
         ControlFlow::Continue(())
     }
 
-    // fn remap_x(&self, current_x: f32, world: &World) -> (f32, f32) {
-    //     //todo: cache if necessary❓
-    //     let x_normalized = normalize_x(current_x, world, self.props.size.x);
-    //     let x_coord = playfield_x(x_normalized, world);
+    fn rotate(&mut self, world: &mut World) {
+        self.rotation_index += 1;
+        let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
+        self.current_rotation = ops[self.rotation_index % 4].clone();
+        self.props.size = vec2(
+            self.kind.size(self.current_rotation.clone()).x * world.block.x,
+            self.kind.size(self.current_rotation.clone()).y * world.block.y,
+        );
+    }
 
-    //     println!(">>> norm-x2: {x_normalized}, {x_coord}");
-    //     (x_normalized, x_coord as f32)
-    // }
+    fn update_position(&mut self, position: macroquad::prelude::Vec2, world: &mut World) {
+        draw_circle(position.x, position.y, 10.0, SKYBLUE);
+        (self.props.x, self.props.min_x, self.props.max_x) =
+            normalize_x(position.x, world, self.props.size.x);
+        (self.props.y, self.props.min_y, self.props.max_y) =
+            normalize_y(position.y, world, self.props.size.y);
+    }
+
+    fn keyboard_input(&mut self) {
+        if is_key_down(KeyCode::Right) {
+            self.props.x += MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::Left) {
+            self.props.x -= MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::D) {
+            self.props.x += MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::A) {
+            self.props.x -= MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::Down) {
+            self.props.y += MOVEMENT_SPEED;
+        }
+        if is_key_down(KeyCode::Up) {
+            self.props.y -= MOVEMENT_SPEED;
+        }
+    }
 }
 
 impl Organism for Tetromino {
@@ -233,57 +263,17 @@ impl Organism for Tetromino {
         if cfg!(unix) || cfg!(windows) {
             // let delta_time = get_frame_time();
             // self.props.y += self.props.speed * delta_time;
-
-            if is_key_down(KeyCode::Right) {
-                self.props.x += MOVEMENT_SPEED;
-            }
-            if is_key_down(KeyCode::Left) {
-                self.props.x -= MOVEMENT_SPEED;
-            }
-            if is_key_down(KeyCode::D) {
-                self.props.x += MOVEMENT_SPEED;
-            }
-            if is_key_down(KeyCode::A) {
-                self.props.x -= MOVEMENT_SPEED;
-            }
-            if is_key_down(KeyCode::Down) {
-                self.props.y += MOVEMENT_SPEED;
-            }
-            if is_key_down(KeyCode::Up) {
-                self.props.y -= MOVEMENT_SPEED;
-            }
-
+            self.keyboard_input();
             if is_key_released(KeyCode::Space) {
-                self.rotation_index += 1;
-                let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
-                self.current_rotation = ops[self.rotation_index % 4].clone();
-                self.props.size = vec2(
-                    self.kind.size(self.current_rotation.clone()).x * world.block.x,
-                    self.kind.size(self.current_rotation.clone()).y * world.block.y,
-                );
+                self.rotate(world);
             }
-
-            self.props.x = normalize_x(self.props.x, world, self.props.size.x).0;
-            self.props.y = normalize_y(self.props.y, world, self.props.size.y).0;
-            self.playfield.coord.x = playfield_x(self.props.x, world) as f32;
+            self.update_position(vec2(self.props.x, self.props.y), world);
         } else {
             for touch in touches() {
                 if let TouchPhase::Started = touch.phase {
-                    self.rotation_index += 1;
-                    let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
-                    self.current_rotation = ops[self.rotation_index % 4].clone();
-                    self.props.size = vec2(
-                        self.kind.size(self.current_rotation.clone()).x * world.block.x,
-                        self.kind.size(self.current_rotation.clone()).y * world.block.y,
-                    );
+                    self.rotate(world);
                 };
-
-                draw_circle(touch.position.x, touch.position.y, 10.0, SKYBLUE);
-                (self.props.x, self.props.min_x, self.props.max_x) =
-                    normalize_x(touch.position.x, world, self.props.size.x);
-                (self.props.y, self.props.min_y, self.props.max_y) =
-                    normalize_y(touch.position.y, world, self.props.size.y);
-                // (self.props.x, self.playfield.coord.x) = self.remap_x(touch.position.x, world);
+                self.update_position(touch.position, world);
             }
         };
     }
