@@ -6,7 +6,10 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_W},
+    constants::{
+        NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING,
+        PLAYFIELD_W,
+    },
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
@@ -174,8 +177,8 @@ impl World {
         // * @see https://tetris.fandom.com/wiki/Playfield
         draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
 
-        let origin_playfield_x: f32 = 0.5 * (self.screen.x - self.playfield.x);
-        let origin_playfield_y: f32 = self.screen.y * 0.2;
+        let origin_playfield_x: f32 = PLAYFIELD_LEFT_PADDING * (self.screen.x - self.playfield.x);
+        let origin_playfield_y: f32 = self.screen.y * PLAYFIELD_TOP_PADDING;
         const GAP: f32 = 1.;
 
         for (row_idx, row) in self.game.iter().enumerate() {

@@ -1,6 +1,10 @@
 use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
-use crate::{physics::PhysicsEvent, world::World};
+use crate::{
+    constants::{PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING},
+    physics::PhysicsEvent,
+    world::World,
+};
 
 #[allow(unused)]
 #[derive(Debug)]
@@ -79,17 +83,19 @@ pub fn normalize(value: f32, world: &World) -> f32 {
     clamp(value, left_pad, max)
 }
 
-pub fn normalize_x(value: f32, world: &World, x_size: f32) -> f32 {
-    let min = 0.5 * (world.screen.x - world.playfield.x);
+pub fn normalize_x(value: f32, world: &World, x_size: f32) -> (f32, f32, f32) {
+    let min = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
     let max = min + world.playfield.x - x_size;
-    clamp(value, min, max)
+    let val = clamp(value, min, max);
+    (val, min, max)
 }
 
-pub fn normalize_y(value: f32, world: &World, y_size: f32) -> f32 {
-    let origin_playfield_y: f32 = world.screen.y * 0.2;
+pub fn normalize_y(value: f32, world: &World, y_size: f32) -> (f32, f32, f32) {
+    let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
     let min = origin_playfield_y;
     let max = min + world.playfield.y - y_size;
-    clamp(value, min, max)
+    let val = clamp(value, min, max);
+    (val, min, max)
 }
 
 #[derive(Debug, Clone)]
@@ -98,7 +104,11 @@ pub struct Coso {
     pub size: Vec2,
     pub speed: f32,
     pub x: f32,
+    pub min_x: f32,
+    pub max_x: f32,
     pub y: f32,
+    pub min_y: f32,
+    pub max_y: f32,
     pub collided: bool,
     pub color: Color,
 }

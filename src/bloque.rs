@@ -59,6 +59,10 @@ impl Bloque {
                 y: position.y,
                 collided: false,
                 color: PINK,
+                min_x: 0.0,
+                max_x: 0.0,
+                min_y: 0.0,
+                max_y: 0.0,
             },
             handler,
         }
