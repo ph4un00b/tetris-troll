@@ -66,7 +66,7 @@ pub fn remap_to_canvas(
     }
 }
 
-pub fn normalize_to_discrete(position_x: f32, world: &World) -> usize {
+pub fn playfield_x(position_x: f32, world: &World) -> usize {
     let left_pad = 0.5 * (world.screen.x - world.playfield.x);
     let value = (position_x - left_pad) / world.block.x;
     clamp(value.floor(), 0.0, 9.0) as usize
@@ -79,10 +79,17 @@ pub fn normalize(value: f32, world: &World) -> f32 {
     clamp(value, left_pad, max)
 }
 
-pub fn normalize_to_playfield(value: f32, world: &World, width: usize) -> f32 {
-    let left_pad = 0.5 * (world.screen.x - world.playfield.x);
-    let max = left_pad + world.playfield.x - (width as f32 * world.block.x);
-    clamp(value, left_pad, max)
+pub fn normalize_x(value: f32, world: &World, x_size: f32) -> f32 {
+    let min = 0.5 * (world.screen.x - world.playfield.x);
+    let max = min + world.playfield.x - x_size;
+    clamp(value, min, max)
+}
+
+pub fn normalize_y(value: f32, world: &World, y_size: f32) -> f32 {
+    let origin_playfield_y: f32 = world.screen.y * 0.2;
+    let min = origin_playfield_y;
+    let max = min + world.playfield.y - y_size;
+    clamp(value, min, max)
 }
 
 #[derive(Debug, Clone)]
