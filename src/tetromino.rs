@@ -6,6 +6,7 @@ use macroquad::{
         SKYBLUE,
     },
     shapes::{draw_circle, draw_rectangle},
+    time::get_frame_time,
     window::{screen_height, screen_width},
 };
 
@@ -290,9 +291,10 @@ impl Organism for Tetromino {
         self.playfield.mat4 = piece;
         self.playfield.offsets = offsets;
 
+        let delta_time = get_frame_time();
+        self.props.y += self.props.speed * delta_time;
+
         if cfg!(unix) || cfg!(windows) {
-            // let delta_time = get_frame_time();
-            // self.props.y += self.props.speed * delta_time;
             if (is_key_down(KeyCode::Right)
                 || is_key_down(KeyCode::Left)
                 || is_key_down(KeyCode::D)
