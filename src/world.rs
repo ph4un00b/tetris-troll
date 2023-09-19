@@ -48,7 +48,8 @@ impl World {
      * y de referencia para contrastar las formas distintas
      * para ejecutar est aparte de la lógica.
      */
-    pub(crate) fn add(&mut self, tetro: &Tetromino) {
+    pub(crate) fn add(&mut self, tetro: &mut Tetromino) {
+        tetro.in_game = false;
         match game_configs::ADD_STRATEGY {
             Strat::Generic => self.add_with_generic(tetro),
             Strat::Runtime => self.add_with_runtime(tetro),
