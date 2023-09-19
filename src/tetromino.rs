@@ -113,10 +113,12 @@ pub struct Playfield {
 pub struct Tetromino {
     pub kind: TetroK,
     pub current_rotation: Clock,
-    rotation_index: usize,
     pub props: Coso,
     pub playfield: Playfield,
+    pub in_game: bool,
+    pub pristine: bool,
     current: Vec2,
+    rotation_index: usize,
 }
 
 impl Tetromino {
@@ -129,8 +131,19 @@ impl Tetromino {
             kind.size(rotation.clone()).y * world.block.y,
         );
 
-        let (x, min_x, max_x) = normalize_x(0.0, world, size.x);
+        let (x, min_x, max_x) = normalize_x(screen_width() * 0.5, world, size.x);
         let (y, min_y, max_y) = normalize_y(0.0, world, size.y);
+
+        let coord = vec2(playfield_x(x, world), playfield_y(y, world));
+
+        let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
+        let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
+
+        let current = vec2(
+            origin_playfield_x + (coord.x * world.block.x),
+            origin_playfield_y + (coord.y * world.block.y),
+        );
+
         Tetromino {
             kind,
             rotation_index: 0,
@@ -156,9 +169,11 @@ impl Tetromino {
                     left: 0,
                     right: 0,
                 },
-                coord: vec2(0., 0.),
+                coord,
             },
-            current: vec2(0., 0.),
+            current,
+            in_game: true,
+            pristine: true,
         }
     }
 
@@ -278,17 +293,36 @@ impl Organism for Tetromino {
         if cfg!(unix) || cfg!(windows) {
             // let delta_time = get_frame_time();
             // self.props.y += self.props.speed * delta_time;
+            if (is_key_down(KeyCode::Right)
+                || is_key_down(KeyCode::Left)
+                || is_key_down(KeyCode::D)
+                || is_key_down(KeyCode::A)
+                || is_key_down(KeyCode::Down)
+                || is_key_down(KeyCode::Up))
+                && self.pristine
+            {
+                self.pristine = false
+            };
+
             self.keyboard_input();
             if is_key_released(KeyCode::Space) {
                 self.rotate(world);
-            }
-            self.update_positions(vec2(self.props.x, self.props.y), world);
+            };
+
+            if !self.pristine {
+                self.update_positions(vec2(self.props.x, self.props.y), world);
+            };
         } else {
             for touch in touches() {
                 if let TouchPhase::Started = touch.phase {
+                    if self.pristine {
+                        self.pristine = false
+                    }
                     self.rotate(world);
                 };
-                self.update_positions(touch.position, world);
+                if !self.pristine {
+                    self.update_positions(touch.position, world);
+                };
             }
         };
     }

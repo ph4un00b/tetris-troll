@@ -261,8 +261,7 @@ async fn main() {
                     }
                 }
 
-                current_tetro
-                    .retain(|tetro| tetro.playfield.coord.y < g_floor_y - tetro.props.size.y);
+                current_tetro.retain(|tetro| tetro.in_game);
                 // current_tetrios.retain(|tetromino| tetromino < floor);
 
                 bloque.update(&mut world, &mut physics_events);
