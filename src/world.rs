@@ -21,6 +21,7 @@ pub struct World {
     pub screen: Vec3,
     pub playfield: Vec2,
     game: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
+    floor: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
 }
 
 #[allow(unused)]
@@ -38,6 +39,7 @@ impl World {
             screen,
             playfield,
             game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
+            floor: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
         }
     }
 
@@ -80,6 +82,7 @@ impl World {
         tetro.process(|x, y, value| {
             let game = &mut self.game;
             game[x][y - offset] = value;
+            self.floor[x][y - offset] = 8;
 
             None
         });
@@ -192,6 +195,21 @@ impl World {
                     match *value {
                         1..=7 => TetroK::from(*value).color(),
                         _ => BROWN,
+                    },
+                );
+            }
+        }
+
+        for (row_idx, row) in self.floor.iter().enumerate() {
+            for (col_idx, value) in row.iter().enumerate() {
+                draw_rectangle(
+                    origin_playfield_x + (self.block.x * (row_idx as f32 * GAP)) - self.playfield.x,
+                    origin_playfield_y + self.block.y * (col_idx as f32 * GAP),
+                    self.block.x,
+                    self.block.y,
+                    match *value {
+                        8 => GREEN,
+                        _ => BLACK,
                     },
                 );
             }
