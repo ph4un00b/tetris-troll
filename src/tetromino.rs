@@ -116,6 +116,7 @@ pub struct Tetromino {
     rotation_index: usize,
     pub props: Coso,
     pub playfield: Playfield,
+    current: Vec2,
 }
 
 impl Tetromino {
@@ -157,6 +158,7 @@ impl Tetromino {
                 },
                 coord: vec2(0., 0.),
             },
+            current: vec2(0., 0.),
         }
     }
 
@@ -218,8 +220,9 @@ impl Tetromino {
         );
     }
 
-    fn update_position(&mut self, position: macroquad::prelude::Vec2, world: &mut World) {
+    fn update_positions(&mut self, position: macroquad::prelude::Vec2, world: &mut World) {
         draw_circle(position.x, position.y, 10.0, SKYBLUE);
+
         (self.props.x, self.props.min_x, self.props.max_x) =
             normalize_x(position.x, world, self.props.size.x);
         (self.props.y, self.props.min_y, self.props.max_y) =
@@ -227,6 +230,12 @@ impl Tetromino {
 
         self.playfield.coord.x = playfield_x(self.props.x, world);
         self.playfield.coord.y = playfield_y(self.props.y, world);
+
+        let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
+        let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
+
+        self.current.x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
+        self.current.y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
     }
 
     fn keyboard_input(&mut self) {
@@ -273,33 +282,27 @@ impl Organism for Tetromino {
             if is_key_released(KeyCode::Space) {
                 self.rotate(world);
             }
-            self.update_position(vec2(self.props.x, self.props.y), world);
+            self.update_positions(vec2(self.props.x, self.props.y), world);
         } else {
             for touch in touches() {
                 if let TouchPhase::Started = touch.phase {
                     self.rotate(world);
                 };
-                self.update_position(touch.position, world);
+                self.update_positions(touch.position, world);
             }
         };
     }
 
     fn draw(&mut self, world: &mut World) {
-        let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
-        let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
-
-        let current_x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
-        let current_y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
-
         for (row_idx, row) in self.playfield.mat4.iter().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
                 if *value != 0 {
-                    let x = col_idx as f32 - self.playfield.offsets.left as f32;
-                    let y = row_idx as f32 - self.playfield.offsets.up as f32;
+                    let x = (col_idx - self.playfield.offsets.left) as f32 * world.block.x;
+                    let y = (row_idx - self.playfield.offsets.up) as f32 * world.block.x;
 
                     draw_rectangle(
-                        x * world.block.x + current_x,
-                        y * world.block.y + current_y,
+                        x + self.current.x,
+                        y + self.current.y,
                         world.block.x,
                         world.block.y,
                         self.props.color,
