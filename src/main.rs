@@ -155,7 +155,8 @@ async fn main() {
     );
 
     // let mut c = 0;
-    let mut tetro_coord_x = 0_usize;
+    let mut tetro_coord_x = 0.0_f32;
+    let mut tetro_coord_y = 0.0_f32;
     let mut tetro_props_x = 0.0_f32;
     let mut tetro_size_x = 0.0_f32;
     let mut tetro_size_y = 0.0_f32;
@@ -246,7 +247,8 @@ async fn main() {
                     world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    tetro_coord_x = tetro.playfield.coord.x as usize;
+                    tetro_coord_x = tetro.playfield.coord.x;
+                    tetro_coord_y = tetro.playfield.coord.y;
                     tetro_props_x = tetro.props.x;
                     tetro_size_x = tetro.props.size.x;
                     tetro_size_y = tetro.props.size.y;
@@ -295,6 +297,7 @@ async fn main() {
                             ui.label(format!("max x: {}", tetro_max_x));
                             ui.label(format!("tetro y: {}", tetro_props_y));
                             ui.label(format!("coord x: {}", tetro_coord_x));
+                            ui.label(format!("coord y: {}", tetro_coord_y));
                             ui.label(format!("tetro-size y: {}", tetro_size_y));
                             ui.label(format!("piso y: {}", g_floor_y - tetro_size_y));
                             ui.label(format!("piso-y: {}", floor_y));

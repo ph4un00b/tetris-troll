@@ -10,9 +10,12 @@ use macroquad::{
 };
 
 use crate::{
-    constants::{MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H},
+    constants::{
+        MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
+        PLAYFIELD_TOP_PADDING,
+    },
     physics::PhysicsEvent,
-    shared::{normalize_x, normalize_y, Collision, Coso, Organism},
+    shared::{normalize_x, normalize_y, playfield_x, playfield_y, Collision, Coso, Organism},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -221,6 +224,9 @@ impl Tetromino {
             normalize_x(position.x, world, self.props.size.x);
         (self.props.y, self.props.min_y, self.props.max_y) =
             normalize_y(position.y, world, self.props.size.y);
+
+        self.playfield.coord.x = playfield_x(self.props.x, world);
+        self.playfield.coord.y = playfield_y(self.props.y, world);
     }
 
     fn keyboard_input(&mut self) {
@@ -279,23 +285,23 @@ impl Organism for Tetromino {
     }
 
     fn draw(&mut self, world: &mut World) {
-        let block_x = world.block.x;
-        let block_y = world.block.y;
-        let current_x = self.props.x;
-        // let current_y = self.props.y * block_y;
-        let current_y = self.props.y;
+        let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
+        let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
+
+        let current_x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
+        let current_y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
 
         for (row_idx, row) in self.playfield.mat4.iter().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
                 if *value != 0 {
-                    let x_pos = col_idx as f32 - self.playfield.offsets.left as f32;
-                    let y_pos = row_idx as f32 - self.playfield.offsets.up as f32;
+                    let x = col_idx as f32 - self.playfield.offsets.left as f32;
+                    let y = row_idx as f32 - self.playfield.offsets.up as f32;
 
                     draw_rectangle(
-                        x_pos * block_x + current_x,
-                        y_pos * block_y + current_y,
-                        block_x,
-                        block_y,
+                        x * world.block.x + current_x,
+                        y * world.block.y + current_y,
+                        world.block.x,
+                        world.block.y,
                         self.props.color,
                     );
                 }

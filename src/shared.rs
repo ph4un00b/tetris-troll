@@ -1,7 +1,7 @@
 use macroquad::prelude::{clamp, Color, Rect, Vec2};
 
 use crate::{
-    constants::{PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING},
+    constants::{PLAYFIELD_H, PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING, PLAYFIELD_W},
     physics::PhysicsEvent,
     world::World,
 };
@@ -70,10 +70,20 @@ pub fn remap_to_canvas(
     }
 }
 
-pub fn playfield_x(position_x: f32, world: &World) -> usize {
-    let left_pad = 0.5 * (world.screen.x - world.playfield.x);
-    let value = (position_x - left_pad) / world.block.x;
-    clamp(value.floor(), 0.0, 9.0) as usize
+pub fn playfield_x(position_x: f32, world: &World) -> f32 {
+    let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
+    let value = (position_x - origin_playfield_x) / world.block.x;
+    let max = PLAYFIELD_W as f32 - 1.0;
+
+    clamp(value.floor(), 0.0, max)
+}
+
+pub fn playfield_y(position_y: f32, world: &World) -> f32 {
+    let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
+    let value = (position_y - origin_playfield_y) / world.block.y;
+    let max = PLAYFIELD_H as f32 - 1.0;
+
+    clamp(value.floor(), 0.0, max)
 }
 
 pub fn normalize(value: f32, world: &World) -> f32 {
