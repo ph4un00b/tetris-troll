@@ -313,6 +313,8 @@ impl Organism for Tetromino {
                 self.update_positions(vec2(self.props.x, self.props.y), world);
             };
         } else {
+            self.update_positions(vec2(self.props.x, self.props.y), world);
+
             for touch in touches() {
                 if let TouchPhase::Started = touch.phase {
                     if self.pristine {
