@@ -12,7 +12,7 @@ use macroquad::{
 
 use crate::{
     constants::{
-        MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
+        DEBUG_TETRO, MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
         PLAYFIELD_TOP_PADDING,
     },
     physics::PhysicsEvent,
@@ -335,12 +335,17 @@ impl Organism for Tetromino {
         for (row_idx, row) in self.playfield.mat4.iter().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
                 if *value != 0 {
-                    let x = (col_idx - self.playfield.offsets.left) as f32 * world.block.x;
-                    let y = (row_idx - self.playfield.offsets.up) as f32 * world.block.x;
+                    let x = col_idx - self.playfield.offsets.left;
+                    let y = row_idx - self.playfield.offsets.up;
+
+                    world.floor[x + self.playfield.coord.x as usize][y] = DEBUG_TETRO;
+
+                    let mapped_x = x as f32 * world.block.x;
+                    let mapped_y = y as f32 * world.block.x;
 
                     draw_rectangle(
-                        x + self.current.x,
-                        y + self.current.y,
+                        mapped_x + self.current.x,
+                        mapped_y + self.current.y,
                         world.block.x,
                         world.block.y,
                         self.props.color,
