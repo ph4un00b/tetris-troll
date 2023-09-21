@@ -13,7 +13,7 @@ use macroquad::{
 use crate::{
     constants::{
         DEBUG_TETRO, MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
-        PLAYFIELD_TOP_PADDING,
+        PLAYFIELD_TOP_PADDING, PLAYFIELD_W,
     },
     physics::PhysicsEvent,
     shared::{normalize_x, normalize_y, playfield_x, playfield_y, Collision, Coso, Organism},
@@ -132,10 +132,13 @@ impl Tetromino {
             kind.size(rotation.clone()).y * world.block.y,
         );
 
-        let (x, min_x, max_x) = normalize_x(screen_width() * 0.5, world, size.x);
+        let (x, min_x, max_x) = normalize_x(screen_width() * 0.95, world, size.x);
         let (y, min_y, max_y) = normalize_y(0.0, world, size.y);
 
-        let coord = vec2(playfield_x(x, world), playfield_y(y, world));
+        let coord = vec2(
+            playfield_x(x, world, kind.size(rotation.clone()).x),
+            playfield_y(y, world, kind.size(rotation.clone()).y),
+        );
 
         let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
         let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
@@ -193,9 +196,39 @@ impl Tetromino {
                 if *piece_value == NONE_VALUE {
                     continue;
                 }
+
                 let mapped_x =
                     pos_x + self.playfield.coord.x as usize - self.playfield.offsets.left;
+
+                assert!(
+                    mapped_x < PLAYFIELD_W,
+                    "{}",
+                    format!(
+                        "falla!, kind: {:?}, rot: {:?}, pos_x: {pos_x}, coord-x: {}, left: {:?}, size: {}, offs {:?}",
+                        self.kind,
+                        self.current_rotation,
+                        self.playfield.coord.x,
+                        self.playfield.offsets,
+                        self.kind.size(self.current_rotation.clone()).x,
+                        self.playfield.offsets
+                    )
+                );
+
                 let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.playfield.offsets.down);
+
+                assert!(
+                    mapped_y < PLAYFIELD_H,
+                    "{}",
+                    format!(
+                        "falla!, kind: {:?}, rot: {:?}, pos_y: {pos_y}, coord-y: {}, left: {:?}, size: {}",
+                        self.kind,
+                        self.current_rotation,
+                        self.playfield.coord.y,
+                        self.playfield.offsets,
+                        self.kind.size(self.current_rotation.clone()).y
+                    )
+                );
+
                 let result = callback(mapped_x, mapped_y, *piece_value);
                 if result.is_some() {
                     return ControlFlow::Break(());
@@ -230,10 +263,27 @@ impl Tetromino {
         self.rotation_index += 1;
         let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
         self.current_rotation = ops[self.rotation_index % 4].clone();
+        self.update_from_rotation(world);
+    }
+
+    fn update_from_rotation(&mut self, world: &World) {
         self.props.size = vec2(
             self.kind.size(self.current_rotation.clone()).x * world.block.x,
             self.kind.size(self.current_rotation.clone()).y * world.block.y,
         );
+
+        let (piece, offsets) = match &self.kind {
+            crate::tetromino::TetroK::I => TetrioI::mat4(self),
+            crate::tetromino::TetroK::J => TetrioJ::mat4(self),
+            crate::tetromino::TetroK::L => TetrioL::mat4(self),
+            crate::tetromino::TetroK::O => TetrioO::mat4(self),
+            crate::tetromino::TetroK::S => TetrioS::mat4(self),
+            crate::tetromino::TetroK::T => TetrioT::mat4(self),
+            crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
+        };
+
+        self.playfield.mat4 = piece;
+        self.playfield.offsets = offsets;
     }
 
     fn update_positions(&mut self, position: macroquad::prelude::Vec2, world: &mut World) {
@@ -244,8 +294,16 @@ impl Tetromino {
         (self.props.y, self.props.min_y, self.props.max_y) =
             normalize_y(position.y, world, self.props.size.y);
 
-        self.playfield.coord.x = playfield_x(self.props.x, world);
-        self.playfield.coord.y = playfield_y(self.props.y, world);
+        self.playfield.coord.x = playfield_x(
+            self.props.x,
+            world,
+            self.kind.size(self.current_rotation.clone()).x,
+        );
+        self.playfield.coord.y = playfield_y(
+            self.props.y,
+            world,
+            self.kind.size(self.current_rotation.clone()).y,
+        );
 
         let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
         let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
@@ -278,18 +336,7 @@ impl Tetromino {
 
 impl Organism for Tetromino {
     fn update(&mut self, world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
-        let (piece, offsets) = match &self.kind {
-            crate::tetromino::TetroK::I => TetrioI::mat4(self),
-            crate::tetromino::TetroK::J => TetrioJ::mat4(self),
-            crate::tetromino::TetroK::L => TetrioL::mat4(self),
-            crate::tetromino::TetroK::O => TetrioO::mat4(self),
-            crate::tetromino::TetroK::S => TetrioS::mat4(self),
-            crate::tetromino::TetroK::T => TetrioT::mat4(self),
-            crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
-        };
-
-        self.playfield.mat4 = piece;
-        self.playfield.offsets = offsets;
+        self.update_from_rotation(world);
 
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
@@ -309,6 +356,10 @@ impl Organism for Tetromino {
             self.keyboard_input();
             if is_key_released(KeyCode::Space) {
                 self.rotate(world);
+            };
+            if is_key_released(KeyCode::F1) {
+                //? debug
+                self.in_game = false
             };
 
             if !self.pristine {
@@ -336,9 +387,11 @@ impl Organism for Tetromino {
             for (col_idx, value) in row.iter().enumerate() {
                 if *value != 0 {
                     let x = col_idx - self.playfield.offsets.left;
+                    // let x = col_idx;
                     let y = row_idx - self.playfield.offsets.up;
+                    // let y = row_idx;
 
-                    world.floor[x + self.playfield.coord.x as usize][y] = DEBUG_TETRO;
+                    world.floor[x][y] = DEBUG_TETRO;
 
                     let mapped_x = x as f32 * world.block.x;
                     let mapped_y = y as f32 * world.block.x;
@@ -350,6 +403,14 @@ impl Organism for Tetromino {
                         world.block.y,
                         self.props.color,
                     );
+                    //? debug
+                    // draw_rectangle(
+                    //     self.props.x,
+                    //     self.props.y,
+                    //     world.block.x,
+                    //     world.block.y,
+                    //     self.props.color,
+                    // );
                 }
             }
         }
