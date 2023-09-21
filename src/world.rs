@@ -73,7 +73,10 @@ impl World {
         let mut offset = 0_usize;
 
         while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
-            let has_collision = self.game[x][y - offset] > 0_u8;
+            let game_x = self.game[x];
+            let game_y = game_x[y - offset];
+
+            let has_collision = game_y > 0_u8;
             has_collision.then_some(())
         }) {
             offset += 1;
@@ -81,6 +84,7 @@ impl World {
 
         tetro.process(|x, y, value| {
             let game = &mut self.game;
+            println!("{x}, {y}");
             game[x][y - offset] = value;
             self.floor[x][y - offset] = DEBUG_GROUND;
 
