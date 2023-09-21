@@ -124,8 +124,8 @@ pub struct Coso {
 }
 
 pub trait Collision {
-    fn collides_with(&self, other: &Rect) -> bool;
-    fn rect(&self) -> Rect;
+    fn collides_with(&self, other: &Rect, world: &World) -> bool;
+    fn rect(&self, world: &World) -> Rect;
 }
 
 pub trait Position {

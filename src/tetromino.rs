@@ -214,7 +214,7 @@ impl Tetromino {
                     )
                 );
 
-                let mapped_y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + self.playfield.offsets.down);
+                let mapped_y = pos_y + self.playfield.coord.y as usize - self.playfield.offsets.up;
 
                 assert!(
                     mapped_y < PLAYFIELD_H,
@@ -424,8 +424,8 @@ impl Organism for Tetromino {
 }
 
 impl Collision for Tetromino {
-    fn collides_with(&self, other: &Rect) -> bool {
-        self.rect().overlaps(other)
+    fn collides_with(&self, other: &Rect, world: &World) -> bool {
+        self.rect(world).overlaps(other)
     }
 
     //? el cuadro que mapea la colisión❗
@@ -436,10 +436,10 @@ impl Collision for Tetromino {
      * phau: falta un debug mode para ver el perímetro❗
      */
     //todo: draw helpers
-    fn rect(&self) -> Rect {
+    fn rect(&self, _word: &World) -> Rect {
         Rect {
-            x: self.props.x - self.props.size.x / 2.0,
-            y: self.props.y - self.props.size.y / 2.0,
+            x: self.current.x,
+            y: self.current.y,
             w: self.props.size.x,
             h: self.props.size.y,
         }
