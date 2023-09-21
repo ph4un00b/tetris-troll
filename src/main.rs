@@ -1,4 +1,6 @@
-use crate::constants::{PLAYFIELD_H, PLAYFIELD_W};
+use std::ops::ControlFlow;
+
+use crate::constants::{DEBUG_GROUND, PLAYFIELD_H, PLAYFIELD_W};
 
 use bloque::Bloque;
 
@@ -148,7 +150,7 @@ async fn main() {
         10.,
         restitution * 2.2,
     );
-    let mut piso = Piso::new(
+    let mut ground = Piso::new(
         &mut world,
         vec2(0.5 * (screen.x - (20. * block.x)), 31. * block.y),
         vec2(20. * block.x, 1. * block.x),
@@ -247,6 +249,7 @@ async fn main() {
                     world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
+                    //? debug info
                     tetro_coord_x = tetro.playfield.coord.x;
                     tetro_coord_y = tetro.playfield.coord.y;
                     tetro_props_x = tetro.props.x;
@@ -256,13 +259,19 @@ async fn main() {
                     tetro_max_x = tetro.props.max_x;
                     tetro_props_y = tetro.props.y;
                     floor_y = g_floor_y - tetro.props.size.y;
-                    if tetro.props.y >= g_floor_y - tetro.props.size.y {
+
+                    if let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
+                        if world.floor[x][y] == DEBUG_GROUND {
+                            Some(())
+                        } else {
+                            None
+                        }
+                    }) {
                         world.add(tetro);
                     }
                 }
 
                 current_tetro.retain(|tetro| tetro.in_game);
-                // current_tetrios.retain(|tetromino| tetromino < floor);
 
                 bloque.update(&mut world, &mut physics_events);
                 bloque.draw(&mut world);
@@ -272,7 +281,7 @@ async fn main() {
 
                 bloque3.update(&mut world, &mut physics_events);
                 bloque3.draw(&mut world);
-                piso.draw(&mut world);
+                ground.draw(&mut world);
 
                 world.physics.update(get_frame_time(), &mut physics_events);
                 world.physics.draw_colliders();

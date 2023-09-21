@@ -1,10 +1,11 @@
 use macroquad::{
-    prelude::{vec2, Vec2, BLACK},
+    prelude::{vec2, Rect, Vec2, BLACK},
     shapes::draw_rectangle,
 };
 use rapier2d::prelude::ColliderBuilder;
 
 use crate::{
+    constants::{PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING},
     physics::PhysicsEvent,
     shared::{Collision, Coso, Organism},
     world::World,
@@ -41,11 +42,29 @@ impl Piso {
 }
 
 impl Collision for Piso {
-    fn collides_with(&self, _other: &macroquad::prelude::Rect) -> bool {
+    fn collides_with(&self, _other: &macroquad::prelude::Rect, _world: &World) -> bool {
         todo!()
     }
 
-    fn rect(&self) -> macroquad::prelude::Rect {
+    fn rect(&self, world: &World) -> macroquad::prelude::Rect {
+        let origin_playfield_x: f32 = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
+        let origin_playfield_y: f32 = world.screen.y * PLAYFIELD_TOP_PADDING;
+        let mut rectangles = vec![];
+
+        for (row_idx, row) in world.floor.iter().enumerate() {
+            for (col_idx, value) in row.iter().enumerate() {
+                if *value != 0 {
+                    // println!("{value}");
+                    rectangles.push(Rect {
+                        x: origin_playfield_x + (world.block.x * (row_idx as f32)),
+                        y: origin_playfield_y + (world.block.y * (col_idx as f32)),
+                        w: world.block.x,
+                        h: world.block.y,
+                    });
+                }
+            }
+        }
+
         todo!()
     }
 }

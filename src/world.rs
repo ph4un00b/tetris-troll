@@ -39,7 +39,38 @@ impl World {
             screen,
             playfield,
             game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
-            floor: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
+            floor: [
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
+                ],
+            ],
         }
     }
 
@@ -70,23 +101,11 @@ impl World {
      * 4. queda prolijo
      */
     pub(crate) fn add_with_generic(&mut self, tetro: &Tetromino) {
-        let mut offset = 0_usize;
-
-        while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
-            let game_x = self.game[x];
-            let game_y = game_x[y - offset];
-
-            let has_collision = game_y > 0_u8;
-            has_collision.then_some(())
-        }) {
-            offset += 1;
-        }
-
         tetro.process(|x, y, value| {
             let game = &mut self.game;
-            println!("{x}, {y}");
-            game[x][y - offset] = value;
-            self.floor[x][y - offset] = DEBUG_GROUND;
+            // println!("{x}, {y}");
+            game[x][y - 1] = value;
+            self.floor[x][y - 1] = DEBUG_GROUND;
 
             None
         });
