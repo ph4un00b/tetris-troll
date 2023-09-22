@@ -244,6 +244,17 @@ async fn main() {
                     };
                 }
 
+                // * from @link https://discord.com/channels/710177966440579103/710180051349405746/1067069758329073664
+                let (mx, my) = mouse_position();
+
+                draw_text(
+                    format!("mouse: {}, {}", mx, my).as_str(),
+                    5.0,
+                    20.0,
+                    20.0,
+                    BLACK,
+                );
+
                 for tetro in current_tetro.iter_mut() {
                     // println!("floor-y: {}", g_floor_y - tetro.props.size.y);
                     world.render(g_floor_y - tetro.props.size.y);

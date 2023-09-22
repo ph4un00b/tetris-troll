@@ -2,8 +2,8 @@ use std::ops::ControlFlow;
 
 use macroquad::{
     prelude::{
-        is_key_down, is_key_released, touches, vec2, Color, KeyCode, Rect, TouchPhase, Vec2,
-        SKYBLUE,
+        is_key_down, is_key_released, is_mouse_button_pressed, mouse_position, touches, vec2,
+        Color, KeyCode, MouseButton, Rect, TouchPhase, Vec2, SKYBLUE,
     },
     shapes::{draw_circle, draw_rectangle},
     time::get_frame_time,
@@ -390,6 +390,15 @@ impl Organism for Tetromino {
             if !self.pristine {
                 self.update_positions(vec2(self.props.x, self.props.y), world);
             };
+
+            if is_mouse_button_pressed(MouseButton::Left) {
+                if self.pristine {
+                    self.pristine = false
+                }
+                let (mx, my) = mouse_position();
+                println!("click x{mx}, y{my}");
+                self.update_positions(vec2(mx, my), world);
+            }
         } else {
             self.update_positions(vec2(self.props.x, self.props.y), world);
 
