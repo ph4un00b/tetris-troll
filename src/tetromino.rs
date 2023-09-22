@@ -108,6 +108,7 @@ pub struct Playfield {
     pub coord: Vec2,
     pub mat4: Mat4,
     pub offsets: Offset,
+    pub size: Vec2,
 }
 
 #[derive(Debug, Clone)]
@@ -127,17 +128,20 @@ impl Tetromino {
         let kind = spec;
         let color = kind.color();
         let rotation = Clock::P12;
+
+        let discrete_size = vec2(kind.size(rotation.clone()).x, kind.size(rotation.clone()).y);
+
         let size = vec2(
-            kind.size(rotation.clone()).x * world.block.x,
-            kind.size(rotation.clone()).y * world.block.y,
+            discrete_size.x * world.block.x,
+            discrete_size.y * world.block.y,
         );
 
         let (x, min_x, max_x) = normalize_x(screen_width() * 0.95, world, size.x);
         let (y, min_y, max_y) = normalize_y(0.0, world, size.y);
 
         let coord = vec2(
-            playfield_x(x, world, kind.size(rotation.clone()).x),
-            playfield_y(y, world, kind.size(rotation.clone()).y),
+            playfield_x(x, world, discrete_size.x),
+            playfield_y(y, world, discrete_size.y),
         );
 
         let origin_playfield_x = PLAYFIELD_LEFT_PADDING * (world.screen.x - world.playfield.x);
@@ -174,6 +178,7 @@ impl Tetromino {
                     right: 0,
                 },
                 coord,
+                size: discrete_size,
             },
             current,
             in_game: true,
@@ -263,11 +268,11 @@ impl Tetromino {
         self.rotation_index += 1;
         let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
         self.current_rotation = ops[self.rotation_index % 4].clone();
-        self.update_props(world);
+        self.update_playfield_props(world);
         self.update_positions(vec2(self.props.x, self.props.y), world);
     }
 
-    fn update_props(&mut self, world: &World) {
+    fn update_playfield_props(&mut self, world: &World) {
         self.props.size = vec2(
             self.kind.size(self.current_rotation.clone()).x * world.block.x,
             self.kind.size(self.current_rotation.clone()).y * world.block.y,
@@ -283,8 +288,16 @@ impl Tetromino {
             crate::tetromino::TetroK::Z => TetrioZ::mat4(self),
         };
 
-        self.playfield.mat4 = piece;
-        self.playfield.offsets = offsets;
+        self.playfield = Playfield {
+            //? quizá aquí ajustar la rotación❓
+            coord: self.playfield.coord,
+            mat4: piece,
+            offsets,
+            size: vec2(
+                self.kind.size(self.current_rotation.clone()).x,
+                self.kind.size(self.current_rotation.clone()).y,
+            ),
+        }
     }
 
     fn update_positions(&mut self, position: macroquad::prelude::Vec2, world: &mut World) {
@@ -316,7 +329,7 @@ impl Tetromino {
 
 impl Organism for Tetromino {
     fn update(&mut self, world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
-        self.update_props(world);
+        self.update_playfield_props(world);
 
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
