@@ -316,6 +316,7 @@ async fn main() {
                     20.0,
                     YELLOW,
                 );
+
                 current_tetro.retain(|tetro| tetro.in_game);
 
                 bloque.update(&mut world, &mut physics_events);
