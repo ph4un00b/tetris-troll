@@ -244,17 +244,6 @@ async fn main() {
                     };
                 }
 
-                // * from @link https://discord.com/channels/710177966440579103/710180051349405746/1067069758329073664
-                let (mx, my) = mouse_position();
-
-                draw_text(
-                    format!("mouse: {}, {}", mx, my).as_str(),
-                    5.0,
-                    20.0,
-                    20.0,
-                    BLACK,
-                );
-
                 for tetro in current_tetro.iter_mut() {
                     // println!("floor-y: {}", g_floor_y - tetro.props.size.y);
                     world.render(g_floor_y - tetro.props.size.y);
@@ -263,12 +252,42 @@ async fn main() {
                     //? debug info
                     tetro_coord_x = tetro.playfield.coord.x;
                     tetro_coord_y = tetro.playfield.coord.y;
+
+                    draw_text(
+                        format!(
+                            "coord: {}, {}",
+                            tetro.playfield.coord.x, tetro.playfield.coord.y
+                        )
+                        .as_str(),
+                        5.0,
+                        (screen_height() * 0.5) + 40.0,
+                        20.0,
+                        YELLOW,
+                    );
                     tetro_props_x = tetro.props.x;
                     tetro_size_x = tetro.props.size.x;
                     tetro_size_y = tetro.props.size.y;
+                    draw_text(
+                        format!(
+                            "size: {}, {}",
+                            tetro.playfield.size.x, tetro.playfield.size.y
+                        )
+                        .as_str(),
+                        5.0,
+                        (screen_height() * 0.5) + 60.0,
+                        20.0,
+                        YELLOW,
+                    );
                     tetro_min_x = tetro.props.min_x;
                     tetro_max_x = tetro.props.max_x;
                     tetro_props_y = tetro.props.y;
+                    draw_text(
+                        format!("props: {}, {}", tetro.props.x, tetro.props.y).as_str(),
+                        5.0,
+                        (screen_height() * 0.5) + 80.0,
+                        20.0,
+                        YELLOW,
+                    );
                     floor_y = g_floor_y - tetro.props.size.y;
 
                     if let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
@@ -287,6 +306,16 @@ async fn main() {
                     }
                 }
 
+                // * from @link https://discord.com/channels/710177966440579103/710180051349405746/1067069758329073664
+                let (mx, my) = mouse_position();
+
+                draw_text(
+                    format!("mouse: {}, {}", mx, my).as_str(),
+                    5.0,
+                    (screen_height() * 0.5) + 20.0,
+                    20.0,
+                    YELLOW,
+                );
                 current_tetro.retain(|tetro| tetro.in_game);
 
                 bloque.update(&mut world, &mut physics_events);
