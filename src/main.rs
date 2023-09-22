@@ -261,10 +261,15 @@ async fn main() {
                     floor_y = g_floor_y - tetro.props.size.y;
 
                     if let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
-                        if world.floor[x][y] == DEBUG_GROUND {
-                            Some(())
+                        if cfg!(unix) || cfg!(windows) {
+                            (world.floor[x][y] == DEBUG_GROUND).then_some(())
                         } else {
-                            None
+                            /*
+                             * wasm: mobile touch
+                             * this adds up instantly
+                             * todo: delay
+                             */
+                            (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
                         }
                     }) {
                         world.add(tetro);
