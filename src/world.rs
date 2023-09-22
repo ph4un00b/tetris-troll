@@ -104,8 +104,13 @@ impl World {
         tetro.process(|x, y, value| {
             let game = &mut self.game;
             // println!("{x}, {y}");
-            game[x][y - 1] = value;
-            self.floor[x][y - 1] = DEBUG_GROUND;
+            if cfg!(unix) || cfg!(windows) {
+                game[x][y - 1] = value;
+                self.floor[x][y - 1] = DEBUG_GROUND;
+            } else {
+                game[x][y] = value;
+                self.floor[x][y] = DEBUG_GROUND;
+            }
 
             None
         });
