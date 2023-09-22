@@ -101,8 +101,13 @@ impl World {
      * 4. queda prolijo
      */
     pub(crate) fn add_with_generic(&mut self, tetro: &Tetromino) {
-        // * due to initial ground, we start with 1 position offset
-        let mut offset = 1_usize;
+        let mut offset = if cfg!(unix) || cfg!(windows) {
+            // * due to initial ground, we start with 1 position offset
+            1_usize
+        } else {
+            // todo: fix(mobile) instant add up on
+            0_usize
+        };
 
         while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
             let has_collision = self.game[x][y - offset] > 0_u8;
