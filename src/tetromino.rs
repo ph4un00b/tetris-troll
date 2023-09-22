@@ -263,10 +263,11 @@ impl Tetromino {
         self.rotation_index += 1;
         let ops = [Clock::P12, Clock::P3, Clock::P6, Clock::P9];
         self.current_rotation = ops[self.rotation_index % 4].clone();
-        self.update_from_rotation(world);
+        self.update_props(world);
+        self.update_positions(vec2(self.props.x, self.props.y), world);
     }
 
-    fn update_from_rotation(&mut self, world: &World) {
+    fn update_props(&mut self, world: &World) {
         self.props.size = vec2(
             self.kind.size(self.current_rotation.clone()).x * world.block.x,
             self.kind.size(self.current_rotation.clone()).y * world.block.y,
@@ -311,32 +312,11 @@ impl Tetromino {
         self.current.x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
         self.current.y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
     }
-
-    fn keyboard_input(&mut self) {
-        if is_key_down(KeyCode::Right) {
-            self.props.x += MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::Left) {
-            self.props.x -= MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::D) {
-            self.props.x += MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::A) {
-            self.props.x -= MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::Down) {
-            self.props.y += MOVEMENT_SPEED;
-        }
-        if is_key_down(KeyCode::Up) {
-            self.props.y -= MOVEMENT_SPEED;
-        }
-    }
 }
 
 impl Organism for Tetromino {
     fn update(&mut self, world: &mut World, _physics_events: &mut Vec<PhysicsEvent>) {
-        self.update_from_rotation(world);
+        self.update_props(world);
 
         let delta_time = get_frame_time();
         self.props.y += self.props.speed * delta_time;
@@ -353,7 +333,52 @@ impl Organism for Tetromino {
                 self.pristine = false
             };
 
-            self.keyboard_input();
+            if is_key_down(KeyCode::Right) {
+                self.props.x += MOVEMENT_SPEED;
+                self.update_positions(vec2(self.props.x, self.props.y), world);
+
+                if let ControlFlow::Break(()) = self.process(|x, y, _value| {
+                    if world.floor[x][y] != 0_u8 {
+                        Some(())
+                    } else {
+                        None
+                    }
+                }) {
+                    println!("no puedo! >>>>");
+                    //? maybe create a setter❓
+                    self.props.x -= world.block.x;
+                    self.update_positions(vec2(self.props.x, self.props.y), world);
+                }
+            }
+            if is_key_down(KeyCode::Left) {
+                self.props.x -= MOVEMENT_SPEED;
+                self.update_positions(vec2(self.props.x, self.props.y), world);
+
+                if let ControlFlow::Break(()) = self.process(|x, y, _value| {
+                    if world.floor[x][y] != 0_u8 {
+                        Some(())
+                    } else {
+                        None
+                    }
+                }) {
+                    println!("no puedo! <<<<");
+                    //? maybe create a setter❓
+                    self.props.x += world.block.x;
+                    self.update_positions(vec2(self.props.x, self.props.y), world);
+                }
+            }
+            if is_key_down(KeyCode::D) {
+                self.props.x += MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::A) {
+                self.props.x -= MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::Down) {
+                self.props.y += MOVEMENT_SPEED;
+            }
+            if is_key_down(KeyCode::Up) {
+                self.props.y -= MOVEMENT_SPEED;
+            }
             if is_key_released(KeyCode::Space) {
                 self.rotate(world);
             };
