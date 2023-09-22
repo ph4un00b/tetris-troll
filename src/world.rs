@@ -101,16 +101,20 @@ impl World {
      * 4. queda prolijo
      */
     pub(crate) fn add_with_generic(&mut self, tetro: &Tetromino) {
+        // * due to initial ground, we start with 1 position offset
+        let mut offset = 1_usize;
+
+        while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
+            let has_collision = self.game[x][y - offset] > 0_u8;
+            has_collision.then_some(())
+        }) {
+            offset += 1;
+        }
+
         tetro.process(|x, y, value| {
             let game = &mut self.game;
-            // println!("{x}, {y}");
-            if cfg!(unix) || cfg!(windows) {
-                game[x][y - 1] = value;
-                self.floor[x][y - 1] = DEBUG_GROUND;
-            } else {
-                game[x][y] = value;
-                self.floor[x][y] = DEBUG_GROUND;
-            }
+            game[x][y - offset] = value;
+            self.floor[x][y - offset] = DEBUG_GROUND;
 
             None
         });
