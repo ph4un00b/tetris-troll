@@ -13,6 +13,7 @@ use crate::{
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
+    world_with_holes::WORLD_WITH_HOLES,
 };
 
 pub struct World {
@@ -39,38 +40,7 @@ impl World {
             screen,
             playfield,
             game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
-            floor: [
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-                [
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8,
-                ],
-            ],
+            floor: WORLD_WITH_HOLES,
         }
     }
 
@@ -105,7 +75,7 @@ impl World {
             // * due to initial ground, we start with 1 position offset
             1_usize
         } else {
-            // todo: fix(mobile) instant add up on
+            // todo: fix(mobile) instant add up.
             0_usize
         };
 
@@ -123,6 +93,10 @@ impl World {
 
             None
         });
+
+        self.lock_playable_slots();
+        self.fill_unplayable_holes();
+        self.unlock_playable_slots();
     }
 
     /*
@@ -245,7 +219,7 @@ impl World {
                     self.block.x,
                     self.block.y,
                     match *value {
-                        // 1..=7 => TetroK::from(*value).color(),
+                        1..=7 => TetroK::from(*value).color(),
                         DEBUG_GROUND => GREEN,
                         DEBUG_TETRO => BLUE,
                         _ => BLACK,
@@ -273,5 +247,79 @@ impl World {
         );
 
         draw_rectangle_lines(origin_playfield_x, floor, self.playfield.x, 1., 3., GREEN);
+    }
+
+    fn lock_playable_slots(&mut self) {
+        println!("filling...");
+        let mut stack = vec![(0, 0)];
+
+        while let Some(current) = stack.pop() {
+            let neibors = {
+                let x = current.0;
+                let y = current.1;
+                let mut result = vec![];
+                if x + 1 < PLAYFIELD_W && self.floor[x + 1][y] == 0_u8 {
+                    result.push((x + 1, y))
+                }
+                if x > 0 && self.floor[x - 1][y] == 0_u8 {
+                    result.push((x - 1, y))
+                }
+                if y + 1 < PLAYFIELD_H && self.floor[x][y + 1] == 0_u8 {
+                    result.push((x, y + 1))
+                }
+                if y > 0 && self.floor[x][y - 1] == 0_u8 {
+                    result.push((x, y - 1))
+                }
+                result
+            };
+
+            for (x, y) in neibors {
+                // println!("{x}, {y}");
+                self.floor[x][y] = 2;
+                stack.push((x, y));
+            }
+        }
+    }
+
+    fn fill_unplayable_holes(&mut self) {
+        println!("holes...");
+        for (x, row) in self.floor.clone().iter().enumerate() {
+            for (y, _value) in row.iter().enumerate() {
+                if self.floor[x][y] == 0_u8 {
+                    self.floor[x][y] = 7_u8;
+                }
+            }
+        }
+    }
+
+    fn unlock_playable_slots(&mut self) {
+        println!("black again...");
+        let mut stack = vec![(0, 0)];
+        while let Some(current) = stack.pop() {
+            let neibors = {
+                let x = current.0;
+                let y = current.1;
+                let mut result = vec![];
+                if x + 1 < PLAYFIELD_W && self.floor[x + 1][y] == 2_u8 {
+                    result.push((x + 1, y))
+                }
+                if x > 0 && self.floor[x - 1][y] == 2_u8 {
+                    result.push((x - 1, y))
+                }
+                if y + 1 < PLAYFIELD_H && self.floor[x][y + 1] == 2_u8 {
+                    result.push((x, y + 1))
+                }
+                if y > 0 && self.floor[x][y - 1] == 2_u8 {
+                    result.push((x, y - 1))
+                }
+                result
+            };
+
+            for (x, y) in neibors {
+                // println!("{x}, {y}");
+                self.floor[x][y] = 0;
+                stack.push((x, y));
+            }
+        }
     }
 }

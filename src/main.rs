@@ -45,6 +45,7 @@ mod tetrio_Z;
 mod tetromino;
 mod ui;
 mod world;
+mod world_with_holes;
 //todo: fix shader for mobile❗
 const _FRAGMENT_SHADER: &str = include_str!("background.glsl");
 /*
