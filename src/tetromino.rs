@@ -12,7 +12,7 @@ use macroquad::{
 
 use crate::{
     constants::{
-        DEBUG_TETRO, MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
+        MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
         PLAYFIELD_TOP_PADDING, PLAYFIELD_W,
     },
     physics::PhysicsEvent,
@@ -326,32 +326,6 @@ impl Tetromino {
         self.current.x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
         self.current.y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
     }
-
-    fn remove_holes(&self) {
-        todo!()
-    }
-
-    fn neibors(&self, world: &World, x: usize, y: usize) -> Vec<(usize, usize)> {
-        // let is_row_border = x == 0_usize || x == PLAYFIELD_H - 1_usize;
-        // let is_col_border = y == 0_usize || y == PLAYFIELD_W - 1_usize;
-        // let is_border = is_row_border || is_col_border;
-        let mut result = vec![];
-
-        if x + 1 < 10 && world.floor[x + 1][y] == 0_u8 {
-            result.push((x + 1, y))
-        }
-        if x > 0 && world.floor[x - 1][y] == 0_u8 {
-            result.push((x - 1, y))
-        }
-        if y + 1 < 24 && world.floor[x][y + 1] == 0_u8 {
-            result.push((x, y + 1))
-        }
-        if y > 0 && world.floor[x][y - 1] == 0_u8 {
-            result.push((x, y - 1))
-        }
-
-        result
-    }
 }
 
 impl Organism for Tetromino {
@@ -435,7 +409,7 @@ impl Organism for Tetromino {
 
                     for (x, y) in neibors {
                         // println!("{x}, {y}");
-                        world.floor[x][y] = 2;
+                        world.floor[x][y] = 2_u8;
                         stack.push((x, y));
                     }
                 }
@@ -447,6 +421,39 @@ impl Organism for Tetromino {
                         if world.floor[row_idx][col_idx] == 0_u8 {
                             world.floor[row_idx][col_idx] = 7_u8;
                         }
+                    }
+                }
+            }
+            if is_key_down(KeyCode::F4) {
+                println!("black again...");
+                let mut stack = vec![(0, 0)];
+
+                while let Some(current) = stack.pop() {
+                    let neibors = {
+                        let x = current.0;
+                        let y = current.1;
+                        let mut result = vec![];
+
+                        if x + 1 < 10 && world.floor[x + 1][y] == 2_u8 {
+                            result.push((x + 1, y))
+                        }
+                        if x > 0 && world.floor[x - 1][y] == 2_u8 {
+                            result.push((x - 1, y))
+                        }
+                        if y + 1 < 24 && world.floor[x][y + 1] == 2_u8 {
+                            result.push((x, y + 1))
+                        }
+                        if y > 0 && world.floor[x][y - 1] == 2_u8 {
+                            result.push((x, y - 1))
+                        }
+
+                        result
+                    };
+
+                    for (x, y) in neibors {
+                        // println!("{x}, {y}");
+                        world.floor[x][y] = 0_u8;
+                        stack.push((x, y));
                     }
                 }
             }
@@ -508,7 +515,8 @@ impl Organism for Tetromino {
                     let y = row_idx - self.playfield.offsets.up;
                     // let y = row_idx;
 
-                    world.floor[x][y] = DEBUG_TETRO;
+                    //? no debug, se overlapped con el algoritmo de llenado
+                    // world.floor[x][y] = DEBUG_TETRO;
 
                     let mapped_x = x as f32 * world.block.x;
                     let mapped_y = y as f32 * world.block.x;
