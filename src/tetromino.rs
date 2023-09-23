@@ -243,6 +243,7 @@ impl Tetromino {
         ControlFlow::Continue(())
     }
 
+    #[allow(unused)]
     pub fn process_with_runtime(
         &self,
         callback: &mut impl FnMut(usize, usize, u8) -> Option<()>,
@@ -325,6 +326,32 @@ impl Tetromino {
         self.current.x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
         self.current.y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
     }
+
+    fn remove_holes(&self) {
+        todo!()
+    }
+
+    fn neibors(&self, world: &World, x: usize, y: usize) -> Vec<(usize, usize)> {
+        // let is_row_border = x == 0_usize || x == PLAYFIELD_H - 1_usize;
+        // let is_col_border = y == 0_usize || y == PLAYFIELD_W - 1_usize;
+        // let is_border = is_row_border || is_col_border;
+        let mut result = vec![];
+
+        if x + 1 < 10 && world.floor[x + 1][y] == 0_u8 {
+            result.push((x + 1, y))
+        }
+        if x > 0 && world.floor[x - 1][y] == 0_u8 {
+            result.push((x - 1, y))
+        }
+        if y + 1 < 24 && world.floor[x][y + 1] == 0_u8 {
+            result.push((x, y + 1))
+        }
+        if y > 0 && world.floor[x][y - 1] == 0_u8 {
+            result.push((x, y - 1))
+        }
+
+        result
+    }
 }
 
 impl Organism for Tetromino {
@@ -379,6 +406,21 @@ impl Organism for Tetromino {
                     self.props.x += world.block.x;
                     self.update_positions(vec2(self.props.x, self.props.y), world);
                 }
+            }
+            if is_key_down(KeyCode::F2) {
+                println!("filling...");
+                let mut stack = vec![(0, 0)];
+                while let Some(current) = stack.pop() {
+                    let neibors = self.neibors(world, current.0, current.1);
+                    for (x, y) in neibors {
+                        println!("{x}, {y}");
+                        world.floor[x][y] = 2;
+                        stack.push((x, y));
+                    }
+                }
+            }
+            if is_key_down(KeyCode::F3) {
+                self.remove_holes()
             }
             if is_key_down(KeyCode::D) {
                 self.props.x += MOVEMENT_SPEED;
