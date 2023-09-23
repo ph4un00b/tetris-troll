@@ -410,17 +410,45 @@ impl Organism for Tetromino {
             if is_key_down(KeyCode::F2) {
                 println!("filling...");
                 let mut stack = vec![(0, 0)];
+
                 while let Some(current) = stack.pop() {
-                    let neibors = self.neibors(world, current.0, current.1);
+                    let neibors = {
+                        let x = current.0;
+                        let y = current.1;
+                        let mut result = vec![];
+
+                        if x + 1 < 10 && world.floor[x + 1][y] == 0_u8 {
+                            result.push((x + 1, y))
+                        }
+                        if x > 0 && world.floor[x - 1][y] == 0_u8 {
+                            result.push((x - 1, y))
+                        }
+                        if y + 1 < 24 && world.floor[x][y + 1] == 0_u8 {
+                            result.push((x, y + 1))
+                        }
+                        if y > 0 && world.floor[x][y - 1] == 0_u8 {
+                            result.push((x, y - 1))
+                        }
+
+                        result
+                    };
+
                     for (x, y) in neibors {
-                        println!("{x}, {y}");
+                        // println!("{x}, {y}");
                         world.floor[x][y] = 2;
                         stack.push((x, y));
                     }
                 }
             }
             if is_key_down(KeyCode::F3) {
-                self.remove_holes()
+                println!("holes...");
+                for (row_idx, row) in world.floor.clone().iter().enumerate() {
+                    for (col_idx, _value) in row.iter().enumerate() {
+                        if world.floor[row_idx][col_idx] == 0_u8 {
+                            world.floor[row_idx][col_idx] = 7_u8;
+                        }
+                    }
+                }
             }
             if is_key_down(KeyCode::D) {
                 self.props.x += MOVEMENT_SPEED;
