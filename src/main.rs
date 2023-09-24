@@ -1,3 +1,11 @@
+// * @see https://github.com/0x61nas/todo2#using-the-log-feature
+#[macro_use]
+extern crate todo2;
+#[macro_use]
+extern crate log;
+use simple_logger::SimpleLogger;
+
+// * game deps
 use std::ops::ControlFlow;
 
 use crate::constants::{DEBUG_GROUND, PLAYFIELD_H, PLAYFIELD_W};
@@ -72,6 +80,9 @@ void main() {
 
 #[macroquad::main("TetrisTroll")]
 async fn main() {
+    // * @see https://github.com/0x61nas/todo2#using-the-log-feature
+    SimpleLogger::new().init().unwrap();
+
     simulate_mouse_with_touch(true);
 
     //? game shader init
