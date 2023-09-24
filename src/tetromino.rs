@@ -136,7 +136,7 @@ impl Tetromino {
             discrete_size.y * world.block.y,
         );
 
-        let (x, min_x, max_x) = normalize_x(screen_width() * 0.95, world, size.x);
+        let (x, min_x, max_x) = normalize_x(screen_width() * 0.5, world, size.x);
         let (y, min_y, max_y) = normalize_y(0.0, world, size.y);
 
         let coord = vec2(
