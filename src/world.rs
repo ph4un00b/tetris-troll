@@ -13,7 +13,7 @@ use crate::{
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
-    world_with_holes::WORLD_WITH_HOLES,
+    world_with_holes::WORLD_WITH_FLOOR,
 };
 
 pub struct World {
@@ -40,7 +40,8 @@ impl World {
             screen,
             playfield,
             game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
-            floor: WORLD_WITH_HOLES,
+            // floor: WORLD_WITH_HOLES,
+            floor: WORLD_WITH_FLOOR,
         }
     }
 
@@ -80,7 +81,7 @@ impl World {
         };
 
         while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
-            let has_collision = self.game[x][y - offset] > 0_u8;
+            let has_collision = self.floor[x][y - offset] > 0_u8;
             has_collision.then_some(())
         }) {
             offset += 1;
