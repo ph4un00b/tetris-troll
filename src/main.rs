@@ -1,12 +1,11 @@
 // * @see https://github.com/0x61nas/todo2#using-the-log-feature
 #[macro_use]
 extern crate todo2;
-#[macro_use]
-extern crate log;
+// #[macro_use]
+// extern crate log;
 use simple_logger::SimpleLogger;
 
 // * game deps
-use std::ops::ControlFlow;
 
 use crate::constants::{DEBUG_GROUND, PLAYFIELD_H, PLAYFIELD_W};
 
@@ -302,19 +301,27 @@ async fn main() {
                     );
                     floor_y = g_floor_y - tetro.props.size.y;
 
-                    if let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
-                        if cfg!(unix) || cfg!(windows) {
-                            (world.floor[x][y] == DEBUG_GROUND).then_some(())
-                        } else {
-                            /*
-                             * wasm: mobile touch
-                             * this adds up instantly
-                             * todo: delay
-                             */
-                            (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
+                    if tetro
+                        .current_positions(|x, y, _value| {
+                            if cfg!(unix) || cfg!(windows) {
+                                (world.floor[x][y] == DEBUG_GROUND).then_some(())
+                            } else {
+                                // * wasm: mobile touch this adds up instantly
+                                todo!("add delay", by: 2023-10-01);
+                                (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
+                            }
+                        })
+                        .is_break()
+                    {
+                        //? remove painted pieces
+                        for (x, row) in world.floor.clone().iter().enumerate() {
+                            for (y, _value) in row.iter().enumerate() {
+                                if world.floor[x][y] == 6_u8 {
+                                    world.floor[x][y] = 0_u8;
+                                }
+                            }
                         }
-                    }) {
-                        world.add(tetro);
+                        world.merge(tetro);
                     }
                 }
 

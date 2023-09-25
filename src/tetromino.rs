@@ -16,7 +16,7 @@ use crate::{
         PLAYFIELD_TOP_PADDING, PLAYFIELD_W,
     },
     physics::PhysicsEvent,
-    shared::{normalize_x, normalize_y, playfield_x, playfield_y, Collision, Coso, Organism},
+    shared::{normalize_x, normalize_y, playfield_x, playfield_y, Collision, Coso, Organism, X},
     tetrio_I::TetrioI,
     tetrio_J::TetrioJ,
     tetrio_L::TetrioL,
@@ -186,7 +186,29 @@ impl Tetromino {
         }
     }
 
-    pub fn process<F>(
+    pub fn relative_positions<F>(
+        &self,
+        //* Definís como querés tratar el tipo
+        mut
+        //* Definís como tienes que pasar el tipo
+        callback: F,
+    ) where
+        F: FnMut(usize, usize),
+    {
+        for (pos_y, row) in self.playfield.mat4.iter().enumerate() {
+            for (pos_x, piece_value) in row.iter().enumerate() {
+                if *piece_value == NONE_VALUE {
+                    continue;
+                }
+                callback(
+                    pos_x - self.playfield.offsets.left,
+                    pos_y - self.playfield.offsets.up,
+                )
+            }
+        }
+    }
+
+    pub fn current_positions<F>(
         &self,
         //* Definís como querés tratar el tipo
         mut
@@ -326,6 +348,64 @@ impl Tetromino {
         self.current.x = origin_playfield_x + (self.playfield.coord.x * world.block.x);
         self.current.y = origin_playfield_y + (self.playfield.coord.y * world.block.y);
     }
+
+    fn hit_legal_move(&mut self, mx: f32, my: f32, world: &mut World) -> bool {
+        //? primero existe [mx1, my1] (posición inicial)
+        //? después existe [mx2, my2 ] (posición final)
+        let mx2 = playfield_x(mx, world, self.kind.size(self.current_rotation.clone()).x) as usize;
+        let my2 = playfield_y(my, world, self.kind.size(self.current_rotation.clone()).y) as usize;
+        //? para saber si se puede llegar a posición final
+        let pieza_l = [(0_usize, 0_usize), (0, 1), (0, 2), (1, 2)];
+        let mut cols = vec![];
+        let my1 = self.playfield.coord.y as usize;
+        //? 1. probar bajar hasta my2 desde my1 + 1 en todo x: x0, x1, x2 ...
+        // for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8, 9] {
+        for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8] {
+            cols.push(xn);
+            todo!("checar si el tamaño del tetromino en y afectar", by: 2023-09-26);
+            for yn in (my1 + 1)..=my2 {
+                if let ControlFlow::Break([_piece_position, _field_position]) =
+                    test_for_collision(pieza_l, world, xn, yn)
+                {
+                    cols.pop();
+                    // println!("hit: {piece_position:?}, at {field_position:?}");
+                    break;
+                }
+            }
+        }
+        // println!("init {mx1}, {my1}, clicked {mx2}, {my2}, cols {cols:?}");
+        //? paint successful piece
+        self.relative_positions(|x, y| {
+            for xn in &cols {
+                world.floor[x + xn][y + my2] = 6;
+            }
+        });
+        //? 3. si x = xN, checar si esta a la derecha o a la izquierda de mx2
+        let mapped_cols = cols
+            .iter()
+            .cloned()
+            .map(|xn| {
+                let direction = if xn < mx2 { X::Left } else { X::Right };
+                (xn, direction)
+            })
+            .collect::<Vec<_>>();
+        //? 2. si x = mx2, ✅
+        //? 4. si esta a la derecha, mover hacia la izquierda
+        //? 5. si esta a la izquierda, mover hacia la derecha
+        cols.contains(&mx2)
+            || move_from_right(&mapped_cols, mx2, pieza_l, world, my2).is_continue()
+            || move_from_left(&mapped_cols, mx2, pieza_l, world, my2).is_continue()
+    }
+
+    // fn position_can_enter(
+    //     &mut self,
+    //     world: &World,
+    //     my2: f32,
+    //     tetro_x: usize,
+    //     tetro_y: usize,
+    // ) -> bool {
+
+    // }
 }
 
 impl Organism for Tetromino {
@@ -333,7 +413,7 @@ impl Organism for Tetromino {
         self.update_playfield_props(world);
 
         let delta_time = get_frame_time();
-        self.props.y += self.props.speed * delta_time;
+        //? self.props.y += self.props.speed * delta_time;
 
         if cfg!(unix) || cfg!(windows) {
             if (is_key_down(KeyCode::Right)
@@ -351,7 +431,7 @@ impl Organism for Tetromino {
                 self.props.x += MOVEMENT_SPEED;
                 self.update_positions(vec2(self.props.x, self.props.y), world);
 
-                if let ControlFlow::Break(()) = self.process(|x, y, _value| {
+                if let ControlFlow::Break(()) = self.current_positions(|x, y, _value| {
                     if world.floor[x][y] != 0_u8 {
                         Some(())
                     } else {
@@ -368,7 +448,7 @@ impl Organism for Tetromino {
                 self.props.x -= MOVEMENT_SPEED;
                 self.update_positions(vec2(self.props.x, self.props.y), world);
 
-                if let ControlFlow::Break(()) = self.process(|x, y, _value| {
+                if let ControlFlow::Break(()) = self.current_positions(|x, y, _value| {
                     if world.floor[x][y] != 0_u8 {
                         Some(())
                     } else {
@@ -457,6 +537,11 @@ impl Organism for Tetromino {
                     }
                 }
             }
+            if is_key_down(KeyCode::T) {
+                self.props.x = 340.0;
+                self.props.y = 0.0;
+                self.update_positions(vec2(self.props.x, self.props.y), world);
+            }
             if is_key_down(KeyCode::D) {
                 self.props.x += MOVEMENT_SPEED;
             }
@@ -481,13 +566,23 @@ impl Organism for Tetromino {
                 self.update_positions(vec2(self.props.x, self.props.y), world);
             };
 
+            // * simulating mobile behavior on debug mode
             if is_mouse_button_pressed(MouseButton::Left) {
                 if self.pristine {
                     self.pristine = false
                 }
+                //? remove painted pieces
+                for (x, row) in world.floor.clone().iter().enumerate() {
+                    for (y, _value) in row.iter().enumerate() {
+                        if world.floor[x][y] == 6_u8 {
+                            world.floor[x][y] = 0_u8;
+                        }
+                    }
+                }
                 let (mx, my) = mouse_position();
-                println!("click x{mx}, y{my}");
-                self.update_positions(vec2(mx, my), world);
+                if self.hit_legal_move(mx, my, world) {
+                    self.update_positions(vec2(mx, my), world);
+                }
             }
         } else {
             self.update_positions(vec2(self.props.x, self.props.y), world);
@@ -499,6 +594,7 @@ impl Organism for Tetromino {
                     }
                     self.rotate(world);
                 };
+
                 if !self.pristine {
                     self.update_positions(touch.position, world);
                 };
@@ -546,6 +642,66 @@ impl Organism for Tetromino {
         self.props.x = screen_width() / 2.0;
         self.props.y = screen_height() / 2.0;
     }
+}
+
+fn move_from_right(
+    cols: &Vec<(usize, X)>,
+    mx2: usize,
+    pieza_l: [(usize, usize); 4],
+    world: &World,
+    my2: usize,
+) -> ControlFlow<()> {
+    for (col, direction) in cols {
+        if direction == &X::Right {
+            for x in (mx2..=(col - 1)).rev() {
+                if let ControlFlow::Break([piece_position, field_position]) =
+                    test_for_collision(pieza_l, world, x, my2)
+                {
+                    println!("hit from R: {piece_position:?}, at {field_position:?}");
+                    return ControlFlow::Break(());
+                }
+            }
+        }
+    }
+    ControlFlow::Continue(())
+}
+
+fn move_from_left(
+    cols: &Vec<(usize, X)>,
+    mx2: usize,
+    pieza_l: [(usize, usize); 4],
+    world: &World,
+    my2: usize,
+) -> ControlFlow<()> {
+    for (col, direction) in cols {
+        if direction == &X::Left {
+            for x in (col + 1)..=mx2 {
+                if let ControlFlow::Break([piece_position, field_position]) =
+                    test_for_collision(pieza_l, world, x, my2)
+                {
+                    println!("hit from L: {piece_position:?}, at {field_position:?}");
+                    return ControlFlow::Break(());
+                }
+            }
+        }
+    }
+    ControlFlow::Continue(())
+}
+
+fn test_for_collision(
+    pieza_l: [(usize, usize); 4],
+    world: &World,
+    xn: usize,
+    yn: usize,
+) -> ControlFlow<[(usize, usize); 2]> {
+    for (tetro_x, tetro_y) in pieza_l.iter() {
+        if world.floor[xn + tetro_x][yn + tetro_y] != 0
+            && world.floor[xn + tetro_x][yn + tetro_y] != 6
+        {
+            return ControlFlow::Break([(*tetro_x, *tetro_y), (xn, yn)]);
+        }
+    }
+    ControlFlow::Continue(())
 }
 
 impl Collision for Tetromino {
