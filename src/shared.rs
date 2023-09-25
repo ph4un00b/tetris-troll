@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[allow(unused)]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum X {
     Left,
     Right,

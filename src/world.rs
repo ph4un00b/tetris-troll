@@ -13,7 +13,7 @@ use crate::{
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
-    world_with_holes::WORLD_WITH_FLOOR,
+    world_with_holes::WORLD_FOR_MOBILE_ISSUE,
 };
 
 pub struct World {
@@ -41,7 +41,7 @@ impl World {
             playfield,
             game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
             // floor: WORLD_WITH_HOLES,
-            floor: WORLD_WITH_FLOOR,
+            floor: WORLD_FOR_MOBILE_ISSUE,
         }
     }
 
@@ -52,7 +52,7 @@ impl World {
      * y de referencia para contrastar las formas distintas
      * para ejecutar est aparte de la lógica.
      */
-    pub(crate) fn add(&mut self, tetro: &mut Tetromino) {
+    pub(crate) fn merge(&mut self, tetro: &mut Tetromino) {
         tetro.in_game = false;
         match game_configs::ADD_STRATEGY {
             Strat::Generic => self.add_with_generic(tetro),
@@ -80,14 +80,14 @@ impl World {
             0_usize
         };
 
-        while let ControlFlow::Break(()) = tetro.process(|x, y, _value| {
+        while let ControlFlow::Break(()) = tetro.current_positions(|x, y, _value| {
             let has_collision = self.floor[x][y - offset] > 0_u8;
             has_collision.then_some(())
         }) {
             offset += 1;
         }
 
-        tetro.process(|x, y, value| {
+        tetro.current_positions(|x, y, value| {
             let game = &mut self.game;
             game[x][y - offset] = value;
             self.floor[x][y - offset] = DEBUG_GROUND;
@@ -251,7 +251,7 @@ impl World {
     }
 
     fn lock_playable_slots(&mut self) {
-        println!("filling...");
+        // println!("filling...");
         let mut stack = vec![(0, 0)];
 
         while let Some(current) = stack.pop() {
@@ -283,7 +283,7 @@ impl World {
     }
 
     fn fill_unplayable_holes(&mut self) {
-        println!("holes...");
+        // println!("holes...");
         for (x, row) in self.floor.clone().iter().enumerate() {
             for (y, _value) in row.iter().enumerate() {
                 if self.floor[x][y] == 0_u8 {
@@ -294,7 +294,7 @@ impl World {
     }
 
     fn unlock_playable_slots(&mut self) {
-        println!("black again...");
+        // println!("black again...");
         let mut stack = vec![(0, 0)];
         while let Some(current) = stack.pop() {
             let neibors = {
