@@ -21,7 +21,7 @@ use physics::{Physics, PhysicsEvent};
 use piso::Piso;
 use pointers::Pointers;
 
-use shared::{Evt, Organism, PanelLayout, Position, StateMachine};
+use shared::{Evt, Organism, PanelLayout, Position, StateMachine, WindowPanel};
 use tetromino::{TetroK, Tetromino};
 use ui::UI;
 use world::World;
@@ -167,20 +167,15 @@ async fn main() {
         vec2(20. * block.x, 1. * block.x),
     );
 
-    // let mut c = 0;
-    let mut tetro_coord_x = 0.0_f32;
-    let mut tetro_coord_y = 0.0_f32;
-    let mut tetro_props_x = 0.0_f32;
-    let mut tetro_size_x = 0.0_f32;
-    let mut tetro_size_y = 0.0_f32;
-    let mut tetro_min_x = 0.0_f32;
-    let mut tetro_max_x = 0.0_f32;
-    let mut tetro_props_y = 0.0_f32;
-    let mut floor_y = 0.0_f32;
     let mut g_piece = 0_usize;
     let g_floor_y = (world.screen.y * 0.2) + world.playfield.y;
 
     let mut debug_layout = PanelLayout::new(vec2(10.0, screen_height() * 0.5), 100.0);
+    let mut debug_window = WindowPanel::new(
+        "Debug!".to_string(),
+        vec2(screen_width() * 0.75, screen_height() * 0.5),
+        100.0,
+    );
 
     loop {
         if cfg!(unix) || cfg!(windows) {
@@ -263,9 +258,15 @@ async fn main() {
                     world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-                    //? debug info
-                    tetro_coord_x = tetro.playfield.coord.x;
-                    tetro_coord_y = tetro.playfield.coord.y;
+
+                    {
+                        debug_window.draw(|| {
+                            vec![
+                                format!("min x: {}", tetro.props.min_x),
+                                format!("max x: {}", tetro.props.max_x),
+                            ]
+                        });
+                    }
                     {
                         debug_layout.row(0);
                         debug_layout.text(format!(
@@ -273,10 +274,6 @@ async fn main() {
                             tetro.playfield.coord.x, tetro.playfield.coord.y
                         ));
                     }
-                    tetro_props_x = tetro.props.x;
-                    tetro_size_x = tetro.props.size.x;
-                    tetro_size_y = tetro.props.size.y;
-
                     {
                         debug_layout.row(1);
                         debug_layout.text(format!(
@@ -284,17 +281,10 @@ async fn main() {
                             tetro.playfield.size.x, tetro.playfield.size.y
                         ));
                     }
-
-                    tetro_min_x = tetro.props.min_x;
-                    tetro_max_x = tetro.props.max_x;
-                    tetro_props_y = tetro.props.y;
-
                     {
                         debug_layout.row(2);
                         debug_layout.text(format!("props: {}, {}", tetro.props.x, tetro.props.y));
                     }
-
-                    floor_y = g_floor_y - tetro.props.size.y;
 
                     if tetro
                         .process_current_positions(|x, y, _value| {
@@ -341,39 +331,6 @@ async fn main() {
 
                 world.physics.update(get_frame_time(), &mut physics_events);
                 world.physics.draw_colliders();
-
-                egui_macroquad::ui(|egui_ctx| {
-                    catppuccin_egui::set_theme(egui_ctx, catppuccin_egui::MOCHA);
-                    egui::Window::new("❤ debug")
-                        .current_pos(Pos2 {
-                            x: screen_w * 0.75,
-                            y: screen_h * 0.5,
-                        })
-                        .show(egui_ctx, |ui| {
-                            ui.label(format!("block.x: {}", world.block.x));
-                            ui.label(format!("block.y: {}", world.block.y));
-                            ui.label(format!("screen.H: {}", world.screen.y));
-                            ui.label(format!("screen.W: {}", world.screen.x));
-                            ui.label(format!("tetro x: {}", tetro_props_x));
-                            ui.label(format!("size-x: {}", tetro_size_x));
-                            ui.label(format!("size-y: {}", tetro_size_y));
-                            ui.label(format!("min x: {}", tetro_min_x));
-                            ui.label(format!("max x: {}", tetro_max_x));
-                            ui.label(format!("tetro y: {}", tetro_props_y));
-                            ui.label(format!("coord x: {}", tetro_coord_x));
-                            ui.label(format!("coord y: {}", tetro_coord_y));
-                            ui.label(format!("tetro-size y: {}", tetro_size_y));
-                            ui.label(format!("piso y: {}", g_floor_y - tetro_size_y));
-                            ui.label(format!("piso-y: {}", floor_y));
-                            // ui.label(format!("y: {}", tetro_props_y * world.block.y));
-                            ui.label(format!("altura: {}", bloque.y()));
-                            //? x handler
-                            // ui.label(format!("x: {tetro_x}",));
-                            // ui.label(format!("x playfield: {tetro_x2}"));
-                        });
-                });
-
-                egui_macroquad::draw();
             }
             Manager::MainEntry => {
                 play_sound_once(&transition_sound);

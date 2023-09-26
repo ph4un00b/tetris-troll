@@ -1,3 +1,4 @@
+use egui::Pos2;
 use macroquad::{
     prelude::{clamp, Color, Rect, Vec2, YELLOW},
     text::draw_text,
@@ -15,6 +16,56 @@ pub struct PanelLayout {
     pub at: Vec2,
     pub font_size: f32,
     current_row: usize,
+}
+
+pub struct WindowPanel {
+    pub labels: Vec<String>,
+    pub w: f32,
+    pub row_h: f32,
+    pub at: Vec2,
+    pub font_size: f32,
+    current_row: usize,
+    title: String,
+}
+
+impl WindowPanel {
+    pub fn new(title: String, at: Vec2, w: f32) -> Self {
+        let y_pad = 5.0;
+        let font_height = 20.0;
+
+        Self {
+            title,
+            current_row: 0_usize,
+            row_h: y_pad + 1.2 * font_height,
+            w,
+            at,
+            font_size: 20.0,
+            labels: vec![],
+        }
+    }
+
+    pub fn add_label(&mut self, text: String) {
+        self.labels.push(text);
+    }
+
+    pub fn draw<F: FnOnce() -> Vec<String>>(&self, callback: F) {
+        egui_macroquad::ui(|egui_ctx| {
+            catppuccin_egui::set_theme(egui_ctx, catppuccin_egui::MOCHA);
+            egui::Window::new(self.title.as_str())
+                .current_pos(Pos2 {
+                    x: self.at.x,
+                    y: self.at.y,
+                })
+                .show(egui_ctx, |ui| {
+                    let labels = callback();
+                    for text in labels.iter() {
+                        ui.label(text);
+                    }
+                });
+        });
+
+        egui_macroquad::draw();
+    }
 }
 
 impl PanelLayout {
