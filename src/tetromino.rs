@@ -386,7 +386,9 @@ impl Tetromino {
         //? paint successful piece
         self.process_relative_positions(|piece_x, piece_y| {
             for col in &valid_columns {
-                world.floor[piece_x + col][piece_y + next_y] = 6;
+                if world.floor[piece_x + col][piece_y + next_y] != 8 {
+                    world.floor[piece_x + col][piece_y + next_y] = 6;
+                }
             }
         });
         //? 3. si x = xN, checar si esta a la derecha o a la izquierda de mx2
