@@ -12,7 +12,7 @@ use crate::constants::{DEBUG_GROUND, PLAYFIELD_H, PLAYFIELD_W};
 use bloque::Bloque;
 
 use constants::NUMBER_OF_TETROMINOS;
-use egui::Pos2;
+
 use macroquad::audio::{load_sound, play_sound_once};
 use macroquad::{miniquad::date::now, prelude::*};
 
@@ -21,7 +21,7 @@ use physics::{Physics, PhysicsEvent};
 use piso::Piso;
 use pointers::Pointers;
 
-use shared::{Evt, Organism, PanelLayout, Position, StateMachine, WindowPanel};
+use shared::{Evt, Organism, PanelLayout, StateMachine, WindowPanel};
 use tetromino::{TetroK, Tetromino};
 use ui::UI;
 use world::World;
@@ -171,7 +171,7 @@ async fn main() {
     let g_floor_y = (world.screen.y * 0.2) + world.playfield.y;
 
     let mut debug_layout = PanelLayout::new(vec2(10.0, screen_height() * 0.5), 100.0);
-    let mut debug_window = WindowPanel::new(
+    let debug_window = WindowPanel::new(
         "Debug!".to_string(),
         vec2(screen_width() * 0.75, screen_height() * 0.5),
         100.0,
