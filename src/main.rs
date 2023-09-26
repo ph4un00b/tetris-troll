@@ -139,7 +139,7 @@ async fn main() {
         Tetromino::from(TetroK::Z, &world),
         Tetromino::from(TetroK::T, &world),
     ];
-    let mut current_tetro = vec![Tetromino::from(TetroK::L, &world)];
+    let mut pieces_in_game = vec![Tetromino::from(TetroK::L, &world)];
     let mut physics_events: Vec<PhysicsEvent> = Vec::new();
 
     let restitution = 0.8;
@@ -243,17 +243,17 @@ async fn main() {
                 // });
                 // Universe::draw(&screen, &playfield, &block);
 
-                if current_tetro.is_empty() {
+                if pieces_in_game.is_empty() {
                     if cfg!(unix) || cfg!(windows) {
                         g_piece += 1;
-                        current_tetro.push(tetrominos[g_piece % NUMBER_OF_TETROMINOS].clone());
+                        pieces_in_game.push(tetrominos[g_piece % NUMBER_OF_TETROMINOS].clone());
                     } else {
                         let n = rand::gen_range(0, NUMBER_OF_TETROMINOS);
-                        current_tetro.push(tetrominos[n].clone());
+                        pieces_in_game.push(tetrominos[n].clone());
                     };
                 }
 
-                for tetro in current_tetro.iter_mut() {
+                for tetro in pieces_in_game.iter_mut() {
                     world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
@@ -297,7 +297,7 @@ async fn main() {
                     debug_layout.text(format!("mouse: {}, {}", mx, my));
                 }
 
-                current_tetro.retain(|tetro| tetro.in_game);
+                pieces_in_game.retain(|tetro| tetro.in_game);
 
                 bloque.update(&mut world, &mut physics_events);
                 bloque.draw(&mut world);

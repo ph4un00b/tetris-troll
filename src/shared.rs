@@ -80,15 +80,11 @@ impl PanelLayout {
         self.current_row = idx;
     }
 
-    fn row_offset(&self, idx: usize) -> f32 {
-        idx as f32 * self.row_h
-    }
-
     pub fn text(&self, string: String) {
         draw_text(
             string.as_str(),
             self.at.x,
-            self.row_offset(self.current_row) + self.at.y,
+            (self.current_row as f32 * self.row_h) + self.at.y,
             self.font_size,
             YELLOW,
         );
