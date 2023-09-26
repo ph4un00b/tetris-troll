@@ -447,7 +447,7 @@ impl Organism for Tetromino {
         self.update_playfield_props(world);
 
         let delta_time = get_frame_time();
-        //? self.props.y += self.props.speed * delta_time;
+        self.props.y += self.props.speed * delta_time;
 
         if cfg!(unix) || cfg!(windows) {
             if (is_key_down(KeyCode::Right)

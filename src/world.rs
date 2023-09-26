@@ -13,7 +13,7 @@ use crate::{
     game_configs,
     physics::Physics,
     tetromino::{TetroK, Tetromino},
-    world_with_holes::WORLD_FOR_MOBILE_ISSUE,
+    world_with_holes::WORLD_WITH_FLOOR,
 };
 
 pub struct World {
@@ -40,8 +40,10 @@ impl World {
             screen,
             playfield,
             game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
+            // game: [[0_u8; PLAYFIELD_H]; PLAYFIELD_W],
             // floor: WORLD_WITH_HOLES,
-            floor: WORLD_FOR_MOBILE_ISSUE,
+            // floor: WORLD_FOR_MOBILE_ISSUE,
+            floor: WORLD_WITH_FLOOR,
         }
     }
 
@@ -255,7 +257,7 @@ impl World {
         let mut stack = vec![(0, 0)];
 
         while let Some(current) = stack.pop() {
-            let neibors = {
+            let neighbors = {
                 let x = current.0;
                 let y = current.1;
                 let mut result = vec![];
@@ -274,7 +276,7 @@ impl World {
                 result
             };
 
-            for (x, y) in neibors {
+            for (x, y) in neighbors {
                 // println!("{x}, {y}");
                 self.floor[x][y] = 2;
                 stack.push((x, y));
@@ -297,7 +299,7 @@ impl World {
         // println!("black again...");
         let mut stack = vec![(0, 0)];
         while let Some(current) = stack.pop() {
-            let neibors = {
+            let neighbors = {
                 let x = current.0;
                 let y = current.1;
                 let mut result = vec![];
@@ -316,7 +318,7 @@ impl World {
                 result
             };
 
-            for (x, y) in neibors {
+            for (x, y) in neighbors {
                 // println!("{x}, {y}");
                 self.floor[x][y] = 0;
                 stack.push((x, y));
