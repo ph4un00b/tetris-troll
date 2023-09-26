@@ -302,7 +302,7 @@ async fn main() {
                     floor_y = g_floor_y - tetro.props.size.y;
 
                     if tetro
-                        .current_positions(|x, y, _value| {
+                        .process_current_positions(|x, y, _value| {
                             if cfg!(unix) || cfg!(windows) {
                                 (world.floor[x][y] == DEBUG_GROUND).then_some(())
                             } else {

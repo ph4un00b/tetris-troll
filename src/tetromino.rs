@@ -186,7 +186,7 @@ impl Tetromino {
         }
     }
 
-    pub fn relative_positions<F>(
+    pub fn process_relative_positions<F>(
         &self,
         //* Definís como querés tratar el tipo
         mut
@@ -208,7 +208,7 @@ impl Tetromino {
         }
     }
 
-    pub fn current_positions<F>(
+    pub fn process_current_positions<F>(
         &self,
         //* Definís como querés tratar el tipo
         mut
@@ -352,22 +352,25 @@ impl Tetromino {
     fn hit_legal_move(&mut self, mx: f32, my: f32, world: &mut World) -> bool {
         //? primero existe [mx1, my1] (posición inicial)
         //? después existe [mx2, my2 ] (posición final)
-        let mx2 = playfield_x(mx, world, self.kind.size(self.current_rotation.clone()).x) as usize;
-        let my2 = playfield_y(my, world, self.kind.size(self.current_rotation.clone()).y) as usize;
+        let next_x =
+            playfield_x(mx, world, self.kind.size(self.current_rotation.clone()).x) as usize;
+        let next_y =
+            playfield_y(my, world, self.kind.size(self.current_rotation.clone()).y) as usize;
         //? para saber si se puede llegar a posición final
-        let pieza_l = [(0_usize, 0_usize), (0, 1), (0, 2), (1, 2)];
-        let mut cols = vec![];
-        let my1 = self.playfield.coord.y as usize;
+        // let pieza_l = [(0_usize, 0_usize), (0, 1), (0, 2), (1, 2)];
+        let pieza_l = self.relative_positions();
+        let mut valid_columns = vec![];
+        let initial_y = self.playfield.coord.y as usize;
         //? 1. probar bajar hasta my2 desde my1 + 1 en todo x: x0, x1, x2 ...
         // for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8, 9] {
         for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8] {
-            cols.push(xn);
-            todo!("checar si el tamaño del tetromino en y afectar", by: 2023-09-26);
-            for yn in (my1 + 1)..=my2 {
+            valid_columns.push(xn);
+            todo!("checar si el tamaño del tetromino en y afectar", by: 2023-09-27);
+            for yn in (initial_y + 1)..=next_y {
                 if let ControlFlow::Break([_piece_position, _field_position]) =
                     test_for_collision(pieza_l, world, xn, yn)
                 {
-                    cols.pop();
+                    valid_columns.pop();
                     // println!("hit: {piece_position:?}, at {field_position:?}");
                     break;
                 }
@@ -375,26 +378,49 @@ impl Tetromino {
         }
         // println!("init {mx1}, {my1}, clicked {mx2}, {my2}, cols {cols:?}");
         //? paint successful piece
-        self.relative_positions(|x, y| {
-            for xn in &cols {
-                world.floor[x + xn][y + my2] = 6;
+        self.process_relative_positions(|piece_x, piece_y| {
+            for col in &valid_columns {
+                world.floor[piece_x + col][piece_y + next_y] = 6;
             }
         });
         //? 3. si x = xN, checar si esta a la derecha o a la izquierda de mx2
-        let mapped_cols = cols
+        let with_x_direction = valid_columns
             .iter()
             .cloned()
             .map(|xn| {
-                let direction = if xn < mx2 { X::Left } else { X::Right };
+                let direction = if xn < next_x { X::Left } else { X::Right };
                 (xn, direction)
             })
             .collect::<Vec<_>>();
         //? 2. si x = mx2, ✅
         //? 4. si esta a la derecha, mover hacia la izquierda
         //? 5. si esta a la izquierda, mover hacia la derecha
-        cols.contains(&mx2)
-            || move_from_right(&mapped_cols, mx2, pieza_l, world, my2).is_continue()
-            || move_from_left(&mapped_cols, mx2, pieza_l, world, my2).is_continue()
+        valid_columns.contains(&next_x)
+            || move_from_right(&with_x_direction, next_x, pieza_l, world, next_y).is_continue()
+            || move_from_left(&with_x_direction, next_x, pieza_l, world, next_y).is_continue()
+    }
+
+    fn relative_positions(&self) -> [(usize, usize); 4] {
+        let mut result = [(0, 0); 4];
+        let mut index = 0;
+
+        for (pos_y, row) in self.playfield.mat4.iter().enumerate() {
+            for (pos_x, piece_value) in row.iter().enumerate() {
+                if *piece_value == NONE_VALUE {
+                    continue;
+                }
+
+                if index < 4 {
+                    result[index] = (
+                        pos_x - self.playfield.offsets.left,
+                        pos_y - self.playfield.offsets.up,
+                    );
+                    index += 1;
+                }
+            }
+        }
+
+        result
     }
 
     // fn position_can_enter(
@@ -431,7 +457,7 @@ impl Organism for Tetromino {
                 self.props.x += MOVEMENT_SPEED;
                 self.update_positions(vec2(self.props.x, self.props.y), world);
 
-                if let ControlFlow::Break(()) = self.current_positions(|x, y, _value| {
+                if let ControlFlow::Break(()) = self.process_current_positions(|x, y, _value| {
                     if world.floor[x][y] != 0_u8 {
                         Some(())
                     } else {
@@ -448,7 +474,7 @@ impl Organism for Tetromino {
                 self.props.x -= MOVEMENT_SPEED;
                 self.update_positions(vec2(self.props.x, self.props.y), world);
 
-                if let ControlFlow::Break(()) = self.current_positions(|x, y, _value| {
+                if let ControlFlow::Break(()) = self.process_current_positions(|x, y, _value| {
                     if world.floor[x][y] != 0_u8 {
                         Some(())
                     } else {
@@ -466,7 +492,7 @@ impl Organism for Tetromino {
                 let mut stack = vec![(0, 0)];
 
                 while let Some(current) = stack.pop() {
-                    let neibors = {
+                    let neighbors = {
                         let x = current.0;
                         let y = current.1;
                         let mut result = vec![];
@@ -487,7 +513,7 @@ impl Organism for Tetromino {
                         result
                     };
 
-                    for (x, y) in neibors {
+                    for (x, y) in neighbors {
                         // println!("{x}, {y}");
                         world.floor[x][y] = 2_u8;
                         stack.push((x, y));
@@ -509,7 +535,7 @@ impl Organism for Tetromino {
                 let mut stack = vec![(0, 0)];
 
                 while let Some(current) = stack.pop() {
-                    let neibors = {
+                    let neighbors = {
                         let x = current.0;
                         let y = current.1;
                         let mut result = vec![];
@@ -530,7 +556,7 @@ impl Organism for Tetromino {
                         result
                     };
 
-                    for (x, y) in neibors {
+                    for (x, y) in neighbors {
                         // println!("{x}, {y}");
                         world.floor[x][y] = 0_u8;
                         stack.push((x, y));
