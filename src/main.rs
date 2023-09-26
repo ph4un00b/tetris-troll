@@ -7,7 +7,7 @@
 
 // * game deps
 
-use crate::constants::{DEBUG_GROUND, PLAYFIELD_H, PLAYFIELD_W};
+use crate::constants::{PLAYFIELD_H, PLAYFIELD_W};
 
 use bloque::Bloque;
 

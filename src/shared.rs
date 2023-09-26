@@ -24,7 +24,6 @@ pub struct WindowPanel {
     pub row_h: f32,
     pub at: Vec2,
     pub font_size: f32,
-    current_row: usize,
     title: String,
 }
 
@@ -35,17 +34,12 @@ impl WindowPanel {
 
         Self {
             title,
-            current_row: 0_usize,
             row_h: y_pad + 1.2 * font_height,
             w,
             at,
             font_size: 20.0,
             labels: vec![],
         }
-    }
-
-    pub fn add_label(&mut self, text: String) {
-        self.labels.push(text);
     }
 
     pub fn draw<F: FnOnce() -> Vec<String>>(&self, callback: F) {
