@@ -365,7 +365,7 @@ impl Tetromino {
         // for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8, 9] {
         for test_x in 0..=(PLAYFIELD_W - self.playfield.size.x as usize) {
             valid_columns.push(test_x);
-            todo!("checar si el tamaño del tetromino en y afecta!", by: 2023-09-27);
+            // todo!("checar si el tamaño del tetromino en y afecta!", by: 2023-09-27);
             for test_y in (initial_y + 1)..=next_y {
                 if let ControlFlow::Break([_at_piece, _at_field]) =
                     test_collision_at(piece_positions, test_x, test_y, world)
@@ -613,6 +613,7 @@ impl Organism for Tetromino {
                         }
                     }
                 }
+
                 let (mx, my) = mouse_position();
 
                 if self.hit_legal_move(mx, my, world) {
@@ -635,6 +636,22 @@ impl Organism for Tetromino {
                 if !self.pristine {
                     self.update_positions(touch.position, world);
                 };
+                //? remove painted pieces
+                for (x, row) in world.floor.clone().iter().enumerate() {
+                    for (y, _value) in row.iter().enumerate() {
+                        if world.floor[x][y] == 6_u8 {
+                            world.floor[x][y] = 0_u8;
+                        }
+                    }
+                }
+
+                let (mx, my) = mouse_position();
+
+                if self.hit_legal_move(mx, my, world) {
+                    self.update_positions(vec2(mx, my), world);
+                } else {
+                    println!("not valid position");
+                }
             }
         };
     }

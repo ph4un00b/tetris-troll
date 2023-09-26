@@ -16,6 +16,6 @@ macroquad =  { git = "https://github.com/ph4un00b/macroquad.git", brach = "maste
 rapier2d = { version = "0.17.2", features = [ "simd-stable" ] }
 
 # @see https://github.com/0x61nas/todo2#using-the-log-feature
-log = "0.4.20"
-simple_logger = "4.2.0"
-todo2 = { version = "0.1.2", features = ["log"] }
+# log = "0.4.20"
+# simple_logger = "4.2.0"
+# todo2 = { version = "0.1.2", features = ["log"] }

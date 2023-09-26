@@ -1,9 +1,9 @@
-// * @see https://github.com/0x61nas/todo2#using-the-log-feature
-#[macro_use]
-extern crate todo2;
+// // * @see https://github.com/0x61nas/todo2#using-the-log-feature
 // #[macro_use]
-// extern crate log;
-use simple_logger::SimpleLogger;
+// extern crate todo2;
+// // #[macro_use]
+// // extern crate log;
+// use simple_logger::SimpleLogger;
 
 // * game deps
 
@@ -80,7 +80,7 @@ void main() {
 #[macroquad::main("TetrisTroll")]
 async fn main() {
     // * @see https://github.com/0x61nas/todo2#using-the-log-feature
-    SimpleLogger::new().init().unwrap();
+    // SimpleLogger::new().init().unwrap();
 
     simulate_mouse_with_touch(true);
 
@@ -307,7 +307,7 @@ async fn main() {
                                 (world.floor[x][y] == DEBUG_GROUND).then_some(())
                             } else {
                                 // * wasm: mobile touch this adds up instantly
-                                todo!("add delay", by: 2023-10-01);
+                                //todo!("add delay", by: 2023-10-01);
                                 (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
                             }
                         })
