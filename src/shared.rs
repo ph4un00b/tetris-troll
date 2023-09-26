@@ -1,10 +1,54 @@
-use macroquad::prelude::{clamp, Color, Rect, Vec2};
+use macroquad::{
+    prelude::{clamp, Color, Rect, Vec2, YELLOW},
+    text::draw_text,
+};
 
 use crate::{
     constants::{PLAYFIELD_H, PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING, PLAYFIELD_W},
     physics::PhysicsEvent,
     world::World,
 };
+
+pub struct PanelLayout {
+    pub w: f32,
+    pub row_h: f32,
+    pub at: Vec2,
+    pub font_size: f32,
+    current_row: usize,
+}
+
+impl PanelLayout {
+    pub fn new(at: Vec2, w: f32) -> Self {
+        let y_pad = 5.0;
+        let font_height = 20.0;
+
+        Self {
+            current_row: 0_usize,
+            row_h: y_pad + 1.2 * font_height,
+            w,
+            at,
+            font_size: 20.0,
+        }
+    }
+
+    pub fn row(&mut self, idx: usize) {
+        self.current_row = idx;
+    }
+
+    fn row_offset(&self, idx: usize) -> f32 {
+        idx as f32 * self.row_h
+    }
+
+    pub fn text(&self, string: String) {
+        draw_text(
+            string.as_str(),
+            self.at.x,
+            self.row_offset(self.current_row) + self.at.y,
+            self.font_size,
+            YELLOW,
+        );
+    }
+}
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
