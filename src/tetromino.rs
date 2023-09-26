@@ -12,7 +12,7 @@ use macroquad::{
 
 use crate::{
     constants::{
-        MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
+        DEBUG_GROUND, MOVEMENT_SPEED, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
         PLAYFIELD_TOP_PADDING, PLAYFIELD_W,
     },
     physics::PhysicsEvent,
@@ -208,6 +208,18 @@ impl Tetromino {
         }
     }
 
+    pub fn touched_ground(&self, world: &World) -> bool {
+        self.process_current_positions(|x, y, _value| {
+            if cfg!(unix) || cfg!(windows) {
+                (world.floor[x][y] == DEBUG_GROUND).then_some(())
+            } else {
+                // * wasm: mobile touch this adds up instantly
+                //todo!("add delay", by: 2023-10-01);
+                (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
+            }
+        })
+        .is_break()
+    }
     pub fn process_current_positions<F>(
         &self,
         //* Definís como querés tratar el tipo

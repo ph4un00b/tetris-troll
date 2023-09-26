@@ -254,11 +254,9 @@ async fn main() {
                 }
 
                 for tetro in current_tetro.iter_mut() {
-                    // println!("floor-y: {}", g_floor_y - tetro.props.size.y);
                     world.render(g_floor_y - tetro.props.size.y);
                     tetro.update(&mut world, &mut physics_events);
                     tetro.draw(&mut world);
-
                     {
                         debug_window.draw(|| {
                             vec![
@@ -286,26 +284,8 @@ async fn main() {
                         debug_layout.text(format!("props: {}, {}", tetro.props.x, tetro.props.y));
                     }
 
-                    if tetro
-                        .process_current_positions(|x, y, _value| {
-                            if cfg!(unix) || cfg!(windows) {
-                                (world.floor[x][y] == DEBUG_GROUND).then_some(())
-                            } else {
-                                // * wasm: mobile touch this adds up instantly
-                                //todo!("add delay", by: 2023-10-01);
-                                (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
-                            }
-                        })
-                        .is_break()
-                    {
-                        //? remove painted pieces
-                        for (x, row) in world.floor.clone().iter().enumerate() {
-                            for (y, _value) in row.iter().enumerate() {
-                                if world.floor[x][y] == 6_u8 {
-                                    world.floor[x][y] = 0_u8;
-                                }
-                            }
-                        }
+                    if tetro.touched_ground(&world) {
+                        world.debug_remove_helpers();
                         world.merge(tetro);
                     }
                 }

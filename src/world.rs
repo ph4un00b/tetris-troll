@@ -47,6 +47,16 @@ impl World {
         }
     }
 
+    pub(crate) fn debug_remove_helpers(&mut self) {
+        //? remove painted pieces
+        for (x, row) in self.game.iter().enumerate() {
+            for (y, _) in row.iter().enumerate() {
+                if self.floor[x][y] == 6_u8 {
+                    self.floor[x][y] = 0_u8;
+                }
+            }
+        }
+    }
     /*
      *  factory:
      *
