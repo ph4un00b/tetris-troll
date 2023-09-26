@@ -80,14 +80,14 @@ impl World {
             0_usize
         };
 
-        while let ControlFlow::Break(()) = tetro.current_positions(|x, y, _value| {
+        while let ControlFlow::Break(()) = tetro.process_current_positions(|x, y, _value| {
             let has_collision = self.floor[x][y - offset] > 0_u8;
             has_collision.then_some(())
         }) {
             offset += 1;
         }
 
-        tetro.current_positions(|x, y, value| {
+        tetro.process_current_positions(|x, y, value| {
             let game = &mut self.game;
             game[x][y - offset] = value;
             self.floor[x][y - offset] = DEBUG_GROUND;
