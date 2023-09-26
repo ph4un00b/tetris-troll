@@ -376,6 +376,12 @@ impl Tetromino {
                 }
             }
         }
+        // println!(
+        //     "next: {next_x},{next_y}, pos: {piece_positions:?}, valid_columns: {valid_columns:?}"
+        // );
+        if valid_columns.is_empty() {
+            return false;
+        }
         // println!("init {mx1}, {my1}, clicked {mx2}, {my2}, cols {cols:?}");
         //? paint successful piece
         self.process_relative_positions(|piece_x, piece_y| {
@@ -396,10 +402,8 @@ impl Tetromino {
         //? 4. si esta a la derecha, mover hacia la izquierda
         //? 5. si esta a la izquierda, mover hacia la derecha
         valid_columns.contains(&next_x)
-            || valid_move_from_right(piece_positions, &with_x_direction, next_x, next_y, world)
-                .is_continue()
-            || valid_move_from_left(piece_positions, &with_x_direction, next_x, next_y, world)
-                .is_continue()
+            || right_move(piece_positions, &with_x_direction, next_x, next_y, world).is_continue()
+            || left_move(piece_positions, &with_x_direction, next_x, next_y, world).is_continue()
     }
 
     fn relative_positions(&self) -> [(usize, usize); 4] {
@@ -608,8 +612,11 @@ impl Organism for Tetromino {
                     }
                 }
                 let (mx, my) = mouse_position();
+
                 if self.hit_legal_move(mx, my, world) {
                     self.update_positions(vec2(mx, my), world);
+                } else {
+                    println!("not valid position");
                 }
             }
         } else {
@@ -672,7 +679,7 @@ impl Organism for Tetromino {
     }
 }
 
-fn valid_move_from_right(
+fn right_move(
     positions: [(usize, usize); 4],
     valid_columns: &Vec<(usize, X)>,
     next_x: usize,
@@ -694,7 +701,7 @@ fn valid_move_from_right(
     ControlFlow::Continue(())
 }
 
-fn valid_move_from_left(
+fn left_move(
     positions: [(usize, usize); 4],
     valid_columns: &Vec<(usize, X)>,
     next_x: usize,
