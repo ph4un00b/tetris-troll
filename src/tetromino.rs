@@ -358,17 +358,17 @@ impl Tetromino {
             playfield_y(my, world, self.kind.size(self.current_rotation.clone()).y) as usize;
         //? para saber si se puede llegar a posición final
         // let pieza_l = [(0_usize, 0_usize), (0, 1), (0, 2), (1, 2)];
-        let pieza_l = self.relative_positions();
+        let piece_positions = self.relative_positions();
         let mut valid_columns = vec![];
         let initial_y = self.playfield.coord.y as usize;
         //? 1. probar bajar hasta my2 desde my1 + 1 en todo x: x0, x1, x2 ...
         // for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8, 9] {
-        for xn in [0_usize, 1, 2, 3, 4, 5, 6, 7, 8] {
-            valid_columns.push(xn);
-            todo!("checar si el tamaño del tetromino en y afectar", by: 2023-09-27);
-            for yn in (initial_y + 1)..=next_y {
-                if let ControlFlow::Break([_piece_position, _field_position]) =
-                    test_for_collision(pieza_l, world, xn, yn)
+        for test_x in 0..=(PLAYFIELD_W - self.playfield.size.x as usize) {
+            valid_columns.push(test_x);
+            todo!("checar si el tamaño del tetromino en y afecta!", by: 2023-09-27);
+            for test_y in (initial_y + 1)..=next_y {
+                if let ControlFlow::Break([_at_piece, _at_field]) =
+                    test_collision_at(piece_positions, test_x, test_y, world)
                 {
                     valid_columns.pop();
                     // println!("hit: {piece_position:?}, at {field_position:?}");
@@ -396,8 +396,10 @@ impl Tetromino {
         //? 4. si esta a la derecha, mover hacia la izquierda
         //? 5. si esta a la izquierda, mover hacia la derecha
         valid_columns.contains(&next_x)
-            || move_from_right(&with_x_direction, next_x, pieza_l, world, next_y).is_continue()
-            || move_from_left(&with_x_direction, next_x, pieza_l, world, next_y).is_continue()
+            || valid_move_from_right(piece_positions, &with_x_direction, next_x, next_y, world)
+                .is_continue()
+            || valid_move_from_left(piece_positions, &with_x_direction, next_x, next_y, world)
+                .is_continue()
     }
 
     fn relative_positions(&self) -> [(usize, usize); 4] {
@@ -670,18 +672,18 @@ impl Organism for Tetromino {
     }
 }
 
-fn move_from_right(
-    cols: &Vec<(usize, X)>,
-    mx2: usize,
-    pieza_l: [(usize, usize); 4],
+fn valid_move_from_right(
+    positions: [(usize, usize); 4],
+    valid_columns: &Vec<(usize, X)>,
+    next_x: usize,
+    next_y: usize,
     world: &World,
-    my2: usize,
 ) -> ControlFlow<()> {
-    for (col, direction) in cols {
+    for (col, direction) in valid_columns {
         if direction == &X::Right {
-            for x in (mx2..=(col - 1)).rev() {
+            for test_x in (next_x..=(col - 1)).rev() {
                 if let ControlFlow::Break([piece_position, field_position]) =
-                    test_for_collision(pieza_l, world, x, my2)
+                    test_collision_at(positions, test_x, next_y, world)
                 {
                     println!("hit from R: {piece_position:?}, at {field_position:?}");
                     return ControlFlow::Break(());
@@ -692,20 +694,20 @@ fn move_from_right(
     ControlFlow::Continue(())
 }
 
-fn move_from_left(
-    cols: &Vec<(usize, X)>,
-    mx2: usize,
-    pieza_l: [(usize, usize); 4],
+fn valid_move_from_left(
+    positions: [(usize, usize); 4],
+    valid_columns: &Vec<(usize, X)>,
+    next_x: usize,
+    next_y: usize,
     world: &World,
-    my2: usize,
 ) -> ControlFlow<()> {
-    for (col, direction) in cols {
+    for (col, direction) in valid_columns {
         if direction == &X::Left {
-            for x in (col + 1)..=mx2 {
-                if let ControlFlow::Break([piece_position, field_position]) =
-                    test_for_collision(pieza_l, world, x, my2)
+            for test_x in (col + 1)..=next_x {
+                if let ControlFlow::Break([block, pos]) =
+                    test_collision_at(positions, test_x, next_y, world)
                 {
-                    println!("hit from L: {piece_position:?}, at {field_position:?}");
+                    println!("hit from L: {block:?}, at {pos:?}");
                     return ControlFlow::Break(());
                 }
             }
@@ -714,17 +716,17 @@ fn move_from_left(
     ControlFlow::Continue(())
 }
 
-fn test_for_collision(
-    pieza_l: [(usize, usize); 4],
+fn test_collision_at(
+    positions: [(usize, usize); 4],
+    test_x: usize,
+    test_y: usize,
     world: &World,
-    xn: usize,
-    yn: usize,
 ) -> ControlFlow<[(usize, usize); 2]> {
-    for (tetro_x, tetro_y) in pieza_l.iter() {
-        if world.floor[xn + tetro_x][yn + tetro_y] != 0
-            && world.floor[xn + tetro_x][yn + tetro_y] != 6
+    for (tetro_x, tetro_y) in positions.iter() {
+        if world.floor[test_x + tetro_x][test_y + tetro_y] != 0
+            && world.floor[test_x + tetro_x][test_y + tetro_y] != 6
         {
-            return ControlFlow::Break([(*tetro_x, *tetro_y), (xn, yn)]);
+            return ControlFlow::Break([(*tetro_x, *tetro_y), (test_x, test_y)]);
         }
     }
     ControlFlow::Continue(())
