@@ -541,14 +541,8 @@ impl Organism for Tetromino {
                 }
             }
             if is_key_down(KeyCode::F3) {
-                println!("holes...");
-                world.floor.iter_mut().for_each(|row| {
-                    row.iter_mut().for_each(|value| {
-                        if *value == 0_u8 {
-                            *value = 7_u8;
-                        }
-                    });
-                });
+                println!("fill holes with red...");
+                world.filter_and_paint(0_u8, 7_u8);
             }
             if is_key_down(KeyCode::F4) {
                 println!("black again...");
@@ -618,13 +612,7 @@ impl Organism for Tetromino {
                     self.pristine = false
                 }
                 //? remove painted pieces
-                world.floor.iter_mut().for_each(|row| {
-                    row.iter_mut().for_each(|value| {
-                        if *value == 6_u8 {
-                            *value = 0_u8;
-                        }
-                    });
-                });
+                world.filter_and_paint(6_u8, 0_u8);
 
                 let (mx, my) = mouse_position();
 
@@ -649,13 +637,7 @@ impl Organism for Tetromino {
                     self.update_positions(touch.position, world);
                 };
                 //? remove painted pieces
-                world.floor.iter_mut().for_each(|row| {
-                    row.iter_mut().for_each(|value| {
-                        if *value == 6_u8 {
-                            *value = 0_u8;
-                        }
-                    });
-                });
+                world.filter_and_paint(6_u8, 0_u8);
 
                 let (mx, my) = mouse_position();
 

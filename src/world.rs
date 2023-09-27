@@ -49,13 +49,7 @@ impl World {
 
     pub(crate) fn debug_remove_helpers(&mut self) {
         //? remove painted pieces
-        self.floor.iter_mut().for_each(|row| {
-            row.iter_mut().for_each(|value| {
-                if *value == 6_u8 {
-                    *value = 0_u8;
-                }
-            });
-        });
+        self.filter_and_paint(6_u8, 0_u8);
     }
     /*
      *  factory:
@@ -296,13 +290,15 @@ impl World {
 
     fn fill_unplayable_holes(&mut self) {
         // println!("holes...");
-        self.floor.iter_mut().for_each(|row| {
-            row.iter_mut().for_each(|value| {
-                if *value == 0_u8 {
-                    *value = 7_u8;
-                }
-            });
-        });
+        self.filter_and_paint(0_u8, 7_u8);
+    }
+
+    pub fn filter_and_paint(&mut self, from: u8, to: u8) {
+        self.floor
+            .iter_mut()
+            .flat_map(|row| row.iter_mut())
+            .filter(|value| **value == from)
+            .for_each(|value| *value = to);
     }
 
     fn unlock_playable_slots(&mut self) {
