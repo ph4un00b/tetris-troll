@@ -1,4 +1,7 @@
-use std::ops::ControlFlow;
+use std::{
+    collections::{HashSet, VecDeque},
+    ops::ControlFlow,
+};
 
 use macroquad::{
     prelude::{Vec2, Vec3, BLACK, BLUE, BROWN, GREEN},
@@ -258,34 +261,7 @@ impl World {
 
     fn lock_playable_slots(&mut self) {
         // println!("filling...");
-        let mut stack = vec![(0, 0)];
-
-        while let Some(current) = stack.pop() {
-            let neighbors = {
-                let x = current.0;
-                let y = current.1;
-                let mut result = vec![];
-                if x + 1 < PLAYFIELD_W && self.floor[x + 1][y] == 0_u8 {
-                    result.push((x + 1, y))
-                }
-                if x > 0 && self.floor[x - 1][y] == 0_u8 {
-                    result.push((x - 1, y))
-                }
-                if y + 1 < PLAYFIELD_H && self.floor[x][y + 1] == 0_u8 {
-                    result.push((x, y + 1))
-                }
-                if y > 0 && self.floor[x][y - 1] == 0_u8 {
-                    result.push((x, y - 1))
-                }
-                result
-            };
-
-            for (x, y) in neighbors {
-                // println!("{x}, {y}");
-                self.floor[x][y] = 2;
-                stack.push((x, y));
-            }
-        }
+        self.flood_fill(0, 0, 0_u8, 2_u8);
     }
 
     fn fill_unplayable_holes(&mut self) {
@@ -303,32 +279,30 @@ impl World {
 
     fn unlock_playable_slots(&mut self) {
         // println!("black again...");
-        let mut stack = vec![(0, 0)];
-        while let Some(current) = stack.pop() {
-            let neighbors = {
-                let x = current.0;
-                let y = current.1;
-                let mut result = vec![];
-                if x + 1 < PLAYFIELD_W && self.floor[x + 1][y] == 2_u8 {
-                    result.push((x + 1, y))
-                }
-                if x > 0 && self.floor[x - 1][y] == 2_u8 {
-                    result.push((x - 1, y))
-                }
-                if y + 1 < PLAYFIELD_H && self.floor[x][y + 1] == 2_u8 {
-                    result.push((x, y + 1))
-                }
-                if y > 0 && self.floor[x][y - 1] == 2_u8 {
-                    result.push((x, y - 1))
-                }
-                result
-            };
+        self.flood_fill(0, 0, 2_u8, 0_u8);
+    }
 
-            for (x, y) in neighbors {
-                // println!("{x}, {y}");
-                self.floor[x][y] = 0;
-                stack.push((x, y));
-            }
+    pub fn flood_fill(&mut self, start_x: usize, start_y: usize, target: u8, replacement: u8) {
+        let mut queue = VecDeque::new();
+        queue.push_back((start_x, start_y));
+        while let Some((current_x, current_y)) = queue.pop_front() {
+            let unique_neighbors: HashSet<(usize, usize)> = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+                .iter()
+                .map(|(dx, dy)| (current_x as isize + dx, current_y as isize + dy))
+                .filter(|&(x, y)| {
+                    x >= 0
+                        && x < PLAYFIELD_W as isize
+                        && y >= 0
+                        && y < PLAYFIELD_H as isize
+                        && self.floor[x as usize][y as usize] == target
+                })
+                .map(|(x, y)| (x as usize, y as usize))
+                .collect();
+
+            unique_neighbors.iter().for_each(|&(new_x, new_y)| {
+                self.floor[new_x][new_y] = replacement;
+                queue.push_back((new_x, new_y));
+            });
         }
     }
 }

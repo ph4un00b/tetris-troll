@@ -509,36 +509,7 @@ impl Organism for Tetromino {
             }
             if is_key_down(KeyCode::F2) {
                 println!("filling...");
-                let mut stack = vec![(0, 0)];
-
-                while let Some(current) = stack.pop() {
-                    let neighbors = {
-                        let x = current.0;
-                        let y = current.1;
-                        let mut result = vec![];
-
-                        if x + 1 < 10 && world.floor[x + 1][y] == 0_u8 {
-                            result.push((x + 1, y))
-                        }
-                        if x > 0 && world.floor[x - 1][y] == 0_u8 {
-                            result.push((x - 1, y))
-                        }
-                        if y + 1 < 24 && world.floor[x][y + 1] == 0_u8 {
-                            result.push((x, y + 1))
-                        }
-                        if y > 0 && world.floor[x][y - 1] == 0_u8 {
-                            result.push((x, y - 1))
-                        }
-
-                        result
-                    };
-
-                    for (x, y) in neighbors {
-                        // println!("{x}, {y}");
-                        world.floor[x][y] = 2_u8;
-                        stack.push((x, y));
-                    }
-                }
+                world.flood_fill(0, 0, 0_u8, 2_u8);
             }
             if is_key_down(KeyCode::F3) {
                 println!("fill holes with red...");
@@ -546,36 +517,7 @@ impl Organism for Tetromino {
             }
             if is_key_down(KeyCode::F4) {
                 println!("black again...");
-                let mut stack = vec![(0, 0)];
-
-                while let Some(current) = stack.pop() {
-                    let neighbors = {
-                        let x = current.0;
-                        let y = current.1;
-                        let mut result = vec![];
-
-                        if x + 1 < 10 && world.floor[x + 1][y] == 2_u8 {
-                            result.push((x + 1, y))
-                        }
-                        if x > 0 && world.floor[x - 1][y] == 2_u8 {
-                            result.push((x - 1, y))
-                        }
-                        if y + 1 < 24 && world.floor[x][y + 1] == 2_u8 {
-                            result.push((x, y + 1))
-                        }
-                        if y > 0 && world.floor[x][y - 1] == 2_u8 {
-                            result.push((x, y - 1))
-                        }
-
-                        result
-                    };
-
-                    for (x, y) in neighbors {
-                        // println!("{x}, {y}");
-                        world.floor[x][y] = 0_u8;
-                        stack.push((x, y));
-                    }
-                }
+                world.flood_fill(0, 0, 2_u8, 0_u8);
             }
             if is_key_down(KeyCode::T) {
                 self.props.x = 340.0;
