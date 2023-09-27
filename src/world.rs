@@ -21,7 +21,7 @@ pub struct World {
     pub block: Vec2,
     pub screen: Vec3,
     pub playfield: Vec2,
-    game: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
+    pub game: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
     pub floor: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
 }
 
@@ -49,13 +49,13 @@ impl World {
 
     pub(crate) fn debug_remove_helpers(&mut self) {
         //? remove painted pieces
-        for (x, row) in self.game.iter().enumerate() {
-            for (y, _) in row.iter().enumerate() {
-                if self.floor[x][y] == 6_u8 {
-                    self.floor[x][y] = 0_u8;
+        self.floor.iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|value| {
+                if *value == 6_u8 {
+                    *value = 0_u8;
                 }
-            }
-        }
+            });
+        });
     }
     /*
      *  factory:
@@ -296,13 +296,13 @@ impl World {
 
     fn fill_unplayable_holes(&mut self) {
         // println!("holes...");
-        for (x, row) in self.floor.clone().iter().enumerate() {
-            for (y, _value) in row.iter().enumerate() {
-                if self.floor[x][y] == 0_u8 {
-                    self.floor[x][y] = 7_u8;
+        self.floor.iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|value| {
+                if *value == 0_u8 {
+                    *value = 7_u8;
                 }
-            }
-        }
+            });
+        });
     }
 
     fn unlock_playable_slots(&mut self) {

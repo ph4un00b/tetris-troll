@@ -213,7 +213,7 @@ impl Tetromino {
             if cfg!(unix) || cfg!(windows) {
                 (world.floor[x][y] == DEBUG_GROUND).then_some(())
             } else {
-                // * wasm: mobile touch this adds up instantly
+                // * wasm: on mobile touch this adds up instantly
                 //todo!("add delay", by: 2023-10-01);
                 (world.floor[x][y + 1] == DEBUG_GROUND).then_some(())
             }
@@ -542,13 +542,13 @@ impl Organism for Tetromino {
             }
             if is_key_down(KeyCode::F3) {
                 println!("holes...");
-                for (row_idx, row) in world.floor.clone().iter().enumerate() {
-                    for (col_idx, _value) in row.iter().enumerate() {
-                        if world.floor[row_idx][col_idx] == 0_u8 {
-                            world.floor[row_idx][col_idx] = 7_u8;
+                world.floor.iter_mut().for_each(|row| {
+                    row.iter_mut().for_each(|value| {
+                        if *value == 0_u8 {
+                            *value = 7_u8;
                         }
-                    }
-                }
+                    });
+                });
             }
             if is_key_down(KeyCode::F4) {
                 println!("black again...");
@@ -618,13 +618,13 @@ impl Organism for Tetromino {
                     self.pristine = false
                 }
                 //? remove painted pieces
-                for (x, row) in world.floor.clone().iter().enumerate() {
-                    for (y, _value) in row.iter().enumerate() {
-                        if world.floor[x][y] == 6_u8 {
-                            world.floor[x][y] = 0_u8;
+                world.floor.iter_mut().for_each(|row| {
+                    row.iter_mut().for_each(|value| {
+                        if *value == 6_u8 {
+                            *value = 0_u8;
                         }
-                    }
-                }
+                    });
+                });
 
                 let (mx, my) = mouse_position();
 
@@ -649,13 +649,13 @@ impl Organism for Tetromino {
                     self.update_positions(touch.position, world);
                 };
                 //? remove painted pieces
-                for (x, row) in world.floor.clone().iter().enumerate() {
-                    for (y, _value) in row.iter().enumerate() {
-                        if world.floor[x][y] == 6_u8 {
-                            world.floor[x][y] = 0_u8;
+                world.floor.iter_mut().for_each(|row| {
+                    row.iter_mut().for_each(|value| {
+                        if *value == 6_u8 {
+                            *value = 0_u8;
                         }
-                    }
-                }
+                    });
+                });
 
                 let (mx, my) = mouse_position();
 
