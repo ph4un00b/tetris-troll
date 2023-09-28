@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashSet, VecDeque},
-    ops::ControlFlow,
-};
+use std::{collections::VecDeque, ops::ControlFlow};
 
 use macroquad::{
     prelude::{Vec2, Vec3, BLACK, BLUE, BROWN, GREEN},
@@ -260,7 +257,8 @@ impl World {
     }
 
     fn lock_playable_slots(&mut self) {
-        self.iter_flood_fill(1, 1, 0_u8, 2_u8);
+        self.rusty_flood_fill(1, 1, 0_u8, 2_u8);
+        // self.iter_flood_fill(1, 1, 0_u8, 2_u8);
         // self.recur_flood_fill(1, 1, 0_u8, 2_u8);
         // self.flood_fill(1, 1, 0_u8, 2_u8);
     }
@@ -271,7 +269,8 @@ impl World {
     }
 
     fn unlock_playable_slots(&mut self) {
-        self.iter_flood_fill(1, 1, 2_u8, 0_u8);
+        self.rusty_flood_fill(1, 1, 2_u8, 0_u8);
+        // self.iter_flood_fill(1, 1, 2_u8, 0_u8);
         // self.recur_flood_fill(1, 1, 2_u8, 0_u8);
         // self.flood_fill(1, 1, 2_u8, 0_u8);
     }
@@ -282,35 +281,6 @@ impl World {
             .flat_map(|row| row.iter_mut())
             .filter(|value| **value == from)
             .for_each(|value| *value = to);
-    }
-
-    pub fn flood_fill(&mut self, x0: usize, y0: usize, target: u8, replacement: u8) {
-        let mut queue = VecDeque::new();
-        queue.push_back((x0, y0));
-        while let Some((current_x, current_y)) = queue.pop_front() {
-            let unique_neighbors: HashSet<(usize, usize)> = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-                .iter()
-                .map(|(dx, dy)| (current_x as isize + dx, current_y as isize + dy))
-                // .filter(|&(x, y)| {
-                //     (0..PLAYFIELD_W).contains(&x)
-                //         && (0..PLAYFIELD_H).contains(&y)
-                //         && self.floor[x0][y0] == target
-                // })
-                .filter(|&(x, y)| {
-                    x >= 0
-                        && x < PLAYFIELD_W as isize
-                        && y >= 0
-                        && y < PLAYFIELD_H as isize
-                        && self.floor[x as usize][y as usize] == target
-                })
-                .map(|(x, y)| (x as usize, y as usize))
-                .collect();
-
-            unique_neighbors.iter().for_each(|&(new_x, new_y)| {
-                self.floor[new_x][new_y] = replacement;
-                queue.push_back((new_x, new_y));
-            });
-        }
     }
 
     // * a bit slower❓ but sensual simpler
@@ -350,6 +320,23 @@ impl World {
             if y < H {
                 stack.push((x, y + 1));
             }
+        }
+    }
+
+    pub fn rusty_flood_fill(&mut self, x0: usize, y0: usize, target: u8, replacement: u8) {
+        let mut queue = VecDeque::new();
+        queue.push_back((x0, y0));
+        let directions = [(1_isize, 0_isize), (-1, 0), (0, 1), (0, -1)];
+        while let Some((x, y)) = queue.pop_front() {
+            if self.floor[x][y] != target {
+                continue;
+            }
+            self.floor[x][y] = replacement;
+            directions
+                .iter()
+                .map(|&(dx, dy)| (x as isize + dx, y as isize + dy))
+                .filter(|&(x, y)| (0..=IW).contains(&x) && (0..=IH).contains(&y))
+                .for_each(|(x, y)| queue.push_back((x as usize, y as usize)));
         }
     }
 }
