@@ -328,4 +328,28 @@ impl World {
         self.recur_flood_fill(x0, y0 - 1, target, replacement);
     }
 
+    pub fn iter_flood_fill(&mut self, x0: usize, y0: usize, target: u8, replacement: u8) {
+        let mut stack = Vec::new();
+        stack.push((x0, y0));
+        while let Some((x, y)) = stack.pop() {
+            if self.floor[x][y] != target {
+                continue;
+            }
+
+            self.floor[x][y] = replacement;
+
+            if x > 0 {
+                stack.push((x - 1, y));
+            }
+            if x < W {
+                stack.push((x + 1, y));
+            }
+            if y > 0 {
+                stack.push((x, y - 1));
+            }
+            if y < H {
+                stack.push((x, y + 1));
+            }
+        }
+    }
 }
