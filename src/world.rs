@@ -10,8 +10,8 @@ use macroquad::{
 
 use crate::{
     constants::{
-        DEBUG_GROUND, DEBUG_TETRO, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H, PLAYFIELD_LEFT_PADDING,
-        PLAYFIELD_TOP_PADDING, PLAYFIELD_W,
+        DEBUG_GROUND, DEBUG_TETRO, H, IH, IW, NONE_VALUE, PIECE_SIZE, PLAYFIELD_H,
+        PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING, PLAYFIELD_W, W,
     },
     game_configs,
     physics::Physics,
@@ -260,13 +260,20 @@ impl World {
     }
 
     fn lock_playable_slots(&mut self) {
-        // println!("filling...");
-        self.flood_fill(0, 0, 0_u8, 2_u8);
+        self.iter_flood_fill(1, 1, 0_u8, 2_u8);
+        // self.recur_flood_fill(1, 1, 0_u8, 2_u8);
+        // self.flood_fill(1, 1, 0_u8, 2_u8);
     }
 
     fn fill_unplayable_holes(&mut self) {
         // println!("holes...");
         self.filter_and_paint(0_u8, 7_u8);
+    }
+
+    fn unlock_playable_slots(&mut self) {
+        self.iter_flood_fill(1, 1, 2_u8, 0_u8);
+        // self.recur_flood_fill(1, 1, 2_u8, 0_u8);
+        // self.flood_fill(1, 1, 2_u8, 0_u8);
     }
 
     pub fn filter_and_paint(&mut self, from: u8, to: u8) {
@@ -277,18 +284,18 @@ impl World {
             .for_each(|value| *value = to);
     }
 
-    fn unlock_playable_slots(&mut self) {
-        // println!("black again...");
-        self.flood_fill(0, 0, 2_u8, 0_u8);
-    }
-
-    pub fn flood_fill(&mut self, start_x: usize, start_y: usize, target: u8, replacement: u8) {
+    pub fn flood_fill(&mut self, x0: usize, y0: usize, target: u8, replacement: u8) {
         let mut queue = VecDeque::new();
-        queue.push_back((start_x, start_y));
+        queue.push_back((x0, y0));
         while let Some((current_x, current_y)) = queue.pop_front() {
             let unique_neighbors: HashSet<(usize, usize)> = [(1, 0), (-1, 0), (0, 1), (0, -1)]
                 .iter()
                 .map(|(dx, dy)| (current_x as isize + dx, current_y as isize + dy))
+                // .filter(|&(x, y)| {
+                //     (0..PLAYFIELD_W).contains(&x)
+                //         && (0..PLAYFIELD_H).contains(&y)
+                //         && self.floor[x0][y0] == target
+                // })
                 .filter(|&(x, y)| {
                     x >= 0
                         && x < PLAYFIELD_W as isize
@@ -305,4 +312,20 @@ impl World {
             });
         }
     }
+
+    // * a bit slower❓ but sensual simpler
+    pub fn recur_flood_fill(&mut self, x0: isize, y0: isize, target: u8, replacement: u8) {
+        if x0 < 0 || y0 < 0 {
+            return;
+        }
+        if !matches!((x0, y0), (0..=IW, 0..=IH) if self.floor[x0 as usize][y0 as usize] == target) {
+            return;
+        }
+        self.floor[x0 as usize][y0 as usize] = replacement;
+        self.recur_flood_fill(x0 + 1, y0, target, replacement);
+        self.recur_flood_fill(x0 - 1, y0, target, replacement);
+        self.recur_flood_fill(x0, y0 + 1, target, replacement);
+        self.recur_flood_fill(x0, y0 - 1, target, replacement);
+    }
+
 }
