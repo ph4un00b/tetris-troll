@@ -61,7 +61,7 @@ impl World {
      */
     pub(crate) fn merge(&mut self, tetro: &mut Tetromino) {
         tetro.in_game = false;
-        match game_configs::ADD_STRATEGY {
+        match game_configs::MERGE_STRATEGY {
             Strat::Generic => self.with_generic(tetro),
             Strat::Runtime => self.with_runtime(tetro),
             Strat::Duplicated => self.with_duplication(tetro),
