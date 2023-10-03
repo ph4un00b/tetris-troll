@@ -163,16 +163,13 @@ impl World {
          *    I: IntoIterator,
          * {}
          */
-        // todo try the lemi generic iter
-        // };
+        // todo try the lemi generic iter❗
+        // todo: pass in tetro with lifetimes in to Mat4x4❓
+        // todo: check if we can reuse Tetromino#touched_ground in any❗
 
         while Mat4x4::iter(tetro)
             .filter(|&(_, _, z)| z != NONE_VALUE)
-            .map(|(x, y, z)| {
-                let x = x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
-                let y = (PLAYFIELD_H - PIECE_SIZE) + (y + tetro.playfield.offsets.down);
-                (x, y, z)
-            })
+            .map(|(x, y, z)| tetro.offsets(x, y, z))
             .any(|(x, y, _)| self.game[x][y - offset] > 0_u8)
         {
             offset += 1;
@@ -180,9 +177,8 @@ impl World {
 
         Mat4x4::iter(tetro)
             .filter(|&(_, _, z)| z != NONE_VALUE)
+            .map(|(x, y, z)| tetro.offsets(x, y, z))
             .for_each(|(x, y, z)| {
-                let x = x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
-                let y = (PLAYFIELD_H - PIECE_SIZE) + (y + tetro.playfield.offsets.down);
                 self.game[x][y - offset] = z;
                 self.floor[x][y - offset] = DEBUG_GROUND;
             });

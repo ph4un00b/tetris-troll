@@ -124,6 +124,12 @@ pub struct Tetromino {
 }
 
 impl Tetromino {
+    pub fn offsets(&self, x: usize, y: usize, z: u8) -> (usize, usize, u8) {
+        let x = x + self.playfield.coord.x as usize - self.playfield.offsets.left;
+        let y = (PLAYFIELD_H - PIECE_SIZE) + (y + self.playfield.offsets.down);
+        (x, y, z)
+    }
+
     pub(crate) fn from(spec: TetroK, world: &World) -> Tetromino {
         let kind = spec;
         let color = kind.color();
