@@ -62,9 +62,9 @@ impl World {
     pub(crate) fn merge(&mut self, tetro: &mut Tetromino) {
         tetro.in_game = false;
         match game_configs::ADD_STRATEGY {
-            Strat::Generic => self.add_with_generic(tetro),
-            Strat::Runtime => self.add_with_runtime(tetro),
-            Strat::Duplicated => self.add_with_duplication(tetro),
+            Strat::Generic => self.with_generic(tetro),
+            Strat::Runtime => self.with_runtime(tetro),
+            Strat::Duplicated => self.with_duplication(tetro),
         }
         self.lock_playable_slots();
         self.fill_unplayable_holes();
@@ -81,7 +81,7 @@ impl World {
      *
      * 4. queda prolijo
      */
-    pub(crate) fn add_with_generic(&mut self, tetro: &Tetromino) {
+    pub(crate) fn with_generic(&mut self, tetro: &Tetromino) {
         let mut offset = if cfg!(unix) || cfg!(windows) {
             // * due to initial ground, we start with 1 position offset
             1_usize
@@ -116,7 +116,7 @@ impl World {
      *
      * 5. queda prolijo
      */
-    pub(crate) fn add_with_runtime(&mut self, tetro: &Tetromino) {
+    pub(crate) fn with_runtime(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
         while let ControlFlow::Break(()) = tetro.process_with_runtime(&mut |x, y, _value| {
@@ -146,7 +146,7 @@ impl World {
      * 4. es muy verboso, todo esta explicito
      */
 
-    pub(crate) fn add_with_duplication(&mut self, tetro: &Tetromino) {
+    pub(crate) fn with_duplication(&mut self, tetro: &Tetromino) {
         let mut offset = 0_usize;
 
         // * ref == &
