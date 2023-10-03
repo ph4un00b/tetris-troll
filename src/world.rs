@@ -66,6 +66,9 @@ impl World {
             Strat::Runtime => self.add_with_runtime(tetro),
             Strat::Duplicated => self.add_with_duplication(tetro),
         }
+        self.lock_playable_slots();
+        self.fill_unplayable_holes();
+        self.unlock_playable_slots();
     }
 
     /*
@@ -100,10 +103,6 @@ impl World {
 
             None
         });
-
-        self.lock_playable_slots();
-        self.fill_unplayable_holes();
-        self.unlock_playable_slots();
     }
 
     /*
@@ -133,10 +132,6 @@ impl World {
 
             None
         });
-
-        self.lock_playable_slots();
-        self.fill_unplayable_holes();
-        self.unlock_playable_slots();
     }
 
     /*
@@ -156,30 +151,30 @@ impl World {
 
         // * ref == &
         // * dentro de este closure generó un nuevo offset por el trait copy, no lo movió
-        let check_collision = |offset| {
-            /*
-             * Todo: generic_iter
-             * Vec
-             * &[Y]
-             * HashMap
-             *
-             * fn generic_iter<I>(iter: I)
-             * where
-             *    I: IntoIterator,
-             * {}
-             */
-            // todo try the lemi generic iter
-            Mat4x4::iter(tetro)
-                .filter(|&(_, _, z)| z != NONE_VALUE)
-                .map(|(x, y, z)| {
-                    let x = x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
-                    let y = (PLAYFIELD_H - PIECE_SIZE) + (y + tetro.playfield.offsets.down);
-                    (x, y, z)
-                })
-                .any(|(x, y, _)| self.game[x][y - offset] > 0_u8)
-        };
+        // let check_collision = |offset| {
+        /*
+         * Todo: generic_iter
+         * Vec
+         * &[Y]
+         * HashMap
+         *
+         * fn generic_iter<I>(iter: I)
+         * where
+         *    I: IntoIterator,
+         * {}
+         */
+        // todo try the lemi generic iter
+        // };
 
-        while check_collision(offset) {
+        while Mat4x4::iter(tetro)
+            .filter(|&(_, _, z)| z != NONE_VALUE)
+            .map(|(x, y, z)| {
+                let x = x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
+                let y = (PLAYFIELD_H - PIECE_SIZE) + (y + tetro.playfield.offsets.down);
+                (x, y, z)
+            })
+            .any(|(x, y, _)| self.game[x][y - offset] > 0_u8)
+        {
             offset += 1;
         }
 
@@ -191,10 +186,6 @@ impl World {
                 self.game[x][y - offset] = z;
                 self.floor[x][y - offset] = DEBUG_GROUND;
             });
-
-        self.lock_playable_slots();
-        self.fill_unplayable_holes();
-        self.unlock_playable_slots();
     }
 
     pub fn render(&mut self, floor: f32) {
