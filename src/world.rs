@@ -284,6 +284,7 @@ impl World {
     }
 
     // * a bit slower❓ but sensual simpler
+    #[allow(unused)]
     pub fn recur_flood_fill(&mut self, x0: isize, y0: isize, target: u8, replacement: u8) {
         if x0 < 0 || y0 < 0 {
             return;
@@ -298,6 +299,7 @@ impl World {
         self.recur_flood_fill(x0, y0 - 1, target, replacement);
     }
 
+    #[allow(unused)]
     pub fn iter_flood_fill(&mut self, x0: usize, y0: usize, target: u8, replacement: u8) {
         let mut stack = Vec::new();
         stack.push((x0, y0));
@@ -327,11 +329,14 @@ impl World {
         let mut queue = VecDeque::new();
         queue.push_back((x0, y0));
         let directions = [(1_isize, 0_isize), (-1, 0), (0, 1), (0, -1)];
+
         while let Some((x, y)) = queue.pop_front() {
             if self.floor[x][y] != target {
                 continue;
             }
+
             self.floor[x][y] = replacement;
+
             directions
                 .iter()
                 .map(|&(dx, dy)| (x as isize + dx, y as isize + dy))

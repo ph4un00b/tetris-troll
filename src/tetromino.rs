@@ -509,7 +509,7 @@ impl Organism for Tetromino {
             }
             if is_key_down(KeyCode::F2) {
                 println!("filling...");
-                world.flood_fill(0, 0, 0_u8, 2_u8);
+                world.rusty_flood_fill(0, 0, 0_u8, 2_u8);
             }
             if is_key_down(KeyCode::F3) {
                 println!("fill holes with red...");
@@ -517,7 +517,7 @@ impl Organism for Tetromino {
             }
             if is_key_down(KeyCode::F4) {
                 println!("black again...");
-                world.flood_fill(0, 0, 2_u8, 0_u8);
+                world.rusty_flood_fill(0, 0, 2_u8, 0_u8);
             }
             if is_key_down(KeyCode::T) {
                 self.props.x = 340.0;
