@@ -3,7 +3,7 @@ use macroquad::{
     shapes::draw_rectangle,
 };
 
-use crate::tetromino::{Clock, Mat4, Offset};
+use crate::tetromino::{Clock, M4x4, Offset};
 
 pub struct TetrioZ;
 impl TetrioZ {
@@ -133,7 +133,7 @@ impl TetrioZ {
         }
     }
 
-    pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (Mat4, Offset) {
+    pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (M4x4, Offset) {
         match tetro.current_rotation {
             Clock::P12 => (
                 [

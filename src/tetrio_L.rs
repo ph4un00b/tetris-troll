@@ -5,7 +5,7 @@ use macroquad::{
 
 use crate::{
     shared::normalize,
-    tetromino::{Clock, Mat4, Offset},
+    tetromino::{Clock, M4x4, Offset},
     world::World,
 };
 
@@ -139,7 +139,7 @@ impl TetrioL {
         }
     }
 
-    pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (Mat4, Offset) {
+    pub(crate) fn mat4(tetro: &crate::tetromino::Tetromino) -> (M4x4, Offset) {
         match tetro.current_rotation {
             Clock::P12 => (
                 [

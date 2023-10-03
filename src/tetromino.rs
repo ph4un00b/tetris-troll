@@ -93,7 +93,7 @@ pub enum Clock {
     P9,
 }
 
-pub type Mat4 = [[u8; 4]; 4];
+pub type M4x4 = [[u8; 4]; 4];
 
 #[derive(Debug, Clone)]
 pub struct Offset {
@@ -106,7 +106,7 @@ pub struct Offset {
 #[derive(Debug, Clone)]
 pub struct Playfield {
     pub coord: Vec2,
-    pub mat4: Mat4,
+    pub mat4: M4x4,
     pub offsets: Offset,
     pub size: Vec2,
 }

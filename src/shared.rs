@@ -7,8 +7,46 @@ use macroquad::{
 use crate::{
     constants::{PLAYFIELD_H, PLAYFIELD_LEFT_PADDING, PLAYFIELD_TOP_PADDING, PLAYFIELD_W},
     physics::PhysicsEvent,
+    tetromino::{M4x4, Tetromino},
     world::World,
 };
+
+pub struct Mat4x4 {
+    tetro: M4x4,
+    row: usize,
+    col: usize,
+}
+
+impl Mat4x4 {
+    pub fn iter(tetro: &Tetromino) -> Self {
+        Mat4x4 {
+            tetro: tetro.playfield.mat4,
+            row: 0,
+            col: 0,
+        }
+    }
+}
+
+impl Iterator for Mat4x4 {
+    type Item = (usize, usize, u8);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row >= 4 {
+            return None;
+        }
+
+        let current_value = self.tetro[self.row][self.col];
+        let current_position = (self.col, self.row);
+
+        self.col += 1;
+        if self.col >= 4 {
+            self.col = 0;
+            self.row += 1;
+        }
+
+        Some((current_position.0, current_position.1, current_value))
+    }
+}
 
 pub struct Matrix {
     matrix: [[u8; PLAYFIELD_H]; PLAYFIELD_W],

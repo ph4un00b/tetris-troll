@@ -12,7 +12,7 @@ use crate::{
     },
     game_configs,
     physics::Physics,
-    shared::Matrix,
+    shared::{Mat4x4, Matrix},
     tetromino::{TetroK, Tetromino},
     world_with_holes::WORLD_WITH_FLOOR,
 };
@@ -95,8 +95,7 @@ impl World {
         }
 
         tetro.process_current_positions(|x, y, value| {
-            let game = &mut self.game;
-            game[x][y - offset] = value;
+            self.game[x][y - offset] = value;
             self.floor[x][y - offset] = DEBUG_GROUND;
 
             None
@@ -130,9 +129,14 @@ impl World {
 
         tetro.process_with_runtime(&mut |x, y, value| {
             self.game[x][y - offset] = value;
+            self.floor[x][y - offset] = DEBUG_GROUND;
 
             None
         });
+
+        self.lock_playable_slots();
+        self.fill_unplayable_holes();
+        self.unlock_playable_slots();
     }
 
     /*
@@ -164,35 +168,33 @@ impl World {
              *    I: IntoIterator,
              * {}
              */
-            for (pos_y, row) in tetro.playfield.mat4.iter().enumerate() {
-                for (pos_x, tetro_value) in row.iter().enumerate() {
-                    if *tetro_value == NONE_VALUE {
-                        continue;
-                    }
-                    let x = pos_x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
-                    let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.playfield.offsets.down);
-                    if self.game[x][y - offset] > 0_u8 {
-                        return true;
-                    };
-                }
-            }
-            false
+            // todo try the lemi generic iter
+            Mat4x4::iter(tetro)
+                .filter(|&(_, _, z)| z != NONE_VALUE)
+                .map(|(x, y, z)| {
+                    let x = x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
+                    let y = (PLAYFIELD_H - PIECE_SIZE) + (y + tetro.playfield.offsets.down);
+                    (x, y, z)
+                })
+                .any(|(x, y, _)| self.game[x][y - offset] > 0_u8)
         };
 
         while check_collision(offset) {
             offset += 1;
         }
 
-        for (pos_y, row) in tetro.playfield.mat4.iter().enumerate() {
-            for (pos_x, tetro_value) in row.iter().enumerate() {
-                if *tetro_value == NONE_VALUE {
-                    continue;
-                }
-                let x = pos_x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
-                let y = (PLAYFIELD_H - PIECE_SIZE) + (pos_y + tetro.playfield.offsets.down);
-                self.game[x][y - offset] = *tetro_value;
-            }
-        }
+        Mat4x4::iter(tetro)
+            .filter(|&(_, _, z)| z != NONE_VALUE)
+            .for_each(|(x, y, z)| {
+                let x = x + tetro.playfield.coord.x as usize - tetro.playfield.offsets.left;
+                let y = (PLAYFIELD_H - PIECE_SIZE) + (y + tetro.playfield.offsets.down);
+                self.game[x][y - offset] = z;
+                self.floor[x][y - offset] = DEBUG_GROUND;
+            });
+
+        self.lock_playable_slots();
+        self.fill_unplayable_holes();
+        self.unlock_playable_slots();
     }
 
     pub fn render(&mut self, floor: f32) {
