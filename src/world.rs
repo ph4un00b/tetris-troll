@@ -12,6 +12,7 @@ use crate::{
     },
     game_configs,
     physics::Physics,
+    shared::Matrix,
     tetromino::{TetroK, Tetromino},
     world_with_holes::WORLD_WITH_FLOOR,
 };
@@ -203,44 +204,47 @@ impl World {
         let origin_playfield_y: f32 = self.screen.y * PLAYFIELD_TOP_PADDING;
         const GAP: f32 = 1.;
 
-        for (row_idx, row) in self.game.iter().enumerate() {
-            for (col_idx, value) in row.iter().enumerate() {
-                draw_rectangle(
-                    origin_playfield_x + (self.block.x * (row_idx as f32 * GAP)),
-                    origin_playfield_y + (self.block.y * (col_idx as f32 * GAP)),
-                    self.block.x,
-                    self.block.y,
-                    match *value {
-                        1..=7 => TetroK::from(*value).color(),
-                        _ => BROWN,
-                    },
-                );
-            }
+        // todo: benchmark if the iterator is worse❗
+        for (x, y, val) in Matrix::iter(self.game) {
+            draw_rectangle(
+                origin_playfield_x + (self.block.x * (x as f32 * GAP)),
+                origin_playfield_y + (self.block.y * (y as f32 * GAP)),
+                self.block.x,
+                self.block.y,
+                match val {
+                    1..=7 => TetroK::from(val).color(),
+                    _ => BROWN,
+                },
+            );
         }
+        // for (row_idx, row) in self.game.iter().enumerate() {
+        //     for (col_idx, value) in row.iter().enumerate() {
+        //         draw_rectangle(
+        //             origin_playfield_x + (self.block.x * (row_idx as f32 * GAP)),
+        //             origin_playfield_y + (self.block.y * (col_idx as f32 * GAP)),
+        //             self.block.x,
+        //             self.block.y,
+        //             match *value {
+        //                 1..=7 => TetroK::from(*value).color(),
+        //                 _ => BROWN,
+        //             },
+        //         );
+        //     }
+        // }
 
-        for (row_idx, row) in self.floor.iter().enumerate() {
-            for (col_idx, value) in row.iter().enumerate() {
-                draw_rectangle(
-                    origin_playfield_x + (self.block.x * (row_idx as f32 * GAP)) - self.playfield.x,
-                    origin_playfield_y + self.block.y * (col_idx as f32 * GAP),
-                    self.block.x,
-                    self.block.y,
-                    match *value {
-                        1..=7 => TetroK::from(*value).color(),
-                        DEBUG_GROUND => GREEN,
-                        DEBUG_TETRO => BLUE,
-                        _ => BLACK,
-                    },
-                );
-            }
-        }
-
-        for row in &mut self.floor {
-            for value in row.iter_mut() {
-                if *value == DEBUG_TETRO {
-                    *value = 0;
-                }
-            }
+        for (x, y, val) in Matrix::iter(self.floor) {
+            draw_rectangle(
+                origin_playfield_x + (self.block.x * (x as f32 * GAP)) - self.playfield.x,
+                origin_playfield_y + self.block.y * (y as f32 * GAP),
+                self.block.x,
+                self.block.y,
+                match val {
+                    1..=7 => TetroK::from(val).color(),
+                    DEBUG_GROUND => GREEN,
+                    DEBUG_TETRO => BLUE,
+                    _ => BLACK,
+                },
+            );
         }
 
         //? line

@@ -10,6 +10,45 @@ use crate::{
     world::World,
 };
 
+pub struct Matrix {
+    matrix: [[u8; PLAYFIELD_H]; PLAYFIELD_W],
+    row: usize,
+    col: usize,
+}
+
+impl Matrix {
+    pub fn iter(matrix: [[u8; PLAYFIELD_H]; PLAYFIELD_W]) -> Self {
+        Matrix {
+            matrix,
+            row: 0,
+            col: 0,
+        }
+    }
+}
+
+impl Iterator for Matrix {
+    type Item = (usize, usize, u8);
+    // type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row >= 24 {
+            return None;
+        }
+
+        let current_value = self.matrix[self.col][self.row];
+        let current_position = (self.col, self.row);
+
+        self.col += 1;
+        if self.col >= 10 {
+            self.col = 0;
+            self.row += 1;
+        }
+
+        Some((current_position.0, current_position.1, current_value))
+        // Some((current_position.0, current_position.1))
+    }
+}
+
 pub struct PanelLayout {
     pub w: f32,
     pub row_h: f32,
