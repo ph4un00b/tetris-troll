@@ -13,6 +13,7 @@ catppuccin-egui = "3.1.0"
 egui = "0.22.0"
 egui-macroquad = { git = "https://github.com/ph4un00b/egui-macroquad.git", brach = "master" }
 macroquad =  { git = "https://github.com/ph4un00b/macroquad.git", brach = "master" }
+nalgebra = "0.32.3"
 rapier2d = { version = "0.17.2", features = [ "simd-stable" ] }
 
 # @see https://github.com/0x61nas/todo2#using-the-log-feature
