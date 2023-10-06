@@ -28,6 +28,7 @@
     "nalgebra",
     "playfield",
     "PLAYFIELD",
+    "signum",
     "simd",
     "SKYBLUE",
     "srand",
