@@ -121,7 +121,50 @@ pub struct Tetromino {
     pub pristine: bool,
     current: Vec2,
     rotation_index: usize,
+    y: usize,
+    x: usize,
 }
+
+impl Iterator for &mut Tetromino {
+    type Item = (usize, usize, u8);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.y >= 4 {
+            return None;
+        }
+
+        let current_value = self.playfield.mat4[self.y][self.x];
+        let current_position = (self.x, self.y);
+
+        self.x += 1;
+        if self.x >= 4 {
+            
+            self.x = 0;
+            self.y += 1;
+        }
+
+        let (x, y) = if current_value != 0_u8 {
+            let x =
+                current_position.0 + self.playfield.coord.x as usize - self.playfield.offsets.left;
+            let y = (PLAYFIELD_H - PIECE_SIZE) + (current_position.1 + self.playfield.offsets.down);
+            (x, y)
+        } else {
+            (current_position.0, current_position.1)
+        };
+        // let (x, y) = (current_position.0, current_position.1);
+        Some((x, y, current_value))
+    }
+}
+
+// impl IntoIterator for Tetromino {
+//     type Item = (usize, usize, u8);
+//     type IntoIter = std::vec::IntoIter<Self::Item>;
+
+//     fn into_iter(self) -> Self::IntoIter {
+//         let matrix: Vec<(usize, usize, u8)> = Mat4x4::iter(&self).collect();
+//         matrix.into_iter()
+//     }
+// }
 
 impl Tetromino {
     pub fn offsets(&self, x: usize, y: usize, z: u8) -> (usize, usize, u8) {
@@ -189,6 +232,8 @@ impl Tetromino {
             current,
             in_game: true,
             pristine: true,
+            y: 0_usize,
+            x: 0_usize,
         }
     }
 
