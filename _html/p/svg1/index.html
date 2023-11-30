@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>trigger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="https://gitcdn.link/repo/davidjconnelly/trongate-css/master/trongate.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.15/dist/vue.js"></script>
+    <script src="https://unpkg.com/@cyrilf/vue-dat-gui@latest/dist/vue-dat-gui.umd.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "sans-serif";
+      }
+
+      .full {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      .input-title {
+        font-size: 40px;
+        text-align: center;
+      }
+
+      .input-title:focus {
+        outline-color: #077d43;
+      }
+
+      .input-note {
+        font-size: 11px;
+        color: #666;
+        font-style: italic;
+        text-align: center;
+        margin-top: 5px;
+      }
+
+      .github {
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        color: white;
+        background-color: #077d43;
+        padding: 7px;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-800">
+    <div id="app" class="bg-gray-50 text-2xl">{{ message }}</div>
+
+    <code class="text-gray-50 text-xl">
+      The above element defines a simple SVG canvas with 100x100px. One user
+      unit equals one screen unit.
+    </code>
+    <svg width="100" height="100">
+      <rect x="0" y="0" width="100" height="100" />
+    </svg>
+
+    <hr />
+
+    <code class="text-gray-50 text-xl">
+      The whole SVG canvas here is 200px by 200px in size. However, the viewBox
+      attribute defines the portion of that canvas to display. These 200x200
+      pixels display an area that starts at user unit (0,0) and spans 100x100
+      user units to the right and to the bottom. This effectively zooms in on
+      the 100x100 unit area and enlarges the image to double size.
+    </code>
+    <svg width="200" height="200" viewBox="0 0 100 100">
+      <rect x="0" y="0" width="100" height="100" />
+    </svg>
+
+    <hr />
+
+    <code class="text-gray-50 text-xl"> rectangle </code>
+    <svg width="200" height="200" viewBox="0 0 100 100">
+      <rect x="10" y="10" width="30" height="30" />
+    </svg>
+
+    <svg width="200" height="200" viewBox="0 0 100 100">
+      <rect x="60" y="10" rx="10" ry="10" width="30" height="30" />
+    </svg>
+
+    <div id="dat">
+      </div>
+    </div>
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          message: "hola 🎉",
+        },
+      });
+    </script>
+    <script type="x-template" id="vue-dat-gui-demo">
+      <div class="full" :style="{'background-color': background}">
+        <h1 :style="{color: titleColor, 'font-size': `${titleFontSize}px`}">{{title}}</h1>
+        <img :src="pictureUrl" alt="vue-dat-gui demo" :style="pictureStyle" v-show="showPicture"/>
+        <div>
+          <input v-model="title" class="input-title"/>
+          <div class="input-note">Showcase of the 2-way data-binding</div>
+        </div>
+
+        <dat-gui closeText="Close controls" openText="Open controls" closePosition="bottom">
+          <dat-color v-model="background" label="Background"/>
+          <dat-color v-model="titleColor" label="Title Color"/>
+          <dat-number v-model="titleFontSize" label="Title font-size"/>
+          <dat-string v-model="title" label="Title"/>
+          <dat-button @click="triggerAlert" label="Trigger alert"/>
+          <dat-folder label="Picture">
+            <dat-select v-model="pictureUrl" :items="pictures" label="Picture"/>
+            <dat-boolean v-model="showPicture" label="Show Picture"/>
+            <dat-button @click="nextPicture" label="Next picture"/>
+            <dat-folder label="Box shadow">
+      	<dat-number v-model="boxShadow.offsetX" :min="-100" :max="100" :step="1" label="Offset X"/>
+      	<dat-number v-model="boxShadow.offsetY" :min="-100" :max="100" :step="1" label="Offset Y"/>
+      	<dat-number v-model="boxShadow.blurRadius" :min="0" :max="100" :step="1" label="Blur radius"/>
+      	<dat-number v-model="boxShadow.spreadRadius" :min="0" :max="30" :step="1" label="Spread radius"/>
+      	<dat-color v-model="boxShadow.color" label="Color"/>
+            </dat-folder>
+          </dat-folder>
+        </dat-gui>
+      </div>
+    </script>
+    <script>
+      new Vue({
+        el: "#dat",
+        template: "#vue-dat-gui-demo",
+        data() {
+          const pictures = [
+            {
+              name: "forest",
+              value:
+                "https://images.unsplash.com/photo-1516214104703-d870798883c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80",
+            },
+            {
+              name: "mountain",
+              value:
+                "https://images.unsplash.com/photo-1526080676457-4544bf0ebba9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80",
+            },
+            {
+              name: "beach",
+              value:
+                "https://images.unsplash.com/photo-1520942702018-0862200e6873?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80",
+            },
+          ];
+
+          return {
+            background: "#cdeecc",
+            titleColor: "#077d43",
+            titleFontSize: 75,
+            title: "vue-dat-gui",
+            showPicture: true,
+            pictures,
+            pictureUrl: pictures[0].value,
+            boxShadow: {
+              offsetX: 27,
+              offsetY: 27,
+              blurRadius: 75,
+              spreadRadius: 2,
+              color: "rgba(3, 23, 6, 1)",
+            },
+          };
+        },
+        computed: {
+          pictureStyle() {
+            const { offsetX, offsetY, blurRadius, spreadRadius, color } =
+              this.boxShadow;
+            return {
+              "box-shadow": `${offsetX}px ${offsetY}px ${blurRadius}px ${spreadRadius}px ${color}`,
+            };
+          },
+        },
+        methods: {
+          triggerAlert() {
+            alert("Yeah, you pressed it!");
+          },
+          nextPicture() {
+            const currentIndex = this.pictures.findIndex(
+              (picture) => picture.value === this.pictureUrl
+            );
+            const nextIndex = (currentIndex + 1) % this.pictures.length;
+            this.pictureUrl = this.pictures[nextIndex].value;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
